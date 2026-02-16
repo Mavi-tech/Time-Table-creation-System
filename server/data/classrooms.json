@@ -1,0 +1,58 @@
+[
+  {
+    "id": "r1",
+    "name": "Room 101",
+    "capacity": 60,
+    "type": "lecture",
+    "building": "Block A"
+  },
+  {
+    "id": "r2",
+    "name": "Room 102",
+    "capacity": 60,
+    "type": "lecture",
+    "building": "Block A"
+  },
+  {
+    "id": "r3",
+    "name": "Room 201",
+    "capacity": 40,
+    "type": "lecture",
+    "building": "Block A"
+  },
+  {
+    "id": "r4",
+    "name": "Room 202",
+    "capacity": 40,
+    "type": "lecture",
+    "building": "Block B"
+  },
+  {
+    "id": "r5",
+    "name": "CS Lab 1",
+    "capacity": 30,
+    "type": "lab",
+    "building": "Block C"
+  },
+  {
+    "id": "r6",
+    "name": "CS Lab 2",
+    "capacity": 30,
+    "type": "lab",
+    "building": "Block C"
+  },
+  {
+    "id": "r7",
+    "name": "Physics Lab",
+    "capacity": 30,
+    "type": "lab",
+    "building": "Block C"
+  },
+  {
+    "id": "r8",
+    "name": "Room 301",
+    "capacity": 80,
+    "type": "lecture",
+    "building": "Block B"
+  }
+]

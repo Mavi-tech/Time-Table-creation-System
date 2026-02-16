@@ -1,0 +1,37 @@
+[
+  {
+    "id": "t1",
+    "name": "Dr. Sharma",
+    "email": "sharma@uni.edu",
+    "departmentId": "dept-cs",
+    "specialization": "Data Structures, Programming"
+  },
+  {
+    "id": "t2",
+    "name": "Dr. Verma",
+    "email": "verma@uni.edu",
+    "departmentId": "dept-cs",
+    "specialization": "Operating Systems, Networks"
+  },
+  {
+    "id": "t3",
+    "name": "Dr. Gupta",
+    "email": "gupta@uni.edu",
+    "departmentId": "dept-cs",
+    "specialization": "Databases, ML"
+  },
+  {
+    "id": "t4",
+    "name": "Prof. Singh",
+    "email": "singh@uni.edu",
+    "departmentId": "dept-cs",
+    "specialization": "Mathematics"
+  },
+  {
+    "id": "t5",
+    "name": "Dr. Patel",
+    "email": "patel@uni.edu",
+    "departmentId": "dept-cs",
+    "specialization": "Physics"
+  }
+]

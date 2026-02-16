@@ -1,0 +1,90 @@
+[
+  {
+    "id": "u-admin",
+    "username": "admin",
+    "password": "admin123",
+    "role": "admin",
+    "name": "Administrator",
+    "linkedId": null
+  },
+  {
+    "id": "u-t1",
+    "username": "sharma",
+    "password": "teacher123",
+    "role": "teacher",
+    "name": "Dr. Sharma",
+    "linkedId": "t1"
+  },
+  {
+    "id": "u-t2",
+    "username": "verma",
+    "password": "teacher123",
+    "role": "teacher",
+    "name": "Dr. Verma",
+    "linkedId": "t2"
+  },
+  {
+    "id": "u-t3",
+    "username": "gupta",
+    "password": "teacher123",
+    "role": "teacher",
+    "name": "Dr. Gupta",
+    "linkedId": "t3"
+  },
+  {
+    "id": "u-t4",
+    "username": "singh",
+    "password": "teacher123",
+    "role": "teacher",
+    "name": "Prof. Singh",
+    "linkedId": "t4"
+  },
+  {
+    "id": "u-t5",
+    "username": "patel",
+    "password": "teacher123",
+    "role": "teacher",
+    "name": "Dr. Patel",
+    "linkedId": "t5"
+  },
+  {
+    "id": "u-s1",
+    "username": "student1",
+    "password": "student123",
+    "role": "student",
+    "name": "Rahul Kumar",
+    "linkedId": null,
+    "departmentId": "dept-cs",
+    "year": 1
+  },
+  {
+    "id": "u-s2",
+    "username": "student2",
+    "password": "student123",
+    "role": "student",
+    "name": "Priya Singh",
+    "linkedId": null,
+    "departmentId": "dept-cs",
+    "year": 2
+  },
+  {
+    "id": "u-s3",
+    "username": "student3",
+    "password": "student123",
+    "role": "student",
+    "name": "Amit Patel",
+    "linkedId": null,
+    "departmentId": "dept-cs",
+    "year": 3
+  },
+  {
+    "id": "u-s4",
+    "username": "student4",
+    "password": "student123",
+    "role": "student",
+    "name": "Sneha Gupta",
+    "linkedId": null,
+    "departmentId": "dept-cs",
+    "year": 4
+  }
+]
