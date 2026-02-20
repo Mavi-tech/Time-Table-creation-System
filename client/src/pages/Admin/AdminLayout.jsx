@@ -15,6 +15,7 @@ const NAV = [
     { to: '/admin/teachers', icon: '👨‍🏫', label: 'Teachers' },
     { to: '/admin/classrooms', icon: '🏫', label: 'Classrooms' },
     { to: '/admin/departments', icon: '🏛️', label: 'Departments' },
+    { to: '/admin/batches', icon: '👥', label: 'Student Batches' },
   ]},
   { title: 'Requests', links: [
     { to: '/admin/requests', icon: '📨', label: 'Change Requests' },

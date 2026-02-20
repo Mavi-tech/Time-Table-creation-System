@@ -11,6 +11,7 @@ const FILES = {
   timetables: path.join(DB_DIR, 'timetables.json'),
   users: path.join(DB_DIR, 'users.json'),
   changeRequests: path.join(DB_DIR, 'change_requests.json'),
+  batches: path.join(DB_DIR, 'batches.json'),
 };
 
 const DEFAULTS = {
@@ -61,6 +62,13 @@ const DEFAULTS = {
     { id: 'u-s4', username: 'student4', password: 'student123', role: 'student', name: 'Sneha Gupta', linkedId: null, departmentId: 'dept-cs', year: 4 },
   ],
   changeRequests: [],
+  batches: [
+    { id: 'b1', name: 'Batch A', section: 'A', departmentId: 'dept-cs', year: 1, studentCount: 60 },
+    { id: 'b2', name: 'Batch B', section: 'B', departmentId: 'dept-cs', year: 1, studentCount: 60 },
+    { id: 'b3', name: 'Batch A', section: 'A', departmentId: 'dept-cs', year: 2, studentCount: 45 },
+    { id: 'b4', name: 'Batch A', section: 'A', departmentId: 'dept-cs', year: 3, studentCount: 50 },
+    { id: 'b5', name: 'Batch A', section: 'A', departmentId: 'dept-cs', year: 4, studentCount: 40 },
+  ],
 };
 
 function init() {

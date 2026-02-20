@@ -41,6 +41,18 @@ const api = {
   updateClassroom: (id, d) => http.put(`/api/classrooms/${id}`, d),
   deleteClassroom: (id) => http.delete(`/api/classrooms/${id}`),
 
+  // Batches
+  getBatches: (deptId, year) => {
+    const params = {};
+    if (deptId) params.departmentId = deptId;
+    if (year) params.year = year;
+    return http.get('/api/batches', { params });
+  },
+  createBatch: (d) => http.post('/api/batches', d),
+  updateBatch: (id, d) => http.put(`/api/batches/${id}`, d),
+  deleteBatch: (id) => http.delete(`/api/batches/${id}`),
+  autoSplitBatches: (d) => http.post('/api/batches/auto-split', d),
+
   // Timetable
   generateTimetable: (departmentId, year, mode) => http.post('/api/timetable/generate', { departmentId, year, mode }),
   getTimetable: (deptId, year, day) => {

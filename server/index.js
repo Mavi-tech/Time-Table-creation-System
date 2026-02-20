@@ -93,6 +93,61 @@ app.put('/api/classrooms/:id', (req, res) => {
 });
 app.delete('/api/classrooms/:id', (req, res) => { db.remove('classrooms', req.params.id); res.json({ ok: true }); });
 
+// ==================== BATCHES ====================
+app.get('/api/batches', (req, res) => {
+  let b = db.read('batches');
+  if (req.query.departmentId) b = b.filter(x => x.departmentId === req.query.departmentId);
+  if (req.query.year) b = b.filter(x => x.year === +req.query.year);
+  const depts = db.read('departments');
+  b = b.map(x => ({ ...x, departmentName: (depts.find(d => d.id === x.departmentId) || {}).name || 'Unknown' }));
+  res.json(b);
+});
+app.post('/api/batches', (req, res) => {
+  const d = { id: db.uid('b-'), ...req.body };
+  ['year', 'studentCount'].forEach(k => { if (d[k] != null) d[k] = +d[k]; });
+  res.json(db.add('batches', d));
+});
+app.put('/api/batches/:id', (req, res) => {
+  ['year', 'studentCount'].forEach(k => { if (req.body[k] != null) req.body[k] = +req.body[k]; });
+  const r = db.update('batches', req.params.id, req.body);
+  r ? res.json(r) : res.status(404).json({ error: 'Not found' });
+});
+app.delete('/api/batches/:id', (req, res) => { db.remove('batches', req.params.id); res.json({ ok: true }); });
+app.post('/api/batches/auto-split', (req, res) => {
+  const { departmentId, year, totalStudents, maxPerBatch } = req.body;
+  if (!departmentId || !year || !totalStudents || !maxPerBatch) {
+    return res.status(400).json({ error: 'departmentId, year, totalStudents, and maxPerBatch are required' });
+  }
+  const total = +totalStudents;
+  const max = +maxPerBatch;
+  const numBatches = Math.ceil(total / max);
+  const baseSize = Math.floor(total / numBatches);
+  const remainder = total % numBatches;
+
+  // Remove existing batches for this dept+year
+  const existing = db.read('batches');
+  const kept = existing.filter(b => !(b.departmentId === departmentId && b.year === +year));
+  db.write('batches', kept);
+
+  const created = [];
+  const sections = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  for (let i = 0; i < numBatches; i++) {
+    const section = sections[i] || `${i + 1}`;
+    const count = baseSize + (i < remainder ? 1 : 0);
+    const batch = {
+      id: db.uid('b-'),
+      name: `Batch ${section}`,
+      section,
+      departmentId,
+      year: +year,
+      studentCount: count,
+    };
+    db.add('batches', batch);
+    created.push(batch);
+  }
+  res.json({ created, numBatches });
+});
+
 // ==================== TIMETABLE ====================
 app.post('/api/timetable/generate', (req, res) => {
   try {

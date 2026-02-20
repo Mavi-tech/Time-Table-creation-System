@@ -15,6 +15,7 @@ import TeachersManager from './pages/Admin/TeachersManager';
 import ClassroomsManager from './pages/Admin/ClassroomsManager';
 import DepartmentsManager from './pages/Admin/DepartmentsManager';
 import ChangeRequests from './pages/Admin/ChangeRequests';
+import BatchesManager from './pages/Admin/BatchesManager';
 
 /* Teacher */
 import TeacherLayout from './pages/Teacher/TeacherLayout';
@@ -64,6 +65,7 @@ export default function App() {
           <Route path="teachers" element={<TeachersManager />} />
           <Route path="classrooms" element={<ClassroomsManager />} />
           <Route path="departments" element={<DepartmentsManager />} />
+          <Route path="batches" element={<BatchesManager />} />
           <Route path="requests" element={<ChangeRequests />} />
         </Route>
 

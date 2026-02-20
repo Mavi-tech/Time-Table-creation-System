@@ -140,6 +140,12 @@ body {
 }
 .form-row { display:flex; gap:12px; }
 .form-row .form-group { flex:1; }
+.field-error {
+  display:block; margin-top:4px; font-size:11px; color:var(--danger); font-weight:500;
+}
+.field-hint {
+  display:block; margin-top:4px; font-size:11px; color:var(--text-secondary); font-weight:400;
+}
 
 /* ============ TABLES ============ */
 .table-wrapper { overflow-x:auto; }
@@ -330,6 +336,71 @@ tr:hover td { background:#f8fafc; }
   border-radius:50%; width:32px; height:32px; animation:spin .7s linear infinite; margin:24px auto;
 }
 @keyframes spin { to{transform:rotate(360deg)} }
+
+/* ============ DEPT FLEX BAR ============ */
+.dept-bar-wrapper {
+  display:flex; align-items:stretch; gap:0; position:relative;
+}
+.dept-bar-arrow {
+  width:44px; flex-shrink:0; border:1px solid var(--border); background:var(--card);
+  cursor:pointer; font-size:28px; font-weight:300; color:var(--text-secondary);
+  display:flex; align-items:center; justify-content:center; transition:all .2s;
+  font-family:inherit; z-index:2;
+}
+.dept-bar-arrow.left { border-radius:var(--radius) 0 0 var(--radius); border-right:none; }
+.dept-bar-arrow.right { border-radius:0 var(--radius) var(--radius) 0; border-left:none; }
+.dept-bar-arrow:hover { background:var(--primary-bg); color:var(--primary); }
+.dept-bar-arrow:active { background:var(--primary); color:#fff; }
+.dept-bar-dots {
+  display:flex; justify-content:center; gap:6px; margin-top:10px;
+}
+.dept-bar-dot {
+  width:8px; height:8px; border-radius:50%; background:var(--border); cursor:pointer;
+  transition:all .2s;
+}
+.dept-bar-dot:hover { background:var(--primary-light); }
+.dept-bar-dot.active { background:var(--primary); width:20px; border-radius:4px; }
+.dept-bar {
+  display:flex; flex:1; border-radius:0; overflow:hidden;
+  background:var(--card); box-shadow:var(--shadow-md); border:1px solid var(--border);
+}
+.dept-bar-wrapper .dept-bar:first-child { border-radius:var(--radius) 0 0 var(--radius); }
+.dept-bar-wrapper .dept-bar:last-child  { border-radius:0 var(--radius) var(--radius) 0; }
+.dept-bar-wrapper .dept-bar:only-child  { border-radius:var(--radius); }
+.dept-bar-btn {
+  flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:6px; padding:20px 8px 16px; border:none; background:transparent; cursor:pointer;
+  font-family:inherit; position:relative; transition:all .2s ease;
+  border-right:1px solid var(--border); overflow:hidden;
+}
+.dept-bar-btn:last-child { border-right:none; }
+.dept-bar-btn::after {
+  content:''; position:absolute; bottom:0; left:50%; width:0; height:3px;
+  background:linear-gradient(90deg, var(--primary-light), var(--primary));
+  border-radius:3px 3px 0 0; transition:all .25s ease; transform:translateX(-50%);
+}
+.dept-bar-btn:hover { background:var(--primary-bg); }
+.dept-bar-btn:hover::after { width:40%; }
+.dept-bar-btn.active { background:linear-gradient(180deg, var(--primary-bg) 0%, #fff 100%); }
+.dept-bar-btn.active::after { width:100%; }
+.dept-bar-avatar {
+  width:42px; height:42px; border-radius:10px; display:flex; align-items:center; justify-content:center;
+  font-size:18px; font-weight:800; color:#fff; letter-spacing:-.5px;
+  background:linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  box-shadow:0 2px 8px rgba(79,70,229,.25); transition:transform .2s, box-shadow .2s;
+}
+.dept-bar-btn:hover .dept-bar-avatar { transform:scale(1.08); box-shadow:0 4px 12px rgba(79,70,229,.35); }
+.dept-bar-btn.active .dept-bar-avatar { background:linear-gradient(135deg, #6366f1 0%, #4338ca 100%); transform:scale(1.1); }
+.dept-bar-name {
+  font-size:13px; font-weight:700; color:var(--text); white-space:nowrap;
+  overflow:hidden; text-overflow:ellipsis; max-width:100%; transition:color .15s;
+}
+.dept-bar-btn.active .dept-bar-name { color:var(--primary); }
+.dept-bar-code {
+  font-size:10px; font-weight:600; color:var(--text-secondary); letter-spacing:.5px;
+  text-transform:uppercase;
+}
+.dept-bar-btn.active .dept-bar-code { color:var(--primary-light); }
 
 /* ============ SCROLLBAR ============ */
 ::-webkit-scrollbar { width:6px; }

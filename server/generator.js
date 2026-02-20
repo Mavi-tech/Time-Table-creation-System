@@ -13,21 +13,38 @@ const SLOTS = [
   { id: 7, start: '16:00', end: '17:00', label: '04:00 – 05:00' },
 ];
 
-function slotFree(schedule, day, slotId, teacherId, roomId, deptId, year, count = 1) {
+function slotFree(schedule, day, slotId, teacherId, roomId, deptId, year, count = 1, batchId = null) {
   for (let s = 0; s < count; s++) {
     const sid = slotId + s;
     if (sid > SLOTS.length) return false;
     const hits = schedule.filter(e => e.day === day && e.slotId === sid);
     if (hits.some(e => e.teacherId === teacherId)) return false;
     if (hits.some(e => e.classroomId === roomId)) return false;
-    if (hits.some(e => e.departmentId === deptId && e.year === year)) return false;
+    // If using batches, only block same dept+year+batch; otherwise block all dept+year
+    if (batchId) {
+      if (hits.some(e => e.departmentId === deptId && e.year === year && e.batchId === batchId)) return false;
+    } else {
+      if (hits.some(e => e.departmentId === deptId && e.year === year)) return false;
+    }
   }
   return true;
 }
 
-function findRoom(rooms, kind, schedule, day, slotId, count = 1) {
+function findRoom(rooms, kind, schedule, day, slotId, count = 1, studentCount = 0) {
   const pool = rooms.filter(r => (kind === 'lab' ? r.type === 'lab' : r.type === 'lecture'));
-  for (const r of pool) {
+  // Sort by capacity ascending to pick smallest room that fits
+  const sorted = [...pool].sort((a, b) => (a.capacity || 0) - (b.capacity || 0));
+  for (const r of sorted) {
+    // If we know student count, skip rooms that are too small
+    if (studentCount > 0 && (r.capacity || 0) < studentCount) continue;
+    let ok = true;
+    for (let s = 0; s < count; s++) {
+      if (schedule.some(e => e.day === day && e.slotId === slotId + s && e.classroomId === r.id)) { ok = false; break; }
+    }
+    if (ok) return r;
+  }
+  // Fallback: if no room fits the student count, try any free room
+  for (const r of sorted) {
     let ok = true;
     for (let s = 0; s < count; s++) {
       if (schedule.some(e => e.day === day && e.slotId === slotId + s && e.classroomId === r.id)) { ok = false; break; }
@@ -42,67 +59,77 @@ function generate(departmentId, year, mode = 'week') {
   const rooms = db.read('classrooms');
   const allTT = db.read('timetables');
   const others = allTT.filter(t => !(t.departmentId === departmentId && t.year === year));
+  const batches = db.read('batches').filter(b => b.departmentId === departmentId && b.year === year);
   const schedule = [];
   const errors = [];
   const days = mode === 'day' ? [DAYS[0]] : [...DAYS];
 
-  for (const course of courses) {
-    let lecPlaced = 0, labPlaced = 0;
+  // If batches exist, generate timetable per batch; otherwise generate one timetable for the whole year
+  const batchList = batches.length > 0 ? batches : [{ id: null, section: null, studentCount: 0 }];
 
-    // lectures
-    let tries = 0;
-    while (lecPlaced < (course.weeklyLectures || 0) && tries < 300) {
-      tries++;
-      const day = days[lecPlaced % days.length];
-      for (const slot of SLOTS) {
-        const room = findRoom(rooms, 'lecture', [...schedule, ...others], day, slot.id);
-        if (!room) continue;
-        if (!slotFree([...schedule, ...others], day, slot.id, course.teacherId, room.id, departmentId, year)) continue;
-        if (schedule.filter(e => e.day === day && e.courseId === course.id && e.type === 'lecture').length >= 2) continue;
-        schedule.push({
-          id: db.uid('tt-'), courseId: course.id, courseName: course.name, courseCode: course.code,
-          teacherId: course.teacherId, classroomId: room.id, classroomName: room.name,
-          day, slotId: slot.id, slotLabel: slot.label, startTime: slot.start, endTime: slot.end,
-          type: 'lecture', departmentId, year, status: 'active',
-        });
-        lecPlaced++;
-        break;
-      }
-    }
-    if (lecPlaced < (course.weeklyLectures || 0)) errors.push(`Could not place all lectures for ${course.name} (${lecPlaced}/${course.weeklyLectures})`);
+  for (const batch of batchList) {
+    for (const course of courses) {
+      let lecPlaced = 0, labPlaced = 0;
+      const batchLabel = batch.section ? ` [${batch.section}]` : '';
+      const studentCount = batch.studentCount || 0;
 
-    // labs
-    tries = 0;
-    while (labPlaced < (course.weeklyLabs || 0) && tries < 300) {
-      tries++;
-      const day = days[((course.weeklyLectures || 0) + labPlaced) % days.length];
-      const dur = course.labDuration || 2;
-      for (const slot of SLOTS) {
-        if (slot.id + dur - 1 > SLOTS.length) continue;
-        const room = findRoom(rooms, 'lab', [...schedule, ...others], day, slot.id, dur);
-        if (!room) continue;
-        if (!slotFree([...schedule, ...others], day, slot.id, course.teacherId, room.id, departmentId, year, dur)) continue;
-        if (schedule.some(e => e.day === day && e.courseId === course.id && e.type === 'lab')) continue;
-        const groupId = db.uid('lg-');
-        for (let s = 0; s < dur; s++) {
-          const cs = SLOTS.find(x => x.id === slot.id + s);
+      // lectures
+      let tries = 0;
+      while (lecPlaced < (course.weeklyLectures || 0) && tries < 300) {
+        tries++;
+        const day = days[lecPlaced % days.length];
+        for (const slot of SLOTS) {
+          const room = findRoom(rooms, 'lecture', [...schedule, ...others], day, slot.id, 1, studentCount);
+          if (!room) continue;
+          if (!slotFree([...schedule, ...others], day, slot.id, course.teacherId, room.id, departmentId, year, 1, batch.id)) continue;
+          if (schedule.filter(e => e.day === day && e.courseId === course.id && e.type === 'lecture' && e.batchId === batch.id).length >= 2) continue;
           schedule.push({
-            id: db.uid('tt-'), courseId: course.id, courseName: course.name, courseCode: course.code,
+            id: db.uid('tt-'), courseId: course.id, courseName: course.name + batchLabel, courseCode: course.code,
             teacherId: course.teacherId, classroomId: room.id, classroomName: room.name,
-            day, slotId: cs.id, slotLabel: cs.label, startTime: cs.start, endTime: cs.end,
-            type: 'lab', departmentId, year, status: 'active', labGroup: groupId,
+            day, slotId: slot.id, slotLabel: slot.label, startTime: slot.start, endTime: slot.end,
+            type: 'lecture', departmentId, year, status: 'active',
+            batchId: batch.id || null, batchSection: batch.section || null,
           });
+          lecPlaced++;
+          break;
         }
-        labPlaced++;
-        break;
       }
+      if (lecPlaced < (course.weeklyLectures || 0)) errors.push(`Could not place all lectures for ${course.name}${batchLabel} (${lecPlaced}/${course.weeklyLectures})`);
+
+      // labs
+      tries = 0;
+      while (labPlaced < (course.weeklyLabs || 0) && tries < 300) {
+        tries++;
+        const day = days[((course.weeklyLectures || 0) + labPlaced) % days.length];
+        const dur = course.labDuration || 2;
+        for (const slot of SLOTS) {
+          if (slot.id + dur - 1 > SLOTS.length) continue;
+          const room = findRoom(rooms, 'lab', [...schedule, ...others], day, slot.id, dur, studentCount);
+          if (!room) continue;
+          if (!slotFree([...schedule, ...others], day, slot.id, course.teacherId, room.id, departmentId, year, dur, batch.id)) continue;
+          if (schedule.some(e => e.day === day && e.courseId === course.id && e.type === 'lab' && e.batchId === batch.id)) continue;
+          const groupId = db.uid('lg-');
+          for (let s = 0; s < dur; s++) {
+            const cs = SLOTS.find(x => x.id === slot.id + s);
+            schedule.push({
+              id: db.uid('tt-'), courseId: course.id, courseName: course.name + batchLabel, courseCode: course.code,
+              teacherId: course.teacherId, classroomId: room.id, classroomName: room.name,
+              day, slotId: cs.id, slotLabel: cs.label, startTime: cs.start, endTime: cs.end,
+              type: 'lab', departmentId, year, status: 'active', labGroup: groupId,
+              batchId: batch.id || null, batchSection: batch.section || null,
+            });
+          }
+          labPlaced++;
+          break;
+        }
+      }
+      if (labPlaced < (course.weeklyLabs || 0)) errors.push(`Could not place all labs for ${course.name}${batchLabel} (${labPlaced}/${course.weeklyLabs})`);
     }
-    if (labPlaced < (course.weeklyLabs || 0)) errors.push(`Could not place all labs for ${course.name} (${labPlaced}/${course.weeklyLabs})`);
   }
 
   const remaining = allTT.filter(t => !(t.departmentId === departmentId && t.year === year));
   db.write('timetables', [...remaining, ...schedule]);
-  return { schedule, errors, placed: schedule.length };
+  return { schedule, errors, placed: schedule.length, batches: batchList.filter(b => b.id).length };
 }
 
 function generateDept(departmentId) {
