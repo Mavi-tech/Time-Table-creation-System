@@ -29,6 +29,7 @@ import StudentLayout from './pages/Student/StudentLayout';
 import StudentDaily from './pages/Student/StudentDaily';
 import StudentWeekly from './pages/Student/StudentWeekly';
 import StudentCourses from './pages/Student/StudentCourses';
+import StudentElectives from './pages/Student/StudentElectives';
 
 function RequireAuth({ children, allowedRoles }) {
   const { user } = useAuth();
@@ -90,6 +91,7 @@ export default function App() {
           <Route index element={<StudentDaily />} />
           <Route path="weekly" element={<StudentWeekly />} />
           <Route path="courses" element={<StudentCourses />} />
+          <Route path="electives" element={<StudentElectives />} />
         </Route>
 
         {/* Catch-all */}

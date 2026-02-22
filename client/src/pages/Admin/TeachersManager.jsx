@@ -24,6 +24,7 @@ function getAvatarColor(name) {
 export default function TeachersManager() {
   const [teachers, setTeachers] = useState([]);
   const [departments, setDepartments] = useState([]);
+  const [courses, setCourses] = useState([]);
   const [editing, setEditing] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [errors, setErrors] = useState({});
@@ -36,8 +37,9 @@ export default function TeachersManager() {
   const [ttView, setTtView] = useState('weekly');
   const [selectedDay, setSelectedDay] = useState('');
   const [ttLoading, setTtLoading] = useState(false);
+  const [courseSearch, setCourseSearch] = useState('');
 
-  const blank = { name: '', title: '', email: '', phone: '', departmentId: '', specialization: '', office: '', bio: '' };
+  const blank = { name: '', title: '', email: '', phone: '', departmentIds: [], courseIds: [], office: '', bio: '' };
 
   const load = useCallback(() => {
     api.getTeachers().then(r => setTeachers(r.data));
@@ -46,25 +48,40 @@ export default function TeachersManager() {
   useEffect(() => {
     load();
     api.getDepartments().then(r => setDepartments(r.data));
+    api.getCourses().then(r => setCourses(r.data));
   }, [load]);
 
   const filtered = useMemo(() => {
     let list = teachers;
-    if (filterDept) list = list.filter(t => t.departmentId === filterDept);
+    if (filterDept) list = list.filter(t => (t.departmentIds || [t.departmentId]).includes(filterDept));
     if (search.trim()) {
       const q = search.toLowerCase();
       list = list.filter(t =>
         t.name?.toLowerCase().includes(q) ||
         t.email?.toLowerCase().includes(q) ||
-        t.specialization?.toLowerCase().includes(q)
+        (t.courseIds || []).some(cid => {
+          const course = courses.find(c => c.id === cid);
+          return course && (course.name.toLowerCase().includes(q) || course.code.toLowerCase().includes(q));
+        })
       );
     }
     return list;
   }, [teachers, search, filterDept]);
 
-  const openAdd = () => { setEditing({ ...blank }); setErrors({}); setShowModal(true); };
-  const openEdit = (t) => { setEditing({ ...t }); setErrors({}); setShowModal(true); };
-  const close = () => { setEditing(null); setShowModal(false); setErrors({}); };
+  const openAdd = () => { setEditing({ ...blank }); setErrors({}); setCourseSearch(''); setShowModal(true); };
+  const openEdit = (t) => {
+    // Migrate old single departmentId to departmentIds array if needed
+    const edited = { ...t };
+    if (edited.departmentId && !edited.departmentIds) {
+      edited.departmentIds = [edited.departmentId];
+    }
+    if (!edited.departmentIds) edited.departmentIds = [];
+    if (!edited.courseIds) edited.courseIds = [];
+    setEditing(edited);
+    setErrors({});
+    setShowModal(true);
+  };
+  const close = () => { setEditing(null); setShowModal(false); setErrors({}); setCourseSearch(''); };
 
   const openTimetable = async (teacher) => {
     setTimetableTeacher(teacher);
@@ -96,7 +113,8 @@ export default function TeachersManager() {
     if (!editing.email?.trim()) e.email = 'Email is required';
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(editing.email)) e.email = 'Invalid email format';
     if (editing.phone && !/^[\d\s\-+()]{7,20}$/.test(editing.phone)) e.phone = 'Invalid phone number';
-    if (!editing.departmentId) e.departmentId = 'Department is required';
+    if (!editing.departmentIds || editing.departmentIds.length === 0) e.departmentIds = 'At least one department is required';
+    if (!editing.courseIds || editing.courseIds.length === 0) e.courseIds = 'At least one course is required';
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -159,7 +177,7 @@ export default function TeachersManager() {
           <div style={{ flex: 1, minWidth: 200, position: 'relative' }}>
             <span style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', fontSize: 16, color: 'var(--text-secondary)' }}>🔍</span>
             <input
-              placeholder="Search by name, email or specialization..."
+              placeholder="Search by name, email or course..."
               value={search}
               onChange={e => setSearch(e.target.value)}
               style={{ width: '100%', padding: '10px 14px 10px 36px', border: '2px solid var(--border)', borderRadius: 8, fontSize: 14, outline: 'none', background: '#fff', fontFamily: 'inherit' }}
@@ -182,14 +200,14 @@ export default function TeachersManager() {
             <tr>
               <th>Teacher</th>
               <th>Contact</th>
-              <th>Department</th>
-              <th>Specialization</th>
+              <th>Department(s)</th>
+              <th>Courses</th>
               <th style={{ textAlign: 'right' }}>Actions</th>
             </tr>
           </thead>
           <tbody>
             {filtered.map(t => {
-              const dept = deptMap[t.departmentId];
+              const deptIds = t.departmentIds || (t.departmentId ? [t.departmentId] : []);
               return (
                 <tr key={t.id}>
                   <td>
@@ -210,10 +228,21 @@ export default function TeachersManager() {
                     <div style={{ fontSize: 13 }}>{t.email || '-'}</div>
                     {t.phone && <div style={{ fontSize: 11, color: 'var(--text-secondary)' }}>📞 {t.phone}</div>}
                   </td>
-                  <td>{dept ? <span className="badge badge-primary">{dept.code}</span> : '-'}</td>
                   <td>
-                    {t.specialization
-                      ? <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{t.specialization}</span>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                      {deptIds.length > 0 ? deptIds.map(did => (
+                        <span key={did} className="badge badge-primary">{deptMap[did]?.code || '?'}</span>
+                      )) : '-'}
+                    </div>
+                  </td>
+                  <td>
+                    {(t.courseIds || []).length > 0
+                      ? <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                          {t.courseIds.map(cid => {
+                            const course = courses.find(c => c.id === cid);
+                            return course ? <span key={cid} className="badge" style={{ background: '#e0e7ff', color: '#4338ca', fontSize: 10 }}>{course.code}</span> : null;
+                          })}
+                        </div>
                       : <span style={{ fontSize: 12, color: '#ccc' }}>—</span>
                     }
                   </td>
@@ -307,16 +336,38 @@ export default function TeachersManager() {
             {/* Department + Office Row */}
             <div className="form-row">
               <div className="form-group">
-                <label>Department *</label>
-                <select
-                  value={editing.departmentId || ''}
-                  onChange={e => set('departmentId', e.target.value)}
-                  style={errors.departmentId ? { borderColor: 'var(--danger)' } : {}}
-                >
-                  <option value="">Select Department</option>
-                  {departments.map(d => <option key={d.id} value={d.id}>{d.name} ({d.code})</option>)}
-                </select>
-                {errors.departmentId && <span className="field-error">{errors.departmentId}</span>}
+                <label>Departments * <span style={{ fontSize: 11, fontWeight: 400, color: 'var(--text-secondary)' }}>(select one or more)</span></label>
+                <div style={{
+                  border: `2px solid ${errors.departmentIds ? 'var(--danger)' : 'var(--border)'}`,
+                  borderRadius: 8, padding: '8px 12px', maxHeight: 140, overflowY: 'auto',
+                  background: '#fff'
+                }}>
+                  {departments.map(d => {
+                    const checked = (editing.departmentIds || []).includes(d.id);
+                    return (
+                      <label key={d.id} style={{
+                        display: 'flex', alignItems: 'center', gap: 8, padding: '4px 0',
+                        cursor: 'pointer', fontSize: 13, fontWeight: checked ? 600 : 400,
+                      }}>
+                        <input
+                          type="checkbox"
+                          checked={checked}
+                          onChange={e => {
+                            const ids = editing.departmentIds || [];
+                            const newIds = e.target.checked
+                              ? [...ids, d.id]
+                              : ids.filter(x => x !== d.id);
+                            set('departmentIds', newIds);
+                          }}
+                          style={{ width: 16, height: 16 }}
+                        />
+                        <span className="badge badge-primary" style={{ fontSize: 10 }}>{d.code}</span>
+                        {d.name}
+                      </label>
+                    );
+                  })}
+                </div>
+                {errors.departmentIds && <span className="field-error">{errors.departmentIds}</span>}
               </div>
               <div className="form-group">
                 <label>Office / Cabin</label>
@@ -328,15 +379,84 @@ export default function TeachersManager() {
               </div>
             </div>
 
-            {/* Specialization */}
+            {/* Courses */}
             <div className="form-group">
-              <label>Specialization / Expertise</label>
-              <input
-                value={editing.specialization || ''}
-                onChange={e => set('specialization', e.target.value)}
-                placeholder="e.g. Data Structures, Machine Learning, Networks"
-              />
-              <span className="field-hint">Comma-separated areas of expertise</span>
+              <label>Courses * <span style={{ fontSize: 11, fontWeight: 400, color: 'var(--text-secondary)' }}>(select courses this teacher can teach)</span></label>
+              {(() => {
+                const selDepts = editing.departmentIds || [];
+                const availCourses = (selDepts.length > 0
+                  ? courses.filter(c => {
+                      const cDepts = c.departmentIds || (c.departmentId ? [c.departmentId] : []);
+                      return cDepts.some(d => selDepts.includes(d));
+                    })
+                  : courses
+                ).filter(c => {
+                  if (!courseSearch.trim()) return true;
+                  const q = courseSearch.toLowerCase();
+                  return c.name.toLowerCase().includes(q) || c.code.toLowerCase().includes(q);
+                });
+                return (
+                  <>
+                    <div style={{ position: 'relative', marginBottom: 8 }}>
+                      <span style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', fontSize: 14, color: 'var(--text-secondary)' }}>🔍</span>
+                      <input
+                        placeholder="Search courses by name or code..."
+                        value={courseSearch}
+                        onChange={e => setCourseSearch(e.target.value)}
+                        style={{ width: '100%', padding: '8px 12px 8px 32px', border: '2px solid var(--border)', borderRadius: 8, fontSize: 13, outline: 'none', background: '#fff', fontFamily: 'inherit', boxSizing: 'border-box' }}
+                      />
+                    </div>
+                    <div style={{
+                      border: `2px solid ${errors.courseIds ? 'var(--danger)' : 'var(--border)'}`,
+                      borderRadius: 8, padding: '8px 12px', maxHeight: 180, overflowY: 'auto',
+                      background: '#fff'
+                    }}>
+                      {availCourses.length > 0 ? availCourses.map(c => {
+                        // Show checked items at the top when searching
+                        return c;
+                      }).sort((a, b) => {
+                        const aChecked = (editing.courseIds || []).includes(a.id) ? 0 : 1;
+                        const bChecked = (editing.courseIds || []).includes(b.id) ? 0 : 1;
+                        return aChecked - bChecked;
+                      }).map(c => {
+                        const checked = (editing.courseIds || []).includes(c.id);
+                        const cDepts = c.departmentIds || [];
+                        const deptBadges = cDepts.map(dId => deptMap[dId]?.code).filter(Boolean).join(', ');
+                        return (
+                          <label key={c.id} style={{
+                            display: 'flex', alignItems: 'center', gap: 8, padding: '4px 0',
+                            cursor: 'pointer', fontSize: 13, fontWeight: checked ? 600 : 400,
+                          }}>
+                            <input
+                              type="checkbox"
+                              checked={checked}
+                              onChange={e => {
+                                const ids = editing.courseIds || [];
+                                const newIds = e.target.checked ? [...ids, c.id] : ids.filter(x => x !== c.id);
+                                set('courseIds', newIds);
+                              }}
+                              style={{ width: 16, height: 16 }}
+                            />
+                            <span className="badge" style={{ background: '#e0e7ff', color: '#4338ca', fontSize: 10 }}>{c.code}</span>
+                            {c.name}
+                            {deptBadges && <span style={{ fontSize: 10, color: 'var(--text-secondary)', marginLeft: 'auto' }}>({deptBadges})</span>}
+                          </label>
+                        );
+                      }) : (
+                        <div style={{ padding: 12, textAlign: 'center', color: 'var(--text-secondary)', fontSize: 13 }}>
+                          {courseSearch.trim()
+                            ? `😕 No courses matching "${courseSearch}"`
+                            : selDepts.length > 0 ? '⚠️ No courses found for selected departments' : 'Select a department first to see courses'}
+                        </div>
+                      )}
+                    </div>
+                    {errors.courseIds && <span className="field-error">{errors.courseIds}</span>}
+                    {(editing.courseIds || []).length > 0 && (
+                      <span className="field-hint">{editing.courseIds.length} course{editing.courseIds.length !== 1 ? 's' : ''} selected</span>
+                    )}
+                  </>
+                );
+              })()}
             </div>
 
             {/* Bio */}

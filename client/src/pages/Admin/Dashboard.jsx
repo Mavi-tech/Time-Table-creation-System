@@ -20,11 +20,13 @@ export default function Dashboard() {
   }, []);
 
   const handleGenerate = async (deptId) => {
+    const dept = departments.find(d => d.id === deptId);
+    const maxSem = (dept?.years || 4) * 2;
     setGenerating(deptId);
     try {
       const results = [];
-      for (let y = 1; y <= 4; y++) {
-        const r = await api.generateTimetable(deptId, y, 'week');
+      for (let s = 1; s <= maxSem; s++) {
+        const r = await api.generateTimetable(deptId, s, 'week');
         results.push(r.data);
       }
       const total = results.reduce((s, r) => s + (r.placed || 0), 0);
@@ -123,38 +125,49 @@ export default function Dashboard() {
               onClick={() => handleGenerate(selectedDept)}
               disabled={generating === selectedDept}
             >
-              {generating === selectedDept ? '⏳ Generating…' : '+ Generate All Years'}
+              {generating === selectedDept ? '⏳ Generating…' : '+ Generate All Semesters'}
             </button>
           </div>
 
-          <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
-            {[1, 2, 3, 4].map(y => (
-              <YearCard key={y} deptId={selectedDept} year={y} />
-            ))}
-          </div>
+          {Array.from({ length: departments.find(d => d.id === selectedDept)?.years || 4 }, (_, i) => i + 1).map(year => (
+            <div key={year} style={{
+              marginBottom: 20, background: 'var(--card)', borderRadius: 'var(--radius)',
+              border: '1px solid var(--border)', padding: 20, boxShadow: 'var(--shadow)',
+            }}>
+              <h3 style={{ fontSize: 17, fontWeight: 700, marginBottom: 14, color: 'var(--text)' }}>
+                📅 Year {year}
+              </h3>
+              <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+                <SemesterCard deptId={selectedDept} semester={year * 2 - 1} />
+                <SemesterCard deptId={selectedDept} semester={year * 2} />
+              </div>
+            </div>
+          ))}
         </div>
       )}
     </div>
   );
 }
 
-function YearCard({ deptId, year }) {
+function SemesterCard({ deptId, semester }) {
   const [courses, setCourses] = useState([]);
   const [timetable, setTimetable] = useState([]);
+  const [batches, setBatches] = useState([]);
   const [generating, setGenerating] = useState(false);
 
   const load = () => {
-    api.getCourses(deptId, year).then(r => setCourses(r.data)).catch(() => {});
-    api.getTimetable(deptId, year).then(r => setTimetable(r.data)).catch(() => setTimetable([]));
+    api.getCourses(deptId).then(r => setCourses(r.data.filter(c => c.semester === semester))).catch(() => {});
+    api.getTimetable(deptId, semester).then(r => setTimetable(r.data)).catch(() => setTimetable([]));
+    api.getBatches(deptId, Math.ceil(semester / 2)).then(r => setBatches(r.data || [])).catch(() => setBatches([]));
   };
 
-  useEffect(() => { load(); }, [deptId, year]);
+  useEffect(() => { load(); }, [deptId, semester]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleGenerate = async () => {
     setGenerating(true);
     try {
-      const r = await api.generateTimetable(deptId, +year, 'week');
-      toast(`Year ${year} — ${r.data.placed} slots placed`, 'success');
+      const r = await api.generateTimetable(deptId, +semester, 'week');
+      toast(`Semester ${semester} — ${r.data.placed} slots placed`, 'success');
       if (r.data.errors?.length > 0) r.data.errors.forEach(e => toast(e, 'error'));
       load();
     } catch {
@@ -164,9 +177,9 @@ function YearCard({ deptId, year }) {
   };
 
   const handleClear = async () => {
-    if (!window.confirm(`Delete timetable for Year ${year}?`)) return;
+    if (!window.confirm(`Delete timetable for Semester ${semester}?`)) return;
     try {
-      await api.deleteDeptYearTT(deptId, +year);
+      await api.deleteDeptSemTT(deptId, +semester);
       setTimetable([]);
       toast('Cleared', 'success');
     } catch {
@@ -182,7 +195,7 @@ function YearCard({ deptId, year }) {
       border: '1px solid var(--border)', padding: 20, boxShadow: 'var(--shadow)',
     }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-        <h3 style={{ fontSize: 16, fontWeight: 700 }}>Year {year}</h3>
+        <h3 style={{ fontSize: 16, fontWeight: 700 }}>Semester {semester}</h3>
         <span className={`badge ${timetable.length > 0 ? 'badge-success' : 'badge-warning'}`}>
           {timetable.length > 0 ? `${timetable.length} slots` : 'No schedule'}
         </span>
@@ -191,6 +204,11 @@ function YearCard({ deptId, year }) {
       <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 12 }}>
         <div>{courses.length} courses</div>
         <div>{scheduled}/{courses.length} scheduled</div>
+        {batches.length > 0 && (
+          <div style={{ marginTop: 4, color: 'var(--primary)', fontWeight: 500 }}>
+            👥 {batches.length} batch{batches.length !== 1 ? 'es' : ''}: {batches.map(b => `${b.section}(${b.studentCount})`).join(', ')}
+          </div>
+        )}
       </div>
 
       <div className="btn-group">

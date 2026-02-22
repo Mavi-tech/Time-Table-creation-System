@@ -25,10 +25,13 @@ export default function CoursesManager() {
   const [filterDept, setFilterDept] = useState('');
   const [filterYear, setFilterYear] = useState('');
   const [filterType, setFilterType] = useState('');
+  const [viewMode, setViewMode] = useState('grouped'); // 'grouped' | 'table'
+  const [collapsedSections, setCollapsedSections] = useState({});
   const [errors, setErrors] = useState({});
   const [confirm, ConfirmDialog] = useConfirm();
+  const [deptSearch, setDeptSearch] = useState('');
 
-  const blank = { name: '', code: '', departmentId: '', year: 1, semester: 1, weeklyLectures: 3, weeklyLabs: 0, labDuration: 2, lectureDuration: 1, teacherId: '', type: 'theory', credits: '' };
+  const blank = { name: '', code: '', departmentIds: [], year: 1, semester: 1, weeklyLectures: 3, weeklyLabs: 0, labDuration: 2, lectureDuration: 1, teacherId: '', type: 'theory', credits: '', isElective: false };
 
   const load = useCallback(() => {
     api.getCourses().then(r => setCourses(r.data));
@@ -52,15 +55,36 @@ export default function CoursesManager() {
     return m;
   }, [teachers]);
 
-  // Filter teachers by selected department    
+  // Filter teachers by selected department(s)    
   const filteredTeachers = useMemo(() => {
-    if (!editing?.departmentId) return teachers;
-    return teachers.filter(t => t.departmentId === editing.departmentId || !t.departmentId);
-  }, [teachers, editing?.departmentId]);
+    const cDepts = editing?.departmentIds || (editing?.departmentId ? [editing.departmentId] : []);
+    if (cDepts.length === 0) return teachers;
+    return teachers.filter(t => {
+      const tDepts = t.departmentIds || (t.departmentId ? [t.departmentId] : []);
+      return tDepts.some(d => cDepts.includes(d)) || tDepts.length === 0;
+    });
+  }, [teachers, editing?.departmentIds, editing?.departmentId]);
+
+  // Check if selected teacher is assigned to this course
+  const teacherMismatchWarning = useMemo(() => {
+    if (!editing?.teacherId || !editing?.name) return null;
+    const teacher = teachers.find(t => t.id === editing.teacherId);
+    if (!teacher) return null;
+    // If no courseIds on teacher, skip warning
+    if (!teacher.courseIds || teacher.courseIds.length === 0) return null;
+    // If we're editing an existing course, check if it's in the teacher's courseIds
+    if (editing.id && teacher.courseIds.includes(editing.id)) return null;
+    // For new courses, we can't match by ID, so show a note
+    if (!editing.id) return null;
+    return `${teacher.name} is not assigned to "${editing.name}" in their profile. Consider updating their course assignments.`;
+  }, [editing?.teacherId, editing?.name, editing?.id, teachers]);
 
   const filtered = useMemo(() => {
     let list = courses;
-    if (filterDept) list = list.filter(c => c.departmentId === filterDept);
+    if (filterDept) list = list.filter(c => {
+      const cDepts = c.departmentIds || (c.departmentId ? [c.departmentId] : []);
+      return cDepts.includes(filterDept);
+    });
     if (filterYear) list = list.filter(c => c.year === Number(filterYear));
     if (filterType) list = list.filter(c => c.type === filterType);
     if (search.trim()) {
@@ -81,16 +105,59 @@ export default function CoursesManager() {
     totalLectures: courses.reduce((s, c) => s + (c.weeklyLectures || 0), 0),
   }), [courses]);
 
-  const openAdd = () => { setEditing({ ...blank }); setErrors({}); setShowModal(true); };
-  const openEdit = (c) => { setEditing({ ...c }); setErrors({}); setShowModal(true); };
-  const close = () => { setEditing(null); setShowModal(false); setErrors({}); };
+  // Group filtered courses by department then year
+  const groupedCourses = useMemo(() => {
+    const groups = {};
+    filtered.forEach(c => {
+      const cDepts = c.departmentIds || (c.departmentId ? [c.departmentId] : ['_none']);
+      // A course with multiple departments appears under each department group
+      cDepts.forEach(deptId => {
+        const dept = deptMap[deptId];
+        const deptKey = deptId || '_none';
+        const deptName = dept ? dept.name : 'No Department';
+        const deptCode = dept ? dept.code : '—';
+        if (!groups[deptKey]) groups[deptKey] = { name: deptName, code: deptCode, id: deptKey, years: {} };
+        const yr = c.year || 0;
+        if (!groups[deptKey].years[yr]) groups[deptKey].years[yr] = [];
+        groups[deptKey].years[yr].push(c);
+      });
+    });
+    // Sort departments alphabetically, years numerically
+    return Object.values(groups)
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .map(dept => ({
+        ...dept,
+        years: Object.entries(dept.years)
+          .sort(([a], [b]) => Number(a) - Number(b))
+          .map(([yr, courses]) => ({ year: Number(yr), courses }))
+      }));
+  }, [filtered, deptMap]);
+
+  const toggleSection = (key) => {
+    setCollapsedSections(prev => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  const openAdd = () => { setEditing({ ...blank }); setErrors({}); setDeptSearch(''); setShowModal(true); };
+  const openEdit = (c) => {
+    // Migrate old single departmentId to departmentIds array if needed
+    const edited = { ...c };
+    if (edited.departmentId && !edited.departmentIds) {
+      edited.departmentIds = [edited.departmentId];
+    }
+    if (!edited.departmentIds) edited.departmentIds = [];
+    setEditing(edited);
+    setErrors({});
+    setShowModal(true);
+  };
+  const close = () => { setEditing(null); setShowModal(false); setErrors({}); setDeptSearch(''); };
 
   const validate = () => {
     const e = {};
     if (!editing.name?.trim()) e.name = 'Course name is required';
     if (!editing.code?.trim()) e.code = 'Course code is required';
-    if (!editing.departmentId) e.departmentId = 'Department is required';
-    if (!editing.year || editing.year < 1 || editing.year > 6) e.year = 'Invalid year';
+    if (!editing.departmentIds || editing.departmentIds.length === 0) e.departmentIds = 'At least one department is required';
+    const maxYr = Math.max(...(editing.departmentIds || []).map(dId => deptMap[dId]?.years || 4), 4);
+    if (!editing.year || editing.year < 1 || editing.year > maxYr) e.year = 'Invalid year';
     if (!editing.weeklyLectures || editing.weeklyLectures < 0) e.weeklyLectures = 'Invalid lecture count';
     // Check for duplicate code
     const dup = courses.find(c => c.code?.toLowerCase() === editing.code?.toLowerCase() && c.id !== editing.id);
@@ -216,10 +283,163 @@ export default function CoursesManager() {
             <option value="theory+lab">Theory + Lab</option>
             <option value="lab">Lab Only</option>
           </select>
+          <div style={{ display: 'flex', border: '2px solid var(--border)', borderRadius: 8, overflow: 'hidden', marginLeft: 'auto' }}>
+            <button
+              onClick={() => setViewMode('grouped')}
+              style={{
+                padding: '8px 14px', fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer', fontFamily: 'inherit',
+                background: viewMode === 'grouped' ? 'var(--primary)' : '#fff',
+                color: viewMode === 'grouped' ? '#fff' : 'var(--text-secondary)',
+              }}
+            >🗂️ Grouped</button>
+            <button
+              onClick={() => setViewMode('table')}
+              style={{
+                padding: '8px 14px', fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer', fontFamily: 'inherit',
+                borderLeft: '2px solid var(--border)',
+                background: viewMode === 'table' ? 'var(--primary)' : '#fff',
+                color: viewMode === 'table' ? '#fff' : 'var(--text-secondary)',
+              }}
+            >📋 Table</button>
+          </div>
         </div>
       </div>
 
-      {/* Course Table */}
+      {/* Grouped View */}
+      {viewMode === 'grouped' && (
+        <div>
+          {groupedCourses.length === 0 && (
+            <div className="card" style={{ textAlign: 'center', padding: 40, color: 'var(--text-secondary)' }}>
+              {search || filterDept || filterYear || filterType ? '😕 No courses match your filters' : '📭 No courses yet'}
+            </div>
+          )}
+          {groupedCourses.map(dept => {
+            const deptCollapsed = collapsedSections[dept.id];
+            const totalInDept = dept.years.reduce((s, y) => s + y.courses.length, 0);
+            return (
+              <div key={dept.id} className="card" style={{ marginBottom: 20, padding: 0, overflow: 'hidden' }}>
+                {/* Department Header */}
+                <div
+                  onClick={() => toggleSection(dept.id)}
+                  style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    padding: '14px 20px', cursor: 'pointer', userSelect: 'none',
+                    background: 'linear-gradient(135deg, var(--primary), #6366f1)',
+                    color: '#fff',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <span style={{ fontSize: 18, transition: 'transform .2s', transform: deptCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)' }}>▾</span>
+                    <span style={{ fontWeight: 700, fontSize: 15 }}>🏛️ {dept.name}</span>
+                    <span style={{
+                      background: 'rgba(255,255,255,.2)', padding: '2px 10px', borderRadius: 20,
+                      fontSize: 12, fontWeight: 600
+                    }}>{dept.code}</span>
+                  </div>
+                  <span style={{ fontSize: 12, opacity: .85, fontWeight: 500 }}>
+                    {totalInDept} course{totalInDept !== 1 ? 's' : ''}
+                  </span>
+                </div>
+
+                {!deptCollapsed && dept.years.map(({ year, courses: yearCourses }) => {
+                  const yrKey = `${dept.id}-y${year}`;
+                  const yrCollapsed = collapsedSections[yrKey];
+                  return (
+                    <div key={yrKey}>
+                      {/* Year Sub-header */}
+                      <div
+                        onClick={() => toggleSection(yrKey)}
+                        style={{
+                          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                          padding: '10px 20px', cursor: 'pointer', userSelect: 'none',
+                          background: 'var(--bg)', borderBottom: '1px solid var(--border)',
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <span style={{ fontSize: 14, transition: 'transform .2s', transform: yrCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)' }}>▾</span>
+                          <span style={{ fontWeight: 700, fontSize: 13, color: 'var(--primary)' }}>📅 Year {year}</span>
+                          <span style={{
+                            background: 'var(--primary)', color: '#fff', padding: '1px 8px',
+                            borderRadius: 12, fontSize: 11, fontWeight: 700
+                          }}>{yearCourses.length}</span>
+                        </div>
+                      </div>
+
+                      {/* Courses in this year */}
+                      {!yrCollapsed && (
+                        <div style={{ padding: '12px 16px', display: 'flex', flexWrap: 'wrap', gap: 12 }}>
+                          {yearCourses.map(c => {
+                            const teacher = teacherMap[c.teacherId];
+                            const tl = TYPE_LABELS[c.type] || TYPE_LABELS.theory;
+                            return (
+                              <div key={c.id} style={{
+                                border: '1px solid var(--border)', borderRadius: 10, padding: 14,
+                                flex: '1 1 280px', maxWidth: 380, background: '#fff',
+                                borderLeft: `4px solid ${getCourseColor(c.code)}`,
+                                transition: 'box-shadow .15s',
+                              }}
+                              onMouseEnter={e => e.currentTarget.style.boxShadow = '0 2px 12px rgba(0,0,0,.08)'}
+                              onMouseLeave={e => e.currentTarget.style.boxShadow = 'none'}
+                              >
+                                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                    <div style={{
+                                      width: 36, height: 36, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                      fontSize: 11, fontWeight: 800, color: '#fff', background: getCourseColor(c.code), flexShrink: 0
+                                    }}>
+                                      {(c.code || '??').slice(0, 4)}
+                                    </div>
+                                    <div>
+                                      <div style={{ fontWeight: 700, fontSize: 13 }}>{c.name}</div>
+                                      <div style={{ fontSize: 11, color: 'var(--text-secondary)', fontWeight: 600 }}>
+                                        {c.code}{c.semester ? ` • Sem ${c.semester}` : ''}
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <span className={`badge ${tl.badge}`} style={{ fontSize: 10, whiteSpace: 'nowrap' }}>{tl.icon} {tl.label}</span>
+                                  {c.isElective && <span className="badge" style={{ background: '#f59e0b', color: '#fff', fontSize: 10, marginLeft: 4 }}>🎯 Elective</span>}
+                                </div>
+
+                                <div style={{ marginTop: 10, display: 'flex', flexWrap: 'wrap', gap: 6, fontSize: 11, color: 'var(--text-secondary)' }}>
+                                  <span style={{ background: 'var(--bg)', padding: '2px 8px', borderRadius: 6 }}>
+                                    📖 {c.weeklyLectures} lec/wk
+                                  </span>
+                                  {(c.weeklyLabs || 0) > 0 && (
+                                    <span style={{ background: 'var(--bg)', padding: '2px 8px', borderRadius: 6 }}>
+                                      🔬 {c.weeklyLabs}×{c.labDuration || 2}h lab
+                                    </span>
+                                  )}
+                                  {teacher ? (
+                                    <span style={{ background: 'var(--bg)', padding: '2px 8px', borderRadius: 6 }}>
+                                      👨‍🏫 {teacher.name}
+                                    </span>
+                                  ) : (
+                                    <span style={{ background: '#fff3cd', padding: '2px 8px', borderRadius: 6, color: '#856404' }}>
+                                      ⚠️ Unassigned
+                                    </span>
+                                  )}
+                                </div>
+
+                                <div style={{ marginTop: 10, display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
+                                  <button className="btn btn-sm btn-secondary" onClick={() => openEdit(c)}>Edit</button>
+                                  <button className="btn btn-sm btn-danger" onClick={() => remove(c.id)}>Delete</button>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Table View */}
+      {viewMode === 'table' && (
       <div className="table-wrapper card" style={{ padding: 0 }}>
         <table>
           <thead>
@@ -235,7 +455,6 @@ export default function CoursesManager() {
           </thead>
           <tbody>
             {filtered.map(c => {
-              const dept = deptMap[c.departmentId];
               const teacher = teacherMap[c.teacherId];
               const tl = TYPE_LABELS[c.type] || TYPE_LABELS.theory;
               return (
@@ -255,12 +474,25 @@ export default function CoursesManager() {
                       </div>
                     </div>
                   </td>
-                  <td>{dept ? <span className="badge badge-primary">{dept.code}</span> : '-'}</td>
+                  <td>
+                    {(() => {
+                      const cDepts = c.departmentIds || (c.departmentId ? [c.departmentId] : []);
+                      return cDepts.length > 0
+                        ? <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>{cDepts.map(dId => {
+                            const d = deptMap[dId];
+                            return d ? <span key={dId} className="badge badge-primary">{d.code}</span> : null;
+                          })}</div>
+                        : '-';
+                    })()}
+                  </td>
                   <td>
                     <span style={{ fontWeight: 600 }}>Y{c.year}</span>
                     {c.semester && <span style={{ color: 'var(--text-secondary)', fontSize: 11 }}> / S{c.semester}</span>}
                   </td>
-                  <td><span className={`badge ${tl.badge}`}>{tl.icon} {tl.label}</span></td>
+                  <td>
+                    <span className={`badge ${tl.badge}`}>{tl.icon} {tl.label}</span>
+                    {c.isElective && <span className="badge" style={{ background: '#f59e0b', color: '#fff', marginLeft: 4, fontSize: 10 }}>Elective</span>}
+                  </td>
                   <td>
                     <div style={{ fontSize: 12 }}>
                       <span style={{ fontWeight: 600 }}>{c.weeklyLectures}</span> lec/wk
@@ -297,6 +529,7 @@ export default function CoursesManager() {
           </tbody>
         </table>
       </div>
+      )}
 
       <Modal title={editing?.id ? 'Edit Course' : 'Add New Course'} open={showModal} onClose={close}>
         {editing && (
@@ -346,29 +579,93 @@ export default function CoursesManager() {
               </div>
             </div>
 
-            {/* Department + Year + Semester */}
-            <div className="form-row">
-              <div className="form-group">
-                <label>Department *</label>
-                <select
-                  value={editing.departmentId}
-                  onChange={e => set('departmentId', e.target.value)}
-                  style={errors.departmentId ? { borderColor: 'var(--danger)' } : {}}
-                >
-                  <option value="">Select Department</option>
-                  {departments.map(d => <option key={d.id} value={d.id}>{d.name} ({d.code})</option>)}
-                </select>
-                {errors.departmentId && <span className="field-error">{errors.departmentId}</span>}
+            {/* Department */}
+            <div className="form-group">
+              <label>Department(s) * <span style={{ fontSize: 11, fontWeight: 400, color: 'var(--text-secondary)' }}>(select one or more)</span></label>
+              <div style={{ position: 'relative', marginBottom: 8 }}>
+                <span style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', fontSize: 14, color: 'var(--text-secondary)' }}>🔍</span>
+                <input
+                  placeholder="Search departments..."
+                  value={deptSearch}
+                  onChange={e => setDeptSearch(e.target.value)}
+                  style={{ width: '100%', padding: '8px 12px 8px 32px', border: '2px solid var(--border)', borderRadius: 8, fontSize: 13, outline: 'none', background: '#fff', fontFamily: 'inherit', boxSizing: 'border-box' }}
+                />
               </div>
-              <div className="form-group" style={{ flex: '0 0 100px' }}>
+              {(() => {
+                const filteredDepts = departments.filter(d => {
+                  if (!deptSearch.trim()) return true;
+                  const q = deptSearch.toLowerCase();
+                  return d.name.toLowerCase().includes(q) || d.code.toLowerCase().includes(q);
+                }).sort((a, b) => {
+                  const aChecked = (editing.departmentIds || []).includes(a.id) ? 0 : 1;
+                  const bChecked = (editing.departmentIds || []).includes(b.id) ? 0 : 1;
+                  return aChecked - bChecked;
+                });
+                return (
+                  <div style={{
+                    border: `2px solid ${errors.departmentIds ? 'var(--danger)' : 'var(--border)'}`,
+                    borderRadius: 8, padding: '8px 12px', maxHeight: 160, overflowY: 'auto',
+                    background: '#fff'
+                  }}>
+                    {filteredDepts.length > 0 ? filteredDepts.map(d => {
+                      const checked = (editing.departmentIds || []).includes(d.id);
+                      return (
+                        <label key={d.id} style={{
+                          display: 'flex', alignItems: 'center', gap: 8, padding: '5px 0',
+                          cursor: 'pointer', fontSize: 13, fontWeight: checked ? 600 : 400,
+                        }}>
+                          <input
+                            type="checkbox"
+                            checked={checked}
+                            onChange={() => {
+                              const prev = editing.departmentIds || [];
+                              const next = checked ? prev.filter(id => id !== d.id) : [...prev, d.id];
+                              setEditing(p => {
+                                const teacher = teachers.find(t => t.id === p.teacherId);
+                                const keepTeacher = teacher && next.some(dId => (teacher.departmentIds || (teacher.departmentId ? [teacher.departmentId] : [])).includes(dId));
+                                return { ...p, departmentIds: next, teacherId: keepTeacher ? p.teacherId : '' };
+                              });
+                            }}
+                            style={{ width: 16, height: 16 }}
+                          />
+                          <span className="badge badge-primary" style={{ fontSize: 10 }}>{d.code}</span>
+                          {d.name}
+                          <span style={{ fontSize: 10, color: 'var(--text-secondary)', marginLeft: 'auto' }}>{d.years || 4}yr</span>
+                        </label>
+                      );
+                    }) : (
+                      <div style={{ padding: 12, textAlign: 'center', color: 'var(--text-secondary)', fontSize: 13 }}>
+                        😕 No departments matching "{deptSearch}"
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
+              {errors.departmentIds && <span className="field-error">{errors.departmentIds}</span>}
+              {(editing.departmentIds || []).length > 0 && (
+                <span className="field-hint">{editing.departmentIds.length} department{editing.departmentIds.length !== 1 ? 's' : ''} selected</span>
+              )}
+            </div>
+
+            {/* Year + Semester */}
+            <div className="form-row">
+              <div className="form-group" style={{ flex: '0 0 140px' }}>
                 <label>Year *</label>
-                <select
-                  value={editing.year}
-                  onChange={e => set('year', Number(e.target.value))}
-                  style={errors.year ? { borderColor: 'var(--danger)' } : {}}
-                >
-                  {[1,2,3,4,5,6].map(y => <option key={y} value={y}>Year {y}</option>)}
-                </select>
+                {(() => {
+                  const selDepts = editing.departmentIds || [];
+                  const maxYear = selDepts.length > 0
+                    ? Math.max(...selDepts.map(dId => deptMap[dId]?.years || 4))
+                    : 4;
+                  return (
+                    <select
+                      value={editing.year}
+                      onChange={e => set('year', Number(e.target.value))}
+                      style={errors.year ? { borderColor: 'var(--danger)' } : {}}
+                    >
+                      {Array.from({ length: maxYear }, (_, i) => i + 1).map(y => <option key={y} value={y}>Year {y}</option>)}
+                    </select>
+                  );
+                })()}
                 {errors.year && <span className="field-error">{errors.year}</span>}
               </div>
               <div className="form-group" style={{ flex: '0 0 100px' }}>
@@ -386,14 +683,33 @@ export default function CoursesManager() {
                 <label>Teacher</label>
                 <select value={editing.teacherId || ''} onChange={e => set('teacherId', e.target.value)}>
                   <option value="">Select Teacher</option>
-                  {filteredTeachers.map(t => (
-                    <option key={t.id} value={t.id}>
-                      {t.name}{t.departmentId && deptMap[t.departmentId] ? ` (${deptMap[t.departmentId].code})` : ''}
-                    </option>
-                  ))}
+                  {filteredTeachers.map(t => {
+                    const tCourses = (t.courseIds || []).map(cid => {
+                      const course = courses.find(c => c.id === cid);
+                      return course?.code;
+                    }).filter(Boolean);
+                    const courseInfo = tCourses.length > 0 ? ` — ${tCourses.slice(0, 3).join(', ')}${tCourses.length > 3 ? '…' : ''}` : '';
+                    return (
+                      <option key={t.id} value={t.id}>
+                        {t.name}{courseInfo}
+                      </option>
+                    );
+                  })}
                 </select>
-                {editing.departmentId && filteredTeachers.length < teachers.length && (
-                  <span className="field-hint">Showing teachers from selected department</span>
+                {editing.departmentIds?.length > 0 && filteredTeachers.length < teachers.length && (
+                  <span className="field-hint">Showing {filteredTeachers.length} teacher{filteredTeachers.length !== 1 ? 's' : ''} from selected department{editing.departmentIds.length > 1 ? 's' : ''}</span>
+                )}
+                {editing.departmentIds?.length > 0 && filteredTeachers.length === 0 && (
+                  <span className="field-hint" style={{ color: 'var(--warning)' }}>⚠️ No teachers assigned to selected department{editing.departmentIds.length > 1 ? 's' : ''} yet</span>
+                )}
+                {teacherMismatchWarning && (
+                  <div style={{
+                    marginTop: 6, padding: '6px 10px', borderRadius: 6,
+                    background: '#fff3cd', border: '1px solid #ffc107',
+                    fontSize: 12, color: '#856404', display: 'flex', alignItems: 'center', gap: 6
+                  }}>
+                    ⚠️ {teacherMismatchWarning}
+                  </div>
                 )}
               </div>
               <div className="form-group" style={{ flex: '0 0 100px' }}>
@@ -434,6 +750,19 @@ export default function CoursesManager() {
                     <option value={2}>2 hours</option>
                   </select>
                 </div>
+              </div>
+
+              {/* Elective toggle */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 13, fontWeight: 600 }}>
+                  <input
+                    type="checkbox"
+                    checked={!!editing.isElective}
+                    onChange={e => set('isElective', e.target.checked)}
+                    style={{ width: 16, height: 16 }}
+                  />
+                  🎯 This is an elective course (students choose to enroll)
+                </label>
               </div>
 
               {/* Lab toggle */}

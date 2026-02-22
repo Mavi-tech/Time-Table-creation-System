@@ -1,58 +1,155 @@
 [
   {
-    "id": "r1",
-    "name": "Room 101",
+    "id": "r-mlx797yjeptjn2",
+    "name": "Room 1",
+    "type": "lecture",
     "capacity": 60,
-    "type": "lecture",
-    "building": "Block A"
+    "building": "Main",
+    "floor": "Ground",
+    "facilities": "Smart TV"
   },
   {
-    "id": "r2",
-    "name": "Room 102",
+    "id": "r-mlx79vqkuofow0",
+    "name": "Room 2",
+    "type": "lecture",
+    "capacity": 20,
+    "building": "Main",
+    "floor": "Ground",
+    "facilities": ""
+  },
+  {
+    "id": "r-mlx7ao9z1l153y",
+    "name": "Room 3",
+    "type": "lecture",
+    "capacity": 20,
+    "building": "Main",
+    "floor": "Ground",
+    "facilities": "Whiteboard"
+  },
+  {
+    "id": "r-mlx7bng7pme8kl",
+    "name": "Room 4",
+    "type": "lab",
     "capacity": 60,
-    "type": "lecture",
-    "building": "Block A"
+    "building": "Main",
+    "floor": "1st",
+    "facilities": "Computers"
   },
   {
-    "id": "r3",
-    "name": "Room 201",
-    "capacity": 40,
-    "type": "lecture",
-    "building": "Block A"
-  },
-  {
-    "id": "r4",
-    "name": "Room 202",
-    "capacity": 40,
-    "type": "lecture",
-    "building": "Block B"
-  },
-  {
-    "id": "r5",
-    "name": "CS Lab 1",
-    "capacity": 30,
+    "id": "r-mlx7csktyvtxql",
+    "name": "Room 5",
     "type": "lab",
-    "building": "Block C"
+    "capacity": 60,
+    "building": "Main",
+    "floor": "1st",
+    "facilities": "Computers"
   },
   {
-    "id": "r6",
-    "name": "CS Lab 2",
-    "capacity": 30,
+    "id": "r-mlx7d8363qeq4v",
+    "name": "Room 6",
     "type": "lab",
-    "building": "Block C"
+    "capacity": 60,
+    "building": "Main",
+    "floor": "1st",
+    "facilities": "Computers"
   },
   {
-    "id": "r7",
-    "name": "Physics Lab",
-    "capacity": 30,
+    "id": "r-mlx7dwtyjwxcmz",
+    "name": "Room 7",
     "type": "lab",
-    "building": "Block C"
+    "capacity": 60,
+    "building": "Main",
+    "floor": "1st",
+    "facilities": "Computers"
   },
   {
-    "id": "r8",
-    "name": "Room 301",
+    "id": "r-mlx7ex7tprs1l3",
+    "name": "Room 8",
+    "type": "lab",
+    "capacity": 60,
+    "building": "Block A",
+    "floor": "1st",
+    "facilities": "Makers"
+  },
+  {
+    "id": "r-mlx7ffea4pi26q",
+    "name": "Room 9",
+    "type": "lab",
+    "capacity": 60,
+    "building": "Block A",
+    "floor": "1st",
+    "facilities": "Makers"
+  },
+  {
+    "id": "r-mlx7gw26w94cj7",
+    "name": "Seminar Hall 1",
+    "type": "lecture",
+    "capacity": 60,
+    "building": "Main",
+    "floor": "2nd",
+    "facilities": "Smart TV"
+  },
+  {
+    "id": "r-mlx7hto8mcgoz7",
+    "name": "Seminar Hall 2",
+    "type": "lecture",
     "capacity": 80,
+    "building": "Main",
+    "floor": "2nd",
+    "facilities": "Smart TV"
+  },
+  {
+    "id": "r-mlx7jizkanb3j3",
+    "name": "Room 10",
     "type": "lecture",
-    "building": "Block B"
+    "capacity": 60,
+    "building": "Block A",
+    "floor": "2nd",
+    "facilities": "Whiteboard + Projector"
+  },
+  {
+    "id": "r-mlx7kcg4qqb8x8",
+    "name": "Room 11",
+    "type": "lecture",
+    "capacity": 60,
+    "building": "Block A",
+    "floor": "2nd",
+    "facilities": "Whiteboard + Projector"
+  },
+  {
+    "id": "r-mlx7l0lwozgxmu",
+    "name": "Room 12",
+    "type": "lecture",
+    "capacity": 60,
+    "building": "Block A",
+    "floor": "2nd",
+    "facilities": "Whiteboard + Projector"
+  },
+  {
+    "id": "r-mlx7m05kcb0xga",
+    "name": "Room 13",
+    "type": "lecture",
+    "capacity": 60,
+    "building": "Block A",
+    "floor": "3rd",
+    "facilities": "Whiteboard"
+  },
+  {
+    "id": "r-mlx7nyj7vunhp4",
+    "name": "Room 14",
+    "type": "lab",
+    "capacity": 60,
+    "building": "Block A",
+    "floor": "3rd",
+    "facilities": "Mechatronics"
+  },
+  {
+    "id": "r-mlx7ox4n9joorm",
+    "name": "Room 15",
+    "type": "lab",
+    "capacity": 60,
+    "building": "Block A",
+    "floor": "Ground",
+    "facilities": "Electronics"
   }
 ]

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../api';
 import { toast } from '../../components/UI';
@@ -7,18 +7,37 @@ import TimetableGrid from '../../components/TimetableGrid';
 export default function StudentWeekly() {
   const { user } = useAuth();
   const [entries, setEntries] = useState([]);
+  const [courses, setCourses] = useState([]);
+  const [enrollments, setEnrollments] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!user?.departmentId || !user?.year) return;
+    if (!user?.departmentId || !user?.semester) return;
     setLoading(true);
-    api.getTimetable(user.departmentId, user.year)
-      .then(r => setEntries(r.data))
+    Promise.all([
+      api.getTimetable(user.departmentId, user.semester),
+      api.getCourses(),
+      api.getEnrollments(user.id),
+    ])
+      .then(([tr, cr, er]) => {
+        setEntries(tr.data);
+        setCourses(cr.data);
+        setEnrollments(er.data);
+      })
       .catch(() => toast('No timetable found', 'info'))
       .finally(() => setLoading(false));
   }, [user]);
 
-  const active = entries.filter(e => e.status !== 'cancelled');
+  // Filter out elective courses the student hasn't enrolled in
+  const enrolledIds = useMemo(() => new Set(enrollments.map(e => e.courseId)), [enrollments]);
+  const electiveIds = useMemo(() => new Set(courses.filter(c => c.isElective).map(c => c.id)), [courses]);
+  const active = useMemo(() => {
+    return entries.filter(e => {
+      if (e.status === 'cancelled') return false;
+      if (electiveIds.has(e.courseId) && !enrolledIds.has(e.courseId)) return false;
+      return true;
+    });
+  }, [entries, electiveIds, enrolledIds]);
 
   return (
     <div>

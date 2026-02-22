@@ -34,8 +34,16 @@ app.delete('/api/departments/:id', (req, res) => { db.remove('departments', req.
 // ==================== COURSES ====================
 app.get('/api/courses', (req, res) => {
   let c = db.read('courses');
-  if (req.query.departmentId) c = c.filter(x => x.departmentId === req.query.departmentId);
+  // Support both old departmentId and new departmentIds array
+  c = c.map(x => {
+    if (x.departmentId && !x.departmentIds) {
+      return { ...x, departmentIds: [x.departmentId] };
+    }
+    return x;
+  });
+  if (req.query.departmentId) c = c.filter(x => (x.departmentIds || []).includes(req.query.departmentId));
   if (req.query.year) c = c.filter(x => x.year === +req.query.year);
+  if (req.query.semester) c = c.filter(x => x.semester === +req.query.semester);
   const teachers = db.read('teachers');
   c = c.map(x => ({ ...x, teacherName: (teachers.find(t => t.id === x.teacherId) || {}).name || 'Unassigned' }));
   res.json(c);
@@ -55,20 +63,65 @@ app.delete('/api/courses/:id', (req, res) => { db.remove('courses', req.params.i
 // ==================== TEACHERS ====================
 app.get('/api/teachers', (req, res) => {
   let t = db.read('teachers');
-  if (req.query.departmentId) t = t.filter(x => x.departmentId === req.query.departmentId);
+  // Support both old departmentId and new departmentIds array
+  t = t.map(x => {
+    if (x.departmentId && !x.departmentIds) {
+      return { ...x, departmentIds: [x.departmentId] };
+    }
+    return x;
+  });
+  if (req.query.departmentId) t = t.filter(x => (x.departmentIds || []).includes(req.query.departmentId));
   res.json(t);
 });
 app.post('/api/teachers', (req, res) => {
   const t = { id: db.uid('t-'), ...req.body };
   db.add('teachers', t);
   db.add('users', { id: db.uid('u-'), username: req.body.email.split('@')[0], password: 'teacher123', role: 'teacher', name: req.body.name, linkedId: t.id });
+  // Auto-assign teacher to selected courses
+  if (t.courseIds && t.courseIds.length > 0) {
+    t.courseIds.forEach(cid => {
+      db.update('courses', cid, { teacherId: t.id });
+    });
+  }
   res.json(t);
 });
 app.put('/api/teachers/:id', (req, res) => {
+  // Get old teacher data to detect removed courses
+  const oldTeacher = db.findById('teachers', req.params.id);
+  const oldCourseIds = oldTeacher?.courseIds || [];
+  const newCourseIds = req.body.courseIds || [];
+
   const r = db.update('teachers', req.params.id, req.body);
-  r ? res.json(r) : res.status(404).json({ error: 'Not found' });
+  if (!r) return res.status(404).json({ error: 'Not found' });
+
+  // Un-assign teacher from removed courses
+  const removedCourses = oldCourseIds.filter(cid => !newCourseIds.includes(cid));
+  removedCourses.forEach(cid => {
+    const course = db.findById('courses', cid);
+    if (course && course.teacherId === req.params.id) {
+      db.update('courses', cid, { teacherId: '' });
+    }
+  });
+
+  // Auto-assign teacher to newly added courses
+  const addedCourses = newCourseIds.filter(cid => !oldCourseIds.includes(cid));
+  addedCourses.forEach(cid => {
+    db.update('courses', cid, { teacherId: req.params.id });
+  });
+
+  res.json(r);
 });
 app.delete('/api/teachers/:id', (req, res) => {
+  // Un-assign teacher from all their courses before deleting
+  const teacher = db.findById('teachers', req.params.id);
+  if (teacher?.courseIds) {
+    teacher.courseIds.forEach(cid => {
+      const course = db.findById('courses', cid);
+      if (course && course.teacherId === req.params.id) {
+        db.update('courses', cid, { teacherId: '' });
+      }
+    });
+  }
   db.remove('teachers', req.params.id);
   const u = db.read('users').find(x => x.linkedId === req.params.id);
   if (u) db.remove('users', u.id);
@@ -151,17 +204,17 @@ app.post('/api/batches/auto-split', (req, res) => {
 // ==================== TIMETABLE ====================
 app.post('/api/timetable/generate', (req, res) => {
   try {
-    const { departmentId, year, mode } = req.body;
-    if (year) res.json(gen.generate(departmentId, +year, mode || 'week'));
+    const { departmentId, semester, mode, batchId } = req.body;
+    if (semester) res.json(gen.generate(departmentId, +semester, mode || 'week', batchId || null));
     else res.json(gen.generateDept(departmentId));
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
 app.get('/api/timetable', (req, res) => {
-  const { departmentId, year, teacherId, day } = req.query;
+  const { departmentId, semester, teacherId, day } = req.query;
   let entries;
   if (teacherId) entries = gen.getTeacherTT(teacherId);
-  else entries = gen.getTT(departmentId, +year);
+  else entries = gen.getTT(departmentId, +semester);
   if (day) entries = entries.filter(e => e.day === day);
   const teachers = db.read('teachers');
   entries = entries.map(e => ({ ...e, teacherName: (teachers.find(t => t.id === e.teacherId) || {}).name || 'Unknown' }));
@@ -192,10 +245,42 @@ app.post('/api/timetable/:id/restore', (req, res) => {
   r ? res.json(r) : res.status(404).json({ error: 'Not found' });
 });
 
-app.delete('/api/timetable/dept/:deptId/year/:year', (req, res) => {
+app.delete('/api/timetable/dept/:deptId/semester/:semester', (req, res) => {
   const all = db.read('timetables');
-  const kept = all.filter(t => !(t.departmentId === req.params.deptId && t.year === +req.params.year));
+  const kept = all.filter(t => !(t.departmentId === req.params.deptId && t.semester === +req.params.semester));
   db.write('timetables', kept);
+  res.json({ ok: true, removed: all.length - kept.length });
+});
+
+// ==================== ENROLLMENTS (elective course choices) ====================
+app.get('/api/enrollments', (req, res) => {
+  let e = db.read('enrollments');
+  if (req.query.userId) e = e.filter(x => x.userId === req.query.userId);
+  if (req.query.courseId) e = e.filter(x => x.courseId === req.query.courseId);
+  res.json(e);
+});
+app.post('/api/enrollments', (req, res) => {
+  const { userId, courseId } = req.body;
+  if (!userId || !courseId) return res.status(400).json({ error: 'userId and courseId required' });
+  // Prevent duplicate
+  const existing = db.read('enrollments');
+  if (existing.find(e => e.userId === userId && e.courseId === courseId)) {
+    return res.status(409).json({ error: 'Already enrolled' });
+  }
+  const enrollment = { id: db.uid('enr-'), userId, courseId, enrolledAt: new Date().toISOString() };
+  db.add('enrollments', enrollment);
+  res.json(enrollment);
+});
+app.delete('/api/enrollments/:id', (req, res) => {
+  db.remove('enrollments', req.params.id);
+  res.json({ ok: true });
+});
+// Bulk unenroll by userId+courseId (convenience)
+app.post('/api/enrollments/unenroll', (req, res) => {
+  const { userId, courseId } = req.body;
+  const all = db.read('enrollments');
+  const kept = all.filter(e => !(e.userId === userId && e.courseId === courseId));
+  db.write('enrollments', kept);
   res.json({ ok: true, removed: all.length - kept.length });
 });
 

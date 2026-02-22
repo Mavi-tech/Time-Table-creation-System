@@ -1,114 +1,675 @@
 [
   {
-    "id": "c1",
-    "name": "Data Structures",
-    "code": "CS201",
-    "departmentId": "dept-cs",
-    "year": 2,
-    "semester": 3,
+    "id": "c-mlx8n5tk0hmgxi",
+    "name": "Discrete Mathemat",
+    "code": "CS101",
+    "year": 1,
+    "semester": 1,
+    "weeklyLectures": 3,
+    "weeklyLabs": 0,
+    "labDuration": 2,
+    "lectureDuration": 1,
+    "teacherId": "t-mlx88h3obhspg3",
+    "type": "theory",
+    "credits": 2,
+    "teacherName": "Harpreet k",
+    "departmentIds": [
+      "dept-cs",
+      "dept-mloz3lcydz5d3y"
+    ]
+  },
+  {
+    "id": "c-mlx8o18dco62wh",
+    "name": "Programming Language",
+    "code": "CS102",
+    "year": 1,
+    "semester": 1,
     "weeklyLectures": 4,
     "weeklyLabs": 2,
     "labDuration": 2,
     "lectureDuration": 1,
-    "teacherId": "t1",
-    "type": "theory+lab"
+    "teacherId": "t-mlxc1kldj7325m",
+    "type": "theory+lab",
+    "credits": 3,
+    "teacherName": "Unassigned",
+    "departmentIds": [
+      "dept-cs",
+      "dept-mloz3lcydz5d3y"
+    ]
   },
   {
-    "id": "c2",
-    "name": "Operating Systems",
-    "code": "CS301",
-    "departmentId": "dept-cs",
-    "year": 3,
-    "semester": 5,
+    "id": "c-mlx8p7au95poyy",
+    "name": " Information Technology Essentials",
+    "code": "CS103",
+    "year": 1,
+    "semester": 1,
+    "weeklyLectures": 3,
+    "weeklyLabs": 0,
+    "labDuration": 2,
+    "lectureDuration": 1,
+    "teacherId": "",
+    "type": "theory",
+    "credits": 2,
+    "departmentIds": [
+      "dept-cs",
+      "dept-mloz3lcydz5d3y"
+    ],
+    "teacherName": "Unassigned"
+  },
+  {
+    "id": "c-mlx8q62fa1hd9e",
+    "name": "Web Technologies + Certiport Certification ",
+    "code": "CS104",
+    "year": 1,
+    "semester": 1,
     "weeklyLectures": 3,
     "weeklyLabs": 2,
     "labDuration": 2,
     "lectureDuration": 1,
-    "teacherId": "t2",
-    "type": "theory+lab"
+    "teacherId": "t-mlxcgoyz5g43af",
+    "type": "theory+lab",
+    "credits": 2,
+    "departmentIds": [
+      "dept-cs",
+      "dept-mloz3lcydz5d3y"
+    ],
+    "teacherName": "Unassigned"
   },
   {
-    "id": "c3",
-    "name": "Database Systems",
-    "code": "CS202",
-    "departmentId": "dept-cs",
+    "id": "c-mlx8rrwx0sidoe",
+    "name": "Basics of Electrical & Electronics Engg",
+    "code": "CS105",
+    "year": 1,
+    "semester": 1,
+    "weeklyLectures": 2,
+    "weeklyLabs": 2,
+    "labDuration": 1,
+    "lectureDuration": 1,
+    "teacherId": "",
+    "type": "theory+lab",
+    "credits": 2,
+    "departmentIds": [
+      "dept-cs",
+      "dept-mloz3lcydz5d3y"
+    ],
+    "teacherName": "Unassigned"
+  },
+  {
+    "id": "c-mlx8t3wpc336zz",
+    "name": ".Engg Graphics and CAD",
+    "code": "CS106",
+    "year": 1,
+    "semester": 1,
+    "weeklyLectures": 2,
+    "weeklyLabs": 2,
+    "labDuration": 1,
+    "lectureDuration": 1,
+    "teacherId": "t-mlxbv57ldox0tb",
+    "type": "theory+lab",
+    "credits": 2,
+    "departmentIds": [
+      "dept-cs",
+      "dept-mloz3lcydz5d3y"
+    ],
+    "teacherName": "Unassigned"
+  },
+  {
+    "id": "c-mlx8tztnipngv2",
+    "name": "Environmen tal Science and Engg ",
+    "code": "CS107",
+    "year": 1,
+    "semester": 1,
+    "weeklyLectures": 1,
+    "weeklyLabs": 0,
+    "labDuration": 2,
+    "lectureDuration": 2,
+    "teacherId": "",
+    "type": "theory",
+    "credits": 0,
+    "departmentIds": [
+      "dept-cs",
+      "dept-mloz3lcydz5d3y"
+    ],
+    "teacherName": "Unassigned"
+  },
+  {
+    "id": "c-mlx8v8768wy3iw",
+    "name": " Engg Mathematics",
+    "code": "CS108",
+    "year": 1,
+    "semester": 2,
+    "weeklyLectures": 3,
+    "weeklyLabs": 0,
+    "labDuration": 2,
+    "lectureDuration": 1,
+    "teacherId": "",
+    "type": "theory",
+    "credits": 2,
+    "departmentIds": [
+      "dept-cs",
+      "dept-mloz3lcydz5d3y"
+    ],
+    "teacherName": "Unassigned"
+  },
+  {
+    "id": "c-mlx8w71s82e1z2",
+    "name": "Theory of computing",
+    "code": "CS109",
+    "year": 1,
+    "semester": 2,
+    "weeklyLectures": 2,
+    "weeklyLabs": 0,
+    "labDuration": 2,
+    "lectureDuration": 1,
+    "teacherId": "",
+    "type": "theory",
+    "credits": 2,
+    "departmentIds": [
+      "dept-cs",
+      "dept-mloz3lcydz5d3y"
+    ],
+    "teacherName": "Unassigned"
+  },
+  {
+    "id": "c-mlx98ln7ald4pm",
+    "name": "Data Structures and Algorithms",
+    "code": "CS111",
+    "departmentIds": [
+      "dept-cs",
+      "dept-mloz3lcydz5d3y"
+    ],
+    "year": 1,
+    "semester": 2,
+    "weeklyLectures": 3,
+    "weeklyLabs": 0,
+    "labDuration": 2,
+    "lectureDuration": 1,
+    "teacherId": "",
+    "type": "theory",
+    "credits": 3
+  },
+  {
+    "id": "c-mlx9cm0kyokd61",
+    "name": "Database System Concepts",
+    "code": "CS112",
+    "departmentIds": [
+      "dept-cs",
+      "dept-mloz3lcydz5d3y"
+    ],
+    "year": 1,
+    "semester": 2,
+    "weeklyLectures": 3,
+    "weeklyLabs": 2,
+    "labDuration": 2,
+    "lectureDuration": 1,
+    "teacherId": "",
+    "type": "theory+lab",
+    "credits": 2
+  },
+  {
+    "id": "c-mlx9dffigsrgk2",
+    "name": " Computer Architectur e",
+    "code": "CS113",
+    "departmentIds": [
+      "dept-cs",
+      "dept-mloz3lcydz5d3y"
+    ],
+    "year": 1,
+    "semester": 2,
+    "weeklyLectures": 2,
+    "weeklyLabs": 0,
+    "labDuration": 2,
+    "lectureDuration": 1,
+    "teacherId": "",
+    "type": "theory",
+    "credits": 2
+  },
+  {
+    "id": "c-mlx9ei3q7h9ej0",
+    "name": "Computer Networks",
+    "code": "CS114",
+    "departmentIds": [
+      "dept-cs",
+      "dept-mloz3lcydz5d3y"
+    ],
+    "year": 1,
+    "semester": 1,
+    "weeklyLectures": 3,
+    "weeklyLabs": 2,
+    "labDuration": 1,
+    "lectureDuration": 1,
+    "teacherId": "",
+    "type": "theory+lab",
+    "credits": 2
+  },
+  {
+    "id": "c-mlx9fg0ha52ynq",
+    "name": "Climate Change and Carbon",
+    "code": "CS115",
+    "departmentIds": [
+      "dept-cs",
+      "dept-mloz3lcydz5d3y"
+    ],
+    "year": 1,
+    "semester": 2,
+    "weeklyLectures": 1,
+    "weeklyLabs": 0,
+    "labDuration": 2,
+    "lectureDuration": 1,
+    "teacherId": "",
+    "type": "theory",
+    "credits": ""
+  },
+  {
+    "id": "c-mlx9gr2s0yppn0",
+    "name": " Object Oriented Analysis and Design",
+    "code": "CS116",
+    "departmentIds": [
+      "dept-cs",
+      "dept-mloz3lcydz5d3y"
+    ],
+    "year": 2,
+    "semester": 3,
+    "weeklyLectures": 2,
+    "weeklyLabs": 2,
+    "labDuration": 1,
+    "lectureDuration": 1,
+    "teacherId": "",
+    "type": "theory+lab",
+    "credits": 2,
+    "teacherName": "Unassigned"
+  },
+  {
+    "id": "c-mlx9hg3a3u6q9b",
+    "name": "Operating Systems",
+    "code": "CS117",
+    "departmentIds": [
+      "dept-cs",
+      "dept-mloz3lcydz5d3y"
+    ],
+    "year": 2,
+    "semester": 3,
+    "weeklyLectures": 3,
+    "weeklyLabs": 0,
+    "labDuration": 2,
+    "lectureDuration": 1,
+    "teacherId": "",
+    "type": "theory",
+    "credits": 2
+  },
+  {
+    "id": "c-mlx9v50syw6uyi",
+    "name": "Java Programming",
+    "code": "CS119",
+    "departmentIds": [
+      "dept-cs"
+    ],
+    "year": 2,
+    "semester": 3,
+    "weeklyLectures": 2,
+    "weeklyLabs": 2,
+    "labDuration": 1,
+    "lectureDuration": 1,
+    "teacherId": "",
+    "type": "theory+lab",
+    "credits": 2,
+    "isElective": false,
+    "teacherName": "Unassigned"
+  },
+  {
+    "id": "c-mlx9wpt396m9nb",
+    "name": " Foreign Language I",
+    "code": "CS120",
+    "departmentIds": [
+      "dept-cs",
+      "dept-mloz3lcydz5d3y"
+    ],
+    "year": 2,
+    "semester": 3,
+    "weeklyLectures": 1,
+    "weeklyLabs": 0,
+    "labDuration": 2,
+    "lectureDuration": 1,
+    "teacherId": "",
+    "type": "theory",
+    "credits": 1,
+    "isElective": false,
+    "teacherName": "Unassigned"
+  },
+  {
+    "id": "c-mlx9y1u12t0b6h",
+    "name": " Computer Network administration and Security",
+    "code": "IT101",
+    "departmentIds": [
+      "dept-mloz3lcydz5d3y"
+    ],
+    "year": 2,
+    "semester": 3,
+    "weeklyLectures": 3,
+    "weeklyLabs": 0,
+    "labDuration": 2,
+    "lectureDuration": 1,
+    "teacherId": "",
+    "type": "theory",
+    "credits": 3,
+    "isElective": false
+  },
+  {
+    "id": "c-mlx9zztv7vkt74",
+    "name": " Operating Systems administratio n with Certification",
+    "code": "IT102",
+    "departmentIds": [
+      "dept-mloz3lcydz5d3y"
+    ],
+    "year": 2,
+    "semester": 3,
+    "weeklyLectures": 3,
+    "weeklyLabs": 2,
+    "labDuration": 2,
+    "lectureDuration": 1,
+    "teacherId": "",
+    "type": "theory+lab",
+    "credits": 1,
+    "isElective": true
+  },
+  {
+    "id": "c-mlxa10xiv0l2xr",
+    "name": "Organizatio nal Behaviour",
+    "code": "CS121",
+    "departmentIds": [
+      "dept-cs",
+      "dept-mloz3lcydz5d3y"
+    ],
+    "year": 2,
+    "semester": 3,
+    "weeklyLectures": 2,
+    "weeklyLabs": 0,
+    "labDuration": 2,
+    "lectureDuration": 1,
+    "teacherId": "",
+    "type": "theory",
+    "credits": 1,
+    "isElective": false
+  },
+  {
+    "id": "c-mlxa1puecmg9ms",
+    "name": " Financial Literacy",
+    "code": "CS123",
+    "departmentIds": [
+      "dept-cs",
+      "dept-mloz3lcydz5d3y"
+    ],
+    "year": 2,
+    "semester": 3,
+    "weeklyLectures": 1,
+    "weeklyLabs": 0,
+    "labDuration": 2,
+    "lectureDuration": 1,
+    "teacherId": "",
+    "type": "theory",
+    "credits": 1,
+    "isElective": false
+  },
+  {
+    "id": "c-mlxa25uffipegj",
+    "name": "Communica tion and Personality Developme",
+    "code": "CS124",
+    "departmentIds": [
+      "dept-cs",
+      "dept-mloz3lcydz5d3y"
+    ],
+    "year": 1,
+    "semester": 1,
+    "weeklyLectures": 1,
+    "weeklyLabs": 0,
+    "labDuration": 2,
+    "lectureDuration": 1,
+    "teacherId": "",
+    "type": "theory",
+    "credits": "",
+    "isElective": false
+  },
+  {
+    "id": "c-mlxa42da2dyuhq",
+    "name": ". Software Engg and Agile Methodol ogy",
+    "code": "CS125",
+    "departmentIds": [
+      "dept-cs",
+      "dept-mloz3lcydz5d3y"
+    ],
+    "year": 2,
+    "semester": 4,
+    "weeklyLectures": 2,
+    "weeklyLabs": 2,
+    "labDuration": 1,
+    "lectureDuration": 1,
+    "teacherId": "",
+    "type": "theory+lab",
+    "credits": 2,
+    "isElective": false,
+    "teacherName": "Unassigned"
+  },
+  {
+    "id": "c-mlxa4wpr402anq",
+    "name": "Fundamental s of Data Science with Certification",
+    "code": "CS126",
+    "departmentIds": [
+      "dept-cs",
+      "dept-mloz3lcydz5d3y"
+    ],
+    "year": 2,
+    "semester": 4,
+    "weeklyLectures": 2,
+    "weeklyLabs": 0,
+    "labDuration": 2,
+    "lectureDuration": 1,
+    "teacherId": "",
+    "type": "theory",
+    "credits": 2,
+    "isElective": false
+  },
+  {
+    "id": "c-mlxa5virl7t909",
+    "name": "Full Stack framework - Java Web and Spring Framework ",
+    "code": "CS127",
+    "departmentIds": [
+      "dept-cs",
+      "dept-mloz3lcydz5d3y"
+    ],
+    "year": 1,
+    "semester": 1,
+    "weeklyLectures": 3,
+    "weeklyLabs": 2,
+    "labDuration": 2,
+    "lectureDuration": 1,
+    "teacherId": "",
+    "type": "theory+lab",
+    "credits": 3,
+    "isElective": true
+  },
+  {
+    "id": "c-mlxbd0hxnduwsx",
+    "name": "Preparation and Analysis of Data ",
+    "code": "CS128",
+    "departmentIds": [
+      "dept-cs"
+    ],
+    "year": 2,
+    "semester": 4,
+    "weeklyLectures": 2,
+    "weeklyLabs": 0,
+    "labDuration": 2,
+    "lectureDuration": 1,
+    "teacherId": "",
+    "type": "theory",
+    "credits": 1,
+    "isElective": false
+  },
+  {
+    "id": "c-mlxbdwageny2dt",
+    "name": "Data Warehousing and Big Data",
+    "code": "CS129",
+    "departmentIds": [
+      "dept-cs"
+    ],
+    "year": 2,
+    "semester": 4,
+    "weeklyLectures": 3,
+    "weeklyLabs": 0,
+    "labDuration": 2,
+    "lectureDuration": 1,
+    "teacherId": "",
+    "type": "theory",
+    "credits": 3,
+    "isElective": false
+  },
+  {
+    "id": "c-mlxbepjsrwanm4",
+    "name": "Deep Learning ",
+    "code": "CS130",
+    "departmentIds": [
+      "dept-cs"
+    ],
     "year": 2,
     "semester": 4,
     "weeklyLectures": 3,
     "weeklyLabs": 2,
     "labDuration": 2,
     "lectureDuration": 1,
-    "teacherId": "t3",
-    "type": "theory+lab"
+    "teacherId": "",
+    "type": "theory+lab",
+    "credits": 3,
+    "isElective": true
   },
   {
-    "id": "c4",
-    "name": "Mathematics I",
-    "code": "MA101",
-    "departmentId": "dept-cs",
-    "year": 1,
-    "semester": 1,
-    "weeklyLectures": 5,
+    "id": "c-mlxbff3flqt23b",
+    "name": "Capstone Projec",
+    "code": "CAP",
+    "departmentIds": [
+      "dept-cs",
+      "dept-mloz3lcydz5d3y"
+    ],
+    "year": 2,
+    "semester": 4,
+    "weeklyLectures": 1,
     "weeklyLabs": 0,
-    "labDuration": 0,
+    "labDuration": 2,
     "lectureDuration": 1,
-    "teacherId": "t4",
-    "type": "theory"
+    "teacherId": "",
+    "type": "theory",
+    "credits": 2,
+    "isElective": false
   },
   {
-    "id": "c5",
-    "name": "Physics",
-    "code": "PH101",
-    "departmentId": "dept-cs",
+    "id": "c-mlxbh1uk2qh3t0",
+    "name": "Foreign Language I",
+    "code": "CS131",
+    "departmentIds": [
+      "dept-cs",
+      "dept-mloz3lcydz5d3y"
+    ],
+    "year": 2,
+    "semester": 3,
+    "weeklyLectures": 2,
+    "weeklyLabs": 0,
+    "labDuration": 2,
+    "lectureDuration": 1,
+    "teacherId": "",
+    "type": "theory",
+    "credits": 1,
+    "isElective": false
+  },
+  {
+    "id": "c-mlxbhiogohwjc2",
+    "name": ". MIS",
+    "code": "CS132",
+    "departmentIds": [
+      "dept-cs",
+      "dept-mloz3lcydz5d3y"
+    ],
     "year": 1,
     "semester": 1,
-    "weeklyLectures": 4,
-    "weeklyLabs": 2,
+    "weeklyLectures": 2,
+    "weeklyLabs": 0,
     "labDuration": 2,
     "lectureDuration": 1,
-    "teacherId": "t5",
-    "type": "theory+lab"
+    "teacherId": "",
+    "type": "theory",
+    "credits": 2,
+    "isElective": false
   },
   {
-    "id": "c6",
-    "name": "Programming in C",
-    "code": "CS101",
-    "departmentId": "dept-cs",
+    "id": "c-mlxbi2lakum20u",
+    "name": "Intellectual property Rights IPR",
+    "code": "CS133",
+    "departmentIds": [
+      "dept-cs",
+      "dept-mloz3lcydz5d3y"
+    ],
+    "year": 2,
+    "semester": 4,
+    "weeklyLectures": 2,
+    "weeklyLabs": 0,
+    "labDuration": 2,
+    "lectureDuration": 1,
+    "teacherId": "",
+    "type": "theory",
+    "credits": 2,
+    "isElective": false
+  },
+  {
+    "id": "c-mlxbimym0kk0an",
+    "name": "Communica tion and Personality Developme nt – I",
+    "code": "CS134",
+    "departmentIds": [
+      "dept-cs",
+      "dept-mloz3lcydz5d3y"
+    ],
+    "year": 2,
+    "semester": 4,
+    "weeklyLectures": 1,
+    "weeklyLabs": 0,
+    "labDuration": 2,
+    "lectureDuration": 1,
+    "teacherId": "",
+    "type": "theory",
+    "credits": "",
+    "isElective": false
+  },
+  {
+    "id": "c-mlxbjal11oi6yp",
+    "name": "Wireless sensor network",
+    "code": "IT109",
+    "departmentIds": [
+      "dept-mloz3lcydz5d3y"
+    ],
     "year": 1,
     "semester": 1,
-    "weeklyLectures": 3,
-    "weeklyLabs": 2,
+    "weeklyLectures": 2,
+    "weeklyLabs": 0,
     "labDuration": 2,
     "lectureDuration": 1,
-    "teacherId": "t1",
-    "type": "theory+lab"
+    "teacherId": "",
+    "type": "theory",
+    "credits": 2,
+    "isElective": false
   },
   {
-    "id": "c7",
-    "name": "Computer Networks",
-    "code": "CS401",
-    "departmentId": "dept-cs",
-    "year": 4,
-    "semester": 7,
+    "id": "c-mlxbk3tgip2oyl",
+    "name": "Penetration Testing",
+    "code": "IT104",
+    "departmentIds": [
+      "dept-mloz3lcydz5d3y"
+    ],
+    "year": 2,
+    "semester": 3,
     "weeklyLectures": 3,
-    "weeklyLabs": 2,
+    "weeklyLabs": 0,
     "labDuration": 2,
     "lectureDuration": 1,
-    "teacherId": "t2",
-    "type": "theory+lab"
-  },
-  {
-    "id": "c8",
-    "name": "Machine Learning",
-    "code": "CS402",
-    "departmentId": "dept-cs",
-    "year": 4,
-    "semester": 7,
-    "weeklyLectures": 3,
-    "weeklyLabs": 2,
-    "labDuration": 2,
-    "lectureDuration": 1,
-    "teacherId": "t3",
-    "type": "theory+lab"
+    "teacherId": "",
+    "type": "theory",
+    "credits": 3,
+    "isElective": false
   }
 ]

@@ -1,37 +1,63 @@
 [
   {
-    "id": "t1",
-    "name": "Dr. Sharma",
-    "email": "sharma@uni.edu",
-    "departmentId": "dept-cs",
-    "specialization": "Data Structures, Programming"
+    "id": "t-mlx88h3obhspg3",
+    "name": "Harpreet k",
+    "title": "Prof.",
+    "email": "hk@mssu.edu",
+    "phone": "7896541212",
+    "departmentIds": [
+      "dept-cs"
+    ],
+    "specialization": "Discrete Mathemat",
+    "office": "",
+    "bio": ""
   },
   {
-    "id": "t2",
-    "name": "Dr. Verma",
-    "email": "verma@uni.edu",
-    "departmentId": "dept-cs",
-    "specialization": "Operating Systems, Networks"
+    "id": "t-mlxbv57ldox0tb",
+    "name": "rathod",
+    "title": "Mr.",
+    "email": "r@mssu.edu",
+    "phone": "852366974",
+    "departmentIds": [
+      "dept-cs",
+      "dept-mloz3lcydz5d3y"
+    ],
+    "courseIds": [
+      "c-mlx8t3wpc336zz"
+    ],
+    "office": "",
+    "bio": ""
   },
   {
-    "id": "t3",
-    "name": "Dr. Gupta",
-    "email": "gupta@uni.edu",
-    "departmentId": "dept-cs",
-    "specialization": "Databases, ML"
+    "id": "t-mlxc1kldj7325m",
+    "name": "sunil joshi",
+    "title": "Prof.",
+    "email": "sl@mssu.edu",
+    "phone": "741258963",
+    "departmentIds": [
+      "dept-cs",
+      "dept-mloz3lcydz5d3y"
+    ],
+    "courseIds": [
+      "c-mlx8o18dco62wh"
+    ],
+    "office": "",
+    "bio": ""
   },
   {
-    "id": "t4",
-    "name": "Prof. Singh",
-    "email": "singh@uni.edu",
-    "departmentId": "dept-cs",
-    "specialization": "Mathematics"
-  },
-  {
-    "id": "t5",
-    "name": "Dr. Patel",
-    "email": "patel@uni.edu",
-    "departmentId": "dept-cs",
-    "specialization": "Physics"
+    "id": "t-mlxcgoyz5g43af",
+    "name": "lomesh",
+    "title": "Prof.",
+    "email": "l@mssu.edu",
+    "phone": "796542321",
+    "departmentIds": [
+      "dept-cs",
+      "dept-mloz3lcydz5d3y"
+    ],
+    "courseIds": [
+      "c-mlx8q62fa1hd9e"
+    ],
+    "office": "",
+    "bio": ""
   }
 ]

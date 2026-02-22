@@ -2,27 +2,8 @@
   {
     "id": "dept-cs",
     "name": "Computer Science",
-    "code": "CS"
-  },
-  {
-    "id": "dept-ee",
-    "name": "Electrical Engineering",
-    "code": "EE"
-  },
-  {
-    "id": "dept-me",
-    "name": "Mechanical Engineering",
-    "code": "ME"
-  },
-  {
-    "id": "dept-ce",
-    "name": "Civil Engineering",
-    "code": "CE"
-  },
-  {
-    "id": "dept-mloz1j8p3in1x1",
-    "name": "Electricty And Telecommunication",
-    "code": "E&TC",
+    "code": "CS",
+    "hod": "",
     "years": 4
   },
   {
@@ -38,33 +19,19 @@
     "years": 4
   },
   {
-    "id": "dept-mlozpfhro3owqd",
-    "name": "Agricultural Engineering",
-    "code": "AE",
-    "years": 4
+    "id": "dept-mlx760uqos09cv",
+    "name": "Design",
+    "code": "DS",
+    "years": 4,
+    "hod": "Aditi Kale",
+    "description": ""
   },
   {
-    "id": "dept-mlozppfx1pb6wk",
-    "name": "Chemical Engineering",
-    "code": "CE",
-    "years": 4
-  },
-  {
-    "id": "dept-mlozq5idnmfj3l",
-    "name": "Geotechnical Engineering",
-    "code": "GE",
-    "years": 4
-  },
-  {
-    "id": "dept-mlozqqdxr5jo6v",
-    "name": "Architectural Engineering",
-    "code": "AE",
-    "years": 4
-  },
-  {
-    "id": "dept-mlozr1utmplenn",
-    "name": "Food Engineering",
-    "code": "FE",
-    "years": 4
+    "id": "dept-mlx76w007nakx1",
+    "name": "BBA",
+    "code": "BBA",
+    "years": 4,
+    "hod": "Dr.Shruti Joshi",
+    "description": ""
   }
 ]

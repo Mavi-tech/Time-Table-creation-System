@@ -6,9 +6,11 @@ import TimetableGrid from '../../components/TimetableGrid';
 export default function TimetableManager() {
   const [departments, setDepartments] = useState([]);
   const [selDept, setSelDept] = useState('');
-  const [selYear, setSelYear] = useState(1);
+  const [selSem, setSelSem] = useState(1);
   const [timetable, setTimetable] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [selBatch, setSelBatch] = useState('');
+  const [deptBatches, setDeptBatches] = useState([]);
 
   /* edit modal */
   const [editing, setEditing] = useState(null);
@@ -24,28 +26,47 @@ export default function TimetableManager() {
     api.getCourses().then(r => setCourses(r.data));
   }, []);
 
+  // Fetch batches when department changes
+  useEffect(() => {
+    if (selDept) {
+      api.getBatches(selDept).then(r => setDeptBatches(r.data || []));
+    } else {
+      setDeptBatches([]);
+    }
+  }, [selDept]);
+
+  // Batches for current semester's year
+  const semBatches = React.useMemo(() => {
+    const year = Math.ceil(selSem / 2);
+    return deptBatches.filter(b => b.year === year);
+  }, [deptBatches, selSem]);
+
   const load = () => {
     if (!selDept) return;
     setLoading(true);
-    api.getTimetable(selDept, selYear)
+    api.getTimetable(selDept, selSem)
       .then(r => setTimetable(r.data))
       .catch(() => setTimetable(null))
       .finally(() => setLoading(false));
   };
 
-  useEffect(() => { if (selDept) load(); /* eslint-disable-next-line */ }, [selDept, selYear]);
+  useEffect(() => { if (selDept) load(); /* eslint-disable-next-line */ }, [selDept, selSem]);
 
-  const generate = async () => {
+  const generate = async (specificBatchId) => {
     if (!selDept) return;
-    if (!await confirm('Generate Timetable', `This will regenerate the timetable for year ${selYear}. Continue?`)) return;
+    const batchLabel = specificBatchId
+      ? ` for Batch ${semBatches.find(b => b.id === specificBatchId)?.section || '?'}`
+      : semBatches.length > 0 ? ' for all batches' : '';
+    if (!await confirm('Generate Timetable', `This will regenerate the timetable for semester ${selSem}${batchLabel}. Continue?`)) return;
     setLoading(true);
     try {
-      const r = await api.generateTimetable(selDept, selYear);
+      const r = await api.generateTimetable(selDept, selSem, 'week', specificBatchId || null);
       setTimetable(r.data.schedule || r.data);
-      toast(`Timetable generated! ${r.data.placed || 0} entries placed.`, 'success');
+      toast(`Timetable generated! ${r.data.placed || 0} entries placed${r.data.batches ? ` (${r.data.batches} batches)` : ''}.`, 'success');
       if (r.data.errors && r.data.errors.length > 0) {
         r.data.errors.forEach(err => toast(err, 'warning'));
       }
+      load();
     } catch (e) {
       toast(e.response?.data?.error || 'Generation failed', 'error');
     }
@@ -54,15 +75,14 @@ export default function TimetableManager() {
 
   const generateAll = async () => {
     if (!selDept) return;
-    if (!await confirm('Generate All Years', 'This will regenerate timetables for ALL years in this department. Continue?')) return;
+    if (!await confirm('Generate All Semesters', 'This will regenerate timetables for ALL semesters in this department. Continue?')) return;
     setLoading(true);
     try {
-      const dept = departments.find(d => d.id === selDept);
-      for (let y = 1; y <= (dept?.years || 4); y++) {
-        await api.generateTimetable(selDept, y);
+      for (let s = 1; s <= 8; s++) {
+        await api.generateTimetable(selDept, s);
       }
       load();
-      toast('All timetables generated!', 'success');
+      toast('All semester timetables generated!', 'success');
     } catch (e) {
       toast(e.response?.data?.error || 'Generation failed', 'error');
     }
@@ -98,7 +118,35 @@ export default function TimetableManager() {
   };
 
   const dept = departments.find(d => d.id === selDept);
-  const years = dept ? Array.from({ length: dept.years || 4 }, (_, i) => i + 1) : [];
+
+  // Detect batches in the loaded timetable (for viewing)
+  const ttBatches = React.useMemo(() => {
+    if (!timetable) return [];
+    const seen = new Map();
+    timetable.forEach(e => {
+      if (e.batchId && !seen.has(e.batchId)) {
+        seen.set(e.batchId, { id: e.batchId, section: e.batchSection || e.batchId });
+      }
+    });
+    return Array.from(seen.values());
+  }, [timetable]);
+
+  // Filter timetable by selected batch
+  const displayedEntries = React.useMemo(() => {
+    if (!timetable) return [];
+    if (ttBatches.length === 0) return timetable; // no batches, show everything
+    if (!selBatch) return timetable.filter(e => !e.batchId); // show non-batch entries only (fallback)
+    return timetable.filter(e => e.batchId === selBatch || !e.batchId);
+  }, [timetable, selBatch, ttBatches]);
+
+  // Auto-select first batch when timetable loads
+  React.useEffect(() => {
+    if (ttBatches.length > 0 && !ttBatches.find(b => b.id === selBatch)) {
+      setSelBatch(ttBatches[0].id);
+    } else if (ttBatches.length === 0) {
+      setSelBatch('');
+    }
+  }, [ttBatches]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div>
@@ -114,32 +162,71 @@ export default function TimetableManager() {
             </select>
           </div>
           <div className="form-group">
-            <label>Year</label>
-            <select value={selYear} onChange={e => setSelYear(Number(e.target.value))}>
-              {years.map(y => <option key={y} value={y}>Year {y}</option>)}
+            <label>Semester</label>
+            <select value={selSem} onChange={e => setSelSem(Number(e.target.value))}>
+              {Array.from({ length: dept?.years || 4 }, (_, i) => i + 1).map(yr => (
+                <optgroup key={yr} label={`Year ${yr}`}>
+                  <option value={yr * 2 - 1}>Semester {yr * 2 - 1}</option>
+                  <option value={yr * 2}>Semester {yr * 2}</option>
+                </optgroup>
+              ))}
             </select>
           </div>
+          {ttBatches.length > 0 && (
+            <div className="form-group">
+              <label>View Batch</label>
+              <select value={selBatch} onChange={e => setSelBatch(e.target.value)}>
+                {ttBatches.map(b => <option key={b.id} value={b.id}>Section {b.section}</option>)}
+              </select>
+            </div>
+          )}
         </div>
-        <div className="btn-group">
-          <button className="btn btn-primary" onClick={generate} disabled={loading}>
-            {loading ? 'Working…' : '⚡ Generate'}
-          </button>
-          <button className="btn btn-secondary" onClick={generateAll} disabled={loading}>
-            📋 Generate All Years
-          </button>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <div className="btn-group">
+            <button className="btn btn-primary" onClick={() => generate()} disabled={loading}>
+              {loading ? 'Working…' : semBatches.length > 0 ? '⚡ Generate All Batches' : '⚡ Generate'}
+            </button>
+            <button className="btn btn-secondary" onClick={generateAll} disabled={loading}>
+              📋 Generate All Semesters
+            </button>
+          </div>
+          {semBatches.length > 0 && (
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
+              <span style={{ fontSize: 12, color: 'var(--text-secondary)', fontWeight: 600 }}>Generate batch:</span>
+              {semBatches.map(b => (
+                <button
+                  key={b.id}
+                  className="btn btn-sm btn-secondary"
+                  onClick={() => generate(b.id)}
+                  disabled={loading}
+                  style={{ fontSize: 11, padding: '4px 10px' }}
+                >
+                  👥 {b.name} ({b.section}) — {b.studentCount} students
+                </button>
+              ))}
+            </div>
+          )}
+          {semBatches.length > 0 && (
+            <div style={{
+              fontSize: 11, color: 'var(--primary)', background: '#eff6ff',
+              padding: '4px 10px', borderRadius: 6, fontWeight: 500
+            }}>
+              ℹ️ {semBatches.length} batch{semBatches.length !== 1 ? 'es' : ''} found for Year {Math.ceil(selSem / 2)} — timetable will be generated separately per batch
+            </div>
+          )}
         </div>
       </div>
 
       {loading && <div className="loading">Loading…</div>}
 
       {!loading && timetable && timetable.length > 0 && (
-        <TimetableGrid entries={timetable} onCellClick={handleEntryClick} />
+        <TimetableGrid entries={displayedEntries} onCellClick={handleEntryClick} />
       )}
       {!loading && timetable && timetable.length === 0 && (
         <div className="empty-state">
           <span style={{ fontSize: 48 }}>📅</span>
-          <p>No timetable generated yet for this department/year.</p>
-          <button className="btn btn-primary" onClick={generate}>Generate Now</button>
+          <p>No timetable generated yet for this department/semester.</p>
+          <button className="btn btn-primary" onClick={() => generate()}>Generate Now</button>
         </div>
       )}
 
@@ -154,7 +241,10 @@ export default function TimetableManager() {
                 setEditing({ ...editing, courseId: e.target.value, courseName: c?.name || '', courseCode: c?.code || '' });
               }}>
                 <option value="">Select</option>
-                {courses.filter(c => c.departmentId === selDept).map(c => (
+                {courses.filter(c => {
+                  const cDepts = c.departmentIds || (c.departmentId ? [c.departmentId] : []);
+                  return cDepts.includes(selDept);
+                }).map(c => (
                   <option key={c.id} value={c.id}>{c.code} - {c.name}</option>
                 ))}
               </select>

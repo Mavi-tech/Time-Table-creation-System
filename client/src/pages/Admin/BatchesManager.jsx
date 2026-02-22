@@ -100,7 +100,9 @@ export default function BatchesManager() {
     if (!editing.name?.trim()) e.name = 'Batch name is required';
     if (!editing.section?.trim()) e.section = 'Section letter is required';
     if (!editing.departmentId) e.departmentId = 'Department is required';
-    if (!editing.year || editing.year < 1 || editing.year > 6) e.year = 'Invalid year';
+    const dept = deptMap[editing.departmentId];
+    const maxYr = dept?.years || 4;
+    if (!editing.year || editing.year < 1 || editing.year > maxYr) e.year = 'Invalid year';
     if (!editing.studentCount || editing.studentCount < 1) e.studentCount = 'Student count must be at least 1';
     // Check duplicate section in same dept+year
     const dup = batches.find(b =>
@@ -424,7 +426,7 @@ export default function BatchesManager() {
                   onChange={e => set('year', Number(e.target.value))}
                   style={errors.year ? { borderColor: 'var(--danger)' } : {}}
                 >
-                  {[1,2,3,4,5,6].map(y => <option key={y} value={y}>Year {y}</option>)}
+                  {Array.from({ length: (deptMap[editing.departmentId]?.years || 4) }, (_, i) => i + 1).map(y => <option key={y} value={y}>Year {y}</option>)}
                 </select>
                 {errors.year && <span className="field-error">{errors.year}</span>}
               </div>
@@ -498,7 +500,7 @@ export default function BatchesManager() {
                 value={autoSplit.year}
                 onChange={e => setAutoSplit(prev => ({ ...prev, year: Number(e.target.value) }))}
               >
-                {[1,2,3,4,5,6].map(y => <option key={y} value={y}>Year {y}</option>)}
+                {Array.from({ length: (deptMap[autoSplit.departmentId]?.years || 4) }, (_, i) => i + 1).map(y => <option key={y} value={y}>Year {y}</option>)}
               </select>
             </div>
           </div>

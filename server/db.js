@@ -12,6 +12,7 @@ const FILES = {
   users: path.join(DB_DIR, 'users.json'),
   changeRequests: path.join(DB_DIR, 'change_requests.json'),
   batches: path.join(DB_DIR, 'batches.json'),
+  enrollments: path.join(DB_DIR, 'enrollments.json'),
 };
 
 const DEFAULTS = {
@@ -22,21 +23,21 @@ const DEFAULTS = {
     { id: 'dept-ce', name: 'Civil Engineering', code: 'CE' },
   ],
   courses: [
-    { id: 'c1', name: 'Data Structures', code: 'CS201', departmentId: 'dept-cs', year: 2, semester: 3, weeklyLectures: 4, weeklyLabs: 2, labDuration: 2, lectureDuration: 1, teacherId: 't1', type: 'theory+lab' },
-    { id: 'c2', name: 'Operating Systems', code: 'CS301', departmentId: 'dept-cs', year: 3, semester: 5, weeklyLectures: 3, weeklyLabs: 2, labDuration: 2, lectureDuration: 1, teacherId: 't2', type: 'theory+lab' },
-    { id: 'c3', name: 'Database Systems', code: 'CS202', departmentId: 'dept-cs', year: 2, semester: 4, weeklyLectures: 3, weeklyLabs: 2, labDuration: 2, lectureDuration: 1, teacherId: 't3', type: 'theory+lab' },
-    { id: 'c4', name: 'Mathematics I', code: 'MA101', departmentId: 'dept-cs', year: 1, semester: 1, weeklyLectures: 5, weeklyLabs: 0, labDuration: 0, lectureDuration: 1, teacherId: 't4', type: 'theory' },
-    { id: 'c5', name: 'Physics', code: 'PH101', departmentId: 'dept-cs', year: 1, semester: 1, weeklyLectures: 4, weeklyLabs: 2, labDuration: 2, lectureDuration: 1, teacherId: 't5', type: 'theory+lab' },
-    { id: 'c6', name: 'Programming in C', code: 'CS101', departmentId: 'dept-cs', year: 1, semester: 1, weeklyLectures: 3, weeklyLabs: 2, labDuration: 2, lectureDuration: 1, teacherId: 't1', type: 'theory+lab' },
-    { id: 'c7', name: 'Computer Networks', code: 'CS401', departmentId: 'dept-cs', year: 4, semester: 7, weeklyLectures: 3, weeklyLabs: 2, labDuration: 2, lectureDuration: 1, teacherId: 't2', type: 'theory+lab' },
-    { id: 'c8', name: 'Machine Learning', code: 'CS402', departmentId: 'dept-cs', year: 4, semester: 7, weeklyLectures: 3, weeklyLabs: 2, labDuration: 2, lectureDuration: 1, teacherId: 't3', type: 'theory+lab' },
+    { id: 'c1', name: 'Data Structures', code: 'CS201', departmentIds: ['dept-cs'], year: 2, semester: 3, weeklyLectures: 4, weeklyLabs: 2, labDuration: 2, lectureDuration: 1, teacherId: 't1', type: 'theory+lab' },
+    { id: 'c2', name: 'Operating Systems', code: 'CS301', departmentIds: ['dept-cs'], year: 3, semester: 5, weeklyLectures: 3, weeklyLabs: 2, labDuration: 2, lectureDuration: 1, teacherId: 't2', type: 'theory+lab' },
+    { id: 'c3', name: 'Database Systems', code: 'CS202', departmentIds: ['dept-cs'], year: 2, semester: 4, weeklyLectures: 3, weeklyLabs: 2, labDuration: 2, lectureDuration: 1, teacherId: 't3', type: 'theory+lab' },
+    { id: 'c4', name: 'Mathematics I', code: 'MA101', departmentIds: ['dept-cs'], year: 1, semester: 1, weeklyLectures: 5, weeklyLabs: 0, labDuration: 0, lectureDuration: 1, teacherId: 't4', type: 'theory' },
+    { id: 'c5', name: 'Physics', code: 'PH101', departmentIds: ['dept-cs'], year: 1, semester: 1, weeklyLectures: 4, weeklyLabs: 2, labDuration: 2, lectureDuration: 1, teacherId: 't5', type: 'theory+lab' },
+    { id: 'c6', name: 'Programming in C', code: 'CS101', departmentIds: ['dept-cs'], year: 1, semester: 1, weeklyLectures: 3, weeklyLabs: 2, labDuration: 2, lectureDuration: 1, teacherId: 't1', type: 'theory+lab' },
+    { id: 'c7', name: 'Computer Networks', code: 'CS401', departmentIds: ['dept-cs'], year: 4, semester: 7, weeklyLectures: 3, weeklyLabs: 2, labDuration: 2, lectureDuration: 1, teacherId: 't2', type: 'theory+lab' },
+    { id: 'c8', name: 'Machine Learning', code: 'CS402', departmentIds: ['dept-cs'], year: 4, semester: 7, weeklyLectures: 3, weeklyLabs: 2, labDuration: 2, lectureDuration: 1, teacherId: 't3', type: 'theory+lab' },
   ],
   teachers: [
-    { id: 't1', name: 'Dr. Sharma', email: 'sharma@uni.edu', departmentId: 'dept-cs', specialization: 'Data Structures, Programming' },
-    { id: 't2', name: 'Dr. Verma', email: 'verma@uni.edu', departmentId: 'dept-cs', specialization: 'Operating Systems, Networks' },
-    { id: 't3', name: 'Dr. Gupta', email: 'gupta@uni.edu', departmentId: 'dept-cs', specialization: 'Databases, ML' },
-    { id: 't4', name: 'Prof. Singh', email: 'singh@uni.edu', departmentId: 'dept-cs', specialization: 'Mathematics' },
-    { id: 't5', name: 'Dr. Patel', email: 'patel@uni.edu', departmentId: 'dept-cs', specialization: 'Physics' },
+    { id: 't1', name: 'Dr. Sharma', email: 'sharma@uni.edu', departmentIds: ['dept-cs'], specialization: 'Data Structures, Programming' },
+    { id: 't2', name: 'Dr. Verma', email: 'verma@uni.edu', departmentIds: ['dept-cs'], specialization: 'Operating Systems, Networks' },
+    { id: 't3', name: 'Dr. Gupta', email: 'gupta@uni.edu', departmentIds: ['dept-cs'], specialization: 'Databases, ML' },
+    { id: 't4', name: 'Prof. Singh', email: 'singh@uni.edu', departmentIds: ['dept-cs'], specialization: 'Mathematics' },
+    { id: 't5', name: 'Dr. Patel', email: 'patel@uni.edu', departmentIds: ['dept-cs'], specialization: 'Physics' },
   ],
   classrooms: [
     { id: 'r1', name: 'Room 101', capacity: 60, type: 'lecture', building: 'Block A' },
@@ -56,20 +57,23 @@ const DEFAULTS = {
     { id: 'u-t3', username: 'gupta', password: 'teacher123', role: 'teacher', name: 'Dr. Gupta', linkedId: 't3' },
     { id: 'u-t4', username: 'singh', password: 'teacher123', role: 'teacher', name: 'Prof. Singh', linkedId: 't4' },
     { id: 'u-t5', username: 'patel', password: 'teacher123', role: 'teacher', name: 'Dr. Patel', linkedId: 't5' },
-    { id: 'u-s1', username: 'student1', password: 'student123', role: 'student', name: 'Rahul Kumar', linkedId: null, departmentId: 'dept-cs', year: 1 },
-    { id: 'u-s2', username: 'student2', password: 'student123', role: 'student', name: 'Priya Singh', linkedId: null, departmentId: 'dept-cs', year: 2 },
-    { id: 'u-s3', username: 'student3', password: 'student123', role: 'student', name: 'Amit Patel', linkedId: null, departmentId: 'dept-cs', year: 3 },
-    { id: 'u-s4', username: 'student4', password: 'student123', role: 'student', name: 'Sneha Gupta', linkedId: null, departmentId: 'dept-cs', year: 4 },
+    { id: 'u-s1', username: 'student1', password: 'student123', role: 'student', name: 'Rahul Kumar', linkedId: null, departmentId: 'dept-cs', year: 1, semester: 1 },
+    { id: 'u-s2', username: 'student2', password: 'student123', role: 'student', name: 'Priya Singh', linkedId: null, departmentId: 'dept-cs', year: 2, semester: 3 },
+    { id: 'u-s3', username: 'student3', password: 'student123', role: 'student', name: 'Amit Patel', linkedId: null, departmentId: 'dept-cs', year: 3, semester: 5 },
+    { id: 'u-s4', username: 'student4', password: 'student123', role: 'student', name: 'Sneha Gupta', linkedId: null, departmentId: 'dept-cs', year: 4, semester: 7 },
   ],
   changeRequests: [],
-  batches: [
+  batches: [],
+  enrollments: [],
+};
+
+/*  batches seed:
     { id: 'b1', name: 'Batch A', section: 'A', departmentId: 'dept-cs', year: 1, studentCount: 60 },
     { id: 'b2', name: 'Batch B', section: 'B', departmentId: 'dept-cs', year: 1, studentCount: 60 },
     { id: 'b3', name: 'Batch A', section: 'A', departmentId: 'dept-cs', year: 2, studentCount: 45 },
     { id: 'b4', name: 'Batch A', section: 'A', departmentId: 'dept-cs', year: 3, studentCount: 50 },
     { id: 'b5', name: 'Batch A', section: 'A', departmentId: 'dept-cs', year: 4, studentCount: 40 },
-  ],
-};
+*/
 
 function init() {
   if (!fs.existsSync(DB_DIR)) fs.mkdirSync(DB_DIR, { recursive: true });

@@ -13,10 +13,11 @@ const api = {
   deleteDepartment: (id) => http.delete(`/api/departments/${id}`),
 
   // Courses
-  getCourses: (deptId, year) => {
+  getCourses: (deptId, options) => {
     const params = {};
     if (deptId) params.departmentId = deptId;
-    if (year) params.year = year;
+    if (options?.year) params.year = options.year;
+    if (options?.semester) params.semester = options.semester;
     return http.get('/api/courses', { params });
   },
   createCourse: (d) => http.post('/api/courses', d),
@@ -54,9 +55,9 @@ const api = {
   autoSplitBatches: (d) => http.post('/api/batches/auto-split', d),
 
   // Timetable
-  generateTimetable: (departmentId, year, mode) => http.post('/api/timetable/generate', { departmentId, year, mode }),
-  getTimetable: (deptId, year, day) => {
-    const params = { departmentId: deptId, year };
+  generateTimetable: (departmentId, semester, mode, batchId) => http.post('/api/timetable/generate', { departmentId, semester, mode, batchId }),
+  getTimetable: (deptId, semester, day) => {
+    const params = { departmentId: deptId, semester };
     if (day) params.day = day;
     return http.get('/api/timetable', { params });
   },
@@ -70,12 +71,20 @@ const api = {
   deleteEntry: (id) => http.delete(`/api/timetable/${id}`),
   cancelLecture: (id) => http.post(`/api/timetable/${id}/cancel`),
   restoreLecture: (id) => http.post(`/api/timetable/${id}/restore`),
-  deleteDeptYearTT: (deptId, year) => http.delete(`/api/timetable/dept/${deptId}/year/${year}`),
+  deleteDeptSemTT: (deptId, semester) => http.delete(`/api/timetable/dept/${deptId}/semester/${semester}`),
 
   // Change requests
   getRequests: () => http.get('/api/change-requests'),
   createRequest: (d) => http.post('/api/change-requests', d),
   updateRequest: (id, d) => http.put(`/api/change-requests/${id}`, d),
+
+  // Enrollments (elective course choices)
+  getEnrollments: (userId) => {
+    const params = userId ? { userId } : {};
+    return http.get('/api/enrollments', { params });
+  },
+  enroll: (userId, courseId) => http.post('/api/enrollments', { userId, courseId }),
+  unenroll: (userId, courseId) => http.post('/api/enrollments/unenroll', { userId, courseId }),
 };
 
 export default api;

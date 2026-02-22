@@ -10,6 +10,7 @@ const NAV = [
   ]},
   { title: 'Info', links: [
     { to: '/student/courses', icon: '📚', label: 'My Courses' },
+    { to: '/student/electives', icon: '🎯', label: 'Choose Electives' },
   ]},
 ];
 
