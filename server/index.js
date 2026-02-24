@@ -16,9 +16,17 @@ db.init();
 // ==================== AUTH ====================
 app.post('/api/login', (req, res) => {
   const { username, password } = req.body;
-  const user = db.read('users').find(u => u.username === username && u.password === password);
-  if (!user) return res.status(401).json({ error: 'Invalid credentials' });
+  // Debug logging
+  console.log('Login attempt:', { username, password });
+  const users = db.read('users');
+  console.log('Loaded users:', users.map(u => ({ username: u.username, password: u.password, role: u.role })));
+  const user = users.find(u => u.username === username && u.password === password);
+  if (!user) {
+    console.log('Login failed for:', username);
+    return res.status(401).json({ error: 'Invalid credentials' });
+  }
   const { password: _, ...safe } = user;
+  console.log('Login success for:', username, 'role:', user.role);
   res.json(safe);
 });
 
@@ -50,11 +58,11 @@ app.get('/api/courses', (req, res) => {
 });
 app.post('/api/courses', (req, res) => {
   const d = { id: db.uid('c-'), ...req.body };
-  ['year','semester','weeklyLectures','weeklyLabs','labDuration','lectureDuration'].forEach(k => { if (d[k] != null) d[k] = +d[k]; });
+  ['year', 'semester', 'weeklyLectures', 'weeklyLabs', 'labDuration', 'lectureDuration'].forEach(k => { if (d[k] != null) d[k] = +d[k]; });
   res.json(db.add('courses', d));
 });
 app.put('/api/courses/:id', (req, res) => {
-  ['year','weeklyLectures','weeklyLabs','labDuration','lectureDuration','semester'].forEach(k => { if (req.body[k] != null) req.body[k] = +req.body[k]; });
+  ['year', 'weeklyLectures', 'weeklyLabs', 'labDuration', 'lectureDuration', 'semester'].forEach(k => { if (req.body[k] != null) req.body[k] = +req.body[k]; });
   const r = db.update('courses', req.params.id, req.body);
   r ? res.json(r) : res.status(404).json({ error: 'Not found' });
 });
@@ -309,6 +317,6 @@ const PORT = 5000;
 app.listen(PORT, () => {
   console.log(`\n🎓 Server running on http://localhost:${PORT}\n`);
   console.log('  Admin:   admin / admin123');
-  console.log('  Teacher: sharma / teacher123');
+  console.log('  Teacher: teacher / teacher123');
   console.log('  Student: student1 / student123\n');
 });

@@ -48,20 +48,20 @@ export default function LoginPage() {
             <label>Password</label>
             <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Enter password" required />
           </div>
-          <button type="submit" className="btn btn-primary btn-block" style={{ marginTop:8, padding:'12px' }} disabled={loading}>
+          <button type="submit" className="btn btn-primary btn-block" style={{ marginTop: 8, padding: '12px' }} disabled={loading}>
             {loading ? 'Signing in…' : 'Sign In'}
           </button>
         </form>
         <div className="demo-accounts">
           <h4>Demo Accounts</h4>
           <div className="demo-grid">
-            <div className="demo-card" onClick={() => fill('admin','admin123')}>
+            <div className="demo-card" onClick={() => fill('admin', 'admin123')}>
               <strong>Admin</strong><span>admin</span>
             </div>
-            <div className="demo-card" onClick={() => fill('sharma','teacher123')}>
-              <strong>Teacher</strong><span>sharma</span>
+            <div className="demo-card" onClick={() => fill('teacher', 'teacher123')}>
+              <strong>Teacher</strong><span>teacher</span>
             </div>
-            <div className="demo-card" onClick={() => fill('student1','student123')}>
+            <div className="demo-card" onClick={() => fill('student1', 'student123')}>
               <strong>Student</strong><span>student1</span>
             </div>
           </div>
