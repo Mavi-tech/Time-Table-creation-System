@@ -2,9 +2,11 @@ import React, { useEffect, useState, useMemo, useCallback } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../api';
 import { toast } from '../../components/UI';
+import TimetableGrid from '../../components/TimetableGrid';
 
 export default function StudentElectives() {
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
+  const [entries, setEntries] = useState([]);
   const [courses, setCourses] = useState([]);
   const [teachers, setTeachers] = useState([]);
   const [departments, setDepartments] = useState([]);
@@ -15,19 +17,25 @@ export default function StudentElectives() {
   const load = useCallback(() => {
     if (!user?.departmentId) return;
     setLoading(true);
+    const timetableRequest = user?.semester
+      ? api.getTimetable(user.departmentId, user.semester).catch(() => ({ data: [] }))
+      : Promise.resolve({ data: [] });
+
     Promise.all([
+      timetableRequest,
       api.getCourses(),
       api.getTeachers(),
       api.getDepartments(),
       api.getEnrollments(user.id),
     ])
-      .then(([cr, tr, dr, er]) => {
+      .then(([tt, cr, tr, dr, er]) => {
         // Only show elective courses for the student's department + year
         const electives = cr.data.filter(c => {
           if (!c.isElective) return false;
           const cDepts = c.departmentIds || (c.departmentId ? [c.departmentId] : []);
           return cDepts.includes(user.departmentId) && c.year === user.year;
         });
+        setEntries(tt.data || []);
         setCourses(electives);
         setTeachers(tr.data);
         setDepartments(dr.data);
@@ -51,18 +59,49 @@ export default function StudentElectives() {
     return m;
   }, [departments]);
 
-  const enrolledCourseIds = useMemo(() => {
+  const serverEnrolledIds = useMemo(() => {
     return new Set(enrollments.map(e => e.courseId));
   }, [enrollments]);
+
+  const enrolledCourseIds = useMemo(() => {
+    const ids = new Set(enrollments.map(e => e.courseId));
+    (user?.selectedElectiveCourseIds || []).forEach(id => ids.add(id));
+    return ids;
+  }, [enrollments, user]);
+
+  const electiveCourseIds = useMemo(() => {
+    return new Set(courses.map(c => c.id));
+  }, [courses]);
+
+  const electiveEntries = useMemo(() => {
+    return entries.filter(e => {
+      if (e.status === 'cancelled') return false;
+      if (!electiveCourseIds.has(e.courseId)) return false;
+      return enrolledCourseIds.has(e.courseId);
+    });
+  }, [entries, electiveCourseIds, enrolledCourseIds]);
 
   const handleEnroll = async (courseId) => {
     setEnrolling(courseId);
     try {
       await api.enroll(user.id, courseId);
+      const current = user?.selectedElectiveCourseIds || [];
+      if (!current.includes(courseId)) {
+        updateUser({ selectedElectiveCourseIds: [...current, courseId] });
+      }
       toast('Enrolled successfully!', 'success');
       load();
     } catch (e) {
-      toast(e.response?.data?.error || 'Enrollment failed', 'error');
+      if (e.response?.status === 409) {
+        const current = user?.selectedElectiveCourseIds || [];
+        if (!current.includes(courseId)) {
+          updateUser({ selectedElectiveCourseIds: [...current, courseId] });
+        }
+        toast('Already enrolled', 'info');
+        load();
+      } else {
+        toast(e.response?.data?.error || 'Enrollment failed', 'error');
+      }
     } finally {
       setEnrolling(null);
     }
@@ -71,7 +110,15 @@ export default function StudentElectives() {
   const handleUnenroll = async (courseId) => {
     setEnrolling(courseId);
     try {
+      const current = user?.selectedElectiveCourseIds || [];
+      if (!serverEnrolledIds.has(courseId)) {
+        updateUser({ selectedElectiveCourseIds: current.filter(id => id !== courseId) });
+        toast('Removed from selected electives', 'success');
+        return;
+      }
+
       await api.unenroll(user.id, courseId);
+      updateUser({ selectedElectiveCourseIds: current.filter(id => id !== courseId) });
       toast('Unenrolled successfully', 'success');
       load();
     } catch (e) {
@@ -89,6 +136,19 @@ export default function StudentElectives() {
   return (
     <div>
       <h1 className="page-title">Choose Electives</h1>
+
+      <div style={{ marginBottom: 20 }}>
+        <h2 style={{ fontSize: 16, fontWeight: 700, marginBottom: 10, color: '#1f2937' }}>
+          🗓️ Your Elective Timetable
+        </h2>
+        {electiveEntries.length > 0 ? (
+          <TimetableGrid entries={electiveEntries} showRoom showTeacher />
+        ) : (
+          <div className="empty-state" style={{ marginBottom: 8 }}>
+            <p>No elective timetable entries yet. Enroll in electives to see them here.</p>
+          </div>
+        )}
+      </div>
 
       <div style={{
         display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 24,

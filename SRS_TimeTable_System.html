@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>SRS - University Time Table Creation System</title>
+<style>
+body{font-family:'Segoe UI',Arial,sans-serif;max-width:900px;margin:40px auto;padding:0 20px;color:#222;line-height:1.6}
+h1{text-align:center;border-bottom:3px solid #1a5276;padding-bottom:10px}
+h2{color:#1a5276;border-bottom:2px solid #aed6f1;padding-bottom:5px;margin-top:40px}
+h3{color:#2c3e50;margin-top:25px}
+h4{color:#34495e}
+table{border-collapse:collapse;width:100%;margin:15px 0}
+th,td{border:1px solid #888;padding:8px 12px;text-align:left;vertical-align:top}
+th{background:#1a5276;color:#fff;font-weight:600}
+tr:nth-child(even){background:#f2f7fb}
+pre{background:#f4f4f4;padding:15px;border:1px solid #ddd;overflow-x:auto;font-size:13px}
+code{background:#eee;padding:2px 5px;border-radius:3px;font-size:13px}
+.center{text-align:center}
+.meta-table td{border:none;padding:4px 10px}
+.meta-table{margin:20px auto;border:none}
+hr{border:none;border-top:2px solid #aed6f1;margin:30px 0}
+</style>
+</head>
+<body>
+
+<h1>Software Requirements Specification (SRS)<br>University Time Table Creation System</h1>
+
+<table class="meta-table">
+<tr><td><strong>Version:</strong></td><td>1.0</td><td><strong>Date:</strong></td><td>10 March 2026</td></tr>
+<tr><td><strong>Project:</strong></td><td>University Time Table Creation System</td><td><strong>Organization:</strong></td><td>MSSU</td></tr>
+</table>
+
+<hr>
+
+<h2>1. Introduction</h2>
+
+<h3>1.1 Purpose</h3>
+<p>This document provides a detailed Software Requirements Specification for the <strong>University Time Table Creation System</strong>, which automates conflict-free university timetable generation. It is intended for developers, project managers, testers, and stakeholders.</p>
+
+<h3>1.2 Scope</h3>
+<p>A web-based application for generating, managing, and viewing university timetables. Supports three user roles: Administrator, Teacher, and Student with role-specific dashboards. Uses a CSP solver with backtracking for conflict-free scheduling.</p>
+<p><strong>Out of Scope:</strong> Examination scheduling, fee management, attendance tracking, mobile native app.</p>
+
+<h3>1.3 Definitions, Acronyms, and Abbreviations</h3>
+<table>
+<tr><th>Term</th><th>Definition</th></tr>
+<tr><td>SRS</td><td>Software Requirements Specification</td></tr>
+<tr><td>CSP</td><td>Constraint Satisfaction Problem</td></tr>
+<tr><td>MRV</td><td>Minimum Remaining Values (heuristic)</td></tr>
+<tr><td>API</td><td>Application Programming Interface</td></tr>
+<tr><td>REST</td><td>Representational State Transfer</td></tr>
+<tr><td>CRUD</td><td>Create, Read, Update, Delete</td></tr>
+<tr><td>SPA</td><td>Single Page Application</td></tr>
+<tr><td>JSON</td><td>JavaScript Object Notation</td></tr>
+<tr><td>HOD</td><td>Head of Department</td></tr>
+<tr><td>CORS</td><td>Cross-Origin Resource Sharing</td></tr>
+</table>
+
+<h3>1.4 References</h3>
+<p>IEEE Std 830-1998; React.js Documentation; Express.js Documentation; Node.js Documentation.</p>
+
+<hr>
+
+<h2>2. Overall Description</h2>
+
+<h3>2.1 Product Perspective</h3>
+<p>Self-contained web application replacing manual timetable creation. React.js front-end communicating with Node.js/Express.js back-end via RESTful APIs. Data persisted in JSON files.</p>
+
+<h3>2.2 Product Functions</h3>
+<table>
+<tr><th>#</th><th>Function</th><th>Description</th></tr>
+<tr><td>F1</td><td>User Authentication</td><td>Role-based login for Admin, Teacher, and Student</td></tr>
+<tr><td>F2</td><td>Department Management</td><td>CRUD operations for university departments</td></tr>
+<tr><td>F3</td><td>Course Management</td><td>CRUD for courses with department, semester, and teacher association</td></tr>
+<tr><td>F4</td><td>Teacher Management</td><td>CRUD for teachers with department and course assignment</td></tr>
+<tr><td>F5</td><td>Classroom Management</td><td>CRUD for lecture halls and laboratory rooms</td></tr>
+<tr><td>F6</td><td>Batch Management</td><td>CRUD for student batches with auto-splitting</td></tr>
+<tr><td>F7</td><td>Timetable Generation</td><td>Automated conflict-free scheduling using CSP algorithm</td></tr>
+<tr><td>F8</td><td>Timetable Viewing</td><td>Daily and weekly views for all user roles</td></tr>
+<tr><td>F9</td><td>Lecture Management</td><td>Cancel/restore individual lectures (Teacher)</td></tr>
+<tr><td>F10</td><td>Change Request Workflow</td><td>Teachers submit requests; Admin approves/rejects</td></tr>
+<tr><td>F11</td><td>Elective Enrollment</td><td>Students enroll/unenroll in elective courses</td></tr>
+<tr><td>F12</td><td>Admin Dashboard</td><td>Overview statistics and system-wide management</td></tr>
+</table>
+
+<h3>2.3 User Characteristics</h3>
+<table>
+<tr><th>Role</th><th>Description</th><th>Default Credentials</th></tr>
+<tr><td>Administrator</td><td>Full access to all modules. Manages departments, courses, teachers, classrooms, batches. Generates timetables. Reviews change requests.</td><td>admin / admin123</td></tr>
+<tr><td>Teacher</td><td>Views personal daily/weekly timetable. Cancels/restores lectures. Submits change requests.</td><td>teacher / teacher123</td></tr>
+<tr><td>Student</td><td>Views department timetable. Views enrolled courses. Enrolls/unenrolls in electives.</td><td>student1 / student123</td></tr>
+</table>
+
+<h3>2.4 Constraints</h3>
+<table>
+<tr><th>#</th><th>Constraint</th></tr>
+<tr><td>1</td><td>Built using React.js (v18.x) front-end and Node.js/Express.js (v4.x) back-end</td></tr>
+<tr><td>2</td><td>JSON file-based storage; no external database server required</td></tr>
+<tr><td>3</td><td>Accessible via modern web browsers (Chrome, Firefox, Edge, Safari)</td></tr>
+<tr><td>4</td><td>Runs on single server (localhost:5000) serving API and React client</td></tr>
+<tr><td>5</td><td>Fixed 1-hour time slots: 09:00–17:00 with lunch break 13:00–14:00</td></tr>
+<tr><td>6</td><td>Working days: Monday through Saturday (6 days)</td></tr>
+<tr><td>7</td><td>Simple username/password authentication (academic project scope)</td></tr>
+</table>
+
+<hr>
+
+<h2>3. Specific Requirements</h2>
+
+<h3>3.1 User Interface Requirements</h3>
+<table>
+<tr><th>UI-ID</th><th>Requirement</th><th>Description</th></tr>
+<tr><td>UI-01</td><td>Login Page</td><td>Form with username/password fields, role-based redirection on success</td></tr>
+<tr><td>UI-02</td><td>Admin Dashboard</td><td>Statistics overview: counts of departments, courses, teachers, classrooms, batches</td></tr>
+<tr><td>UI-03</td><td>Admin Sidebar</td><td>Links to Dashboard, Timetable, Courses, Teachers, Classrooms, Departments, Batches, Requests, View All</td></tr>
+<tr><td>UI-04</td><td>Teacher Dashboard</td><td>Daily timetable as default with navigation to weekly view, lecture management, change requests</td></tr>
+<tr><td>UI-05</td><td>Student Dashboard</td><td>Daily timetable as default with navigation to weekly view, courses, electives</td></tr>
+<tr><td>UI-06</td><td>Timetable Grid</td><td>Responsive grid: days as rows, time slots as columns, color-coded lecture/lab entries</td></tr>
+<tr><td>UI-07</td><td>CRUD Forms</td><td>Modal/inline forms for creating/editing all entities</td></tr>
+<tr><td>UI-08</td><td>Responsive Design</td><td>Must render correctly on screens ≥1024px width</td></tr>
+</table>
+
+<h3>3.2 Software Interface Requirements</h3>
+<table>
+<tr><th>Software</th><th>Purpose</th><th>Version</th></tr>
+<tr><td>Node.js</td><td>Server runtime environment</td><td>v14+</td></tr>
+<tr><td>Express.js</td><td>HTTP server framework</td><td>v4.18+</td></tr>
+<tr><td>React.js</td><td>Front-end UI library</td><td>v18.2+</td></tr>
+<tr><td>React Router</td><td>Client-side routing</td><td>v6.22+</td></tr>
+<tr><td>Axios</td><td>HTTP client for API calls</td><td>v1.6+</td></tr>
+<tr><td>CORS</td><td>Cross-Origin Resource Sharing middleware</td><td>v2.8+</td></tr>
+</table>
+
+<h3>3.3 Functional Requirements — Authentication</h3>
+<table>
+<tr><th>REQ-ID</th><th>Requirement</th><th>Priority</th></tr>
+<tr><td>FR-AUTH-01</td><td>The system shall provide a login page with username and password fields.</td><td>High</td></tr>
+<tr><td>FR-AUTH-02</td><td>The system shall authenticate users against stored credentials.</td><td>High</td></tr>
+<tr><td>FR-AUTH-03</td><td>Upon successful login, redirect to role-specific dashboard (Admin→/admin, Teacher→/teacher, Student→/student).</td><td>High</td></tr>
+<tr><td>FR-AUTH-04</td><td>Display error message for invalid credentials.</td><td>High</td></tr>
+<tr><td>FR-AUTH-05</td><td>Prevent unauthorized access to role-specific routes using route guards.</td><td>High</td></tr>
+<tr><td>FR-AUTH-06</td><td>Persist user session in the browser context.</td><td>Medium</td></tr>
+</table>
+
+<h3>3.4 Functional Requirements — Department Management</h3>
+<table>
+<tr><th>REQ-ID</th><th>Requirement</th><th>Priority</th></tr>
+<tr><td>FR-DEPT-01</td><td>Admin can create a department with: name, code, HOD, description, years.</td><td>High</td></tr>
+<tr><td>FR-DEPT-02</td><td>Admin can view a list of all departments.</td><td>High</td></tr>
+<tr><td>FR-DEPT-03</td><td>Admin can update department details.</td><td>High</td></tr>
+<tr><td>FR-DEPT-04</td><td>Admin can delete a department.</td><td>High</td></tr>
+<tr><td>FR-DEPT-05</td><td>Each department has a unique system-generated ID.</td><td>High</td></tr>
+</table>
+
+<h3>3.5 Functional Requirements — Course Management</h3>
+<table>
+<tr><th>REQ-ID</th><th>Requirement</th><th>Priority</th></tr>
+<tr><td>FR-CRS-01</td><td>Admin can create a course with: name, code, department(s), year, semester, weekly lectures, weekly labs, lecture duration, lab duration, type (core/elective), teacher.</td><td>High</td></tr>
+<tr><td>FR-CRS-02</td><td>Admin can view courses filtered by department, year, and semester.</td><td>High</td></tr>
+<tr><td>FR-CRS-03</td><td>Admin can update course details.</td><td>High</td></tr>
+<tr><td>FR-CRS-04</td><td>Admin can delete a course.</td><td>High</td></tr>
+<tr><td>FR-CRS-05</td><td>A course may belong to multiple departments (shared courses).</td><td>Medium</td></tr>
+<tr><td>FR-CRS-06</td><td>System displays assigned teacher name alongside each course.</td><td>Medium</td></tr>
+<tr><td>FR-CRS-07</td><td>Numeric fields are automatically parsed to integers.</td><td>Low</td></tr>
+</table>
+
+<h3>3.6 Functional Requirements — Teacher Management</h3>
+<table>
+<tr><th>REQ-ID</th><th>Requirement</th><th>Priority</th></tr>
+<tr><td>FR-TCH-01</td><td>Admin can create a teacher with: name, title, email, phone, department(s), specialization, office, bio, courses.</td><td>High</td></tr>
+<tr><td>FR-TCH-02</td><td>Creating a teacher automatically creates a linked user account (username from email prefix, password: teacher123).</td><td>High</td></tr>
+<tr><td>FR-TCH-03</td><td>Admin can view teachers filtered by department.</td><td>High</td></tr>
+<tr><td>FR-TCH-04</td><td>Admin can update teacher details.</td><td>High</td></tr>
+<tr><td>FR-TCH-05</td><td>Updating teacher courses auto-updates teacherId on respective courses (assign/unassign).</td><td>High</td></tr>
+<tr><td>FR-TCH-06</td><td>Deleting a teacher unassigns from all courses and deletes linked user account.</td><td>High</td></tr>
+<tr><td>FR-TCH-07</td><td>A teacher may be assigned to multiple departments.</td><td>Medium</td></tr>
+</table>
+
+<h3>3.7 Functional Requirements — Classroom Management</h3>
+<table>
+<tr><th>REQ-ID</th><th>Requirement</th><th>Priority</th></tr>
+<tr><td>FR-CLR-01</td><td>Admin can create a classroom with: name, type (lecture/lab), capacity.</td><td>High</td></tr>
+<tr><td>FR-CLR-02</td><td>Admin can view classrooms filtered by type.</td><td>High</td></tr>
+<tr><td>FR-CLR-03</td><td>Admin can update classroom details.</td><td>High</td></tr>
+<tr><td>FR-CLR-04</td><td>Admin can delete a classroom.</td><td>High</td></tr>
+</table>
+
+<h3>3.8 Functional Requirements — Batch Management</h3>
+<table>
+<tr><th>REQ-ID</th><th>Requirement</th><th>Priority</th></tr>
+<tr><td>FR-BCH-01</td><td>Admin can create a batch with: name, section, department, year, student count.</td><td>High</td></tr>
+<tr><td>FR-BCH-02</td><td>Admin can view batches filtered by department and year.</td><td>High</td></tr>
+<tr><td>FR-BCH-03</td><td>Admin can update batch details.</td><td>High</td></tr>
+<tr><td>FR-BCH-04</td><td>Admin can delete a batch.</td><td>High</td></tr>
+<tr><td>FR-BCH-05</td><td>Auto-split: given total students and max batch size, auto-create batches (A, B, C…) with even distribution.</td><td>High</td></tr>
+<tr><td>FR-BCH-06</td><td>Auto-split removes existing batches for same department+year before creating new ones.</td><td>Medium</td></tr>
+</table>
+
+<h3>3.9 Functional Requirements — Timetable Generation</h3>
+<table>
+<tr><th>REQ-ID</th><th>Requirement</th><th>Priority</th></tr>
+<tr><td>FR-TT-01</td><td>Admin can generate a timetable for a specific department and semester.</td><td>High</td></tr>
+<tr><td>FR-TT-02</td><td>Uses CSP algorithm with backtracking for conflict-free scheduling.</td><td>High</td></tr>
+<tr><td>FR-TT-03a</td><td>Hard Constraint: No teacher assigned to two classes at the same time.</td><td>High</td></tr>
+<tr><td>FR-TT-03b</td><td>Hard Constraint: No classroom assigned to two classes at the same time.</td><td>High</td></tr>
+<tr><td>FR-TT-03c</td><td>Hard Constraint: No student group has two classes at the same time.</td><td>High</td></tr>
+<tr><td>FR-TT-03d</td><td>Hard Constraint: Lab sessions must not cross lunch break.</td><td>High</td></tr>
+<tr><td>FR-TT-03e</td><td>Hard Constraint: Room type must match session type.</td><td>High</td></tr>
+<tr><td>FR-TT-04a</td><td>Soft Constraint: Spread course lectures across different days.</td><td>Medium</td></tr>
+<tr><td>FR-TT-04b</td><td>Soft Constraint: Balance daily class load per student group.</td><td>Medium</td></tr>
+<tr><td>FR-TT-04c</td><td>Soft Constraint: Penalize 3+ consecutive classes.</td><td>Medium</td></tr>
+<tr><td>FR-TT-04d</td><td>Soft Constraint: Lectures prefer morning; labs prefer afternoon.</td><td>Medium</td></tr>
+<tr><td>FR-TT-04e</td><td>Soft Constraint: Distribute teacher load evenly across days.</td><td>Medium</td></tr>
+<tr><td>FR-TT-04f</td><td>Soft Constraint: Prefer smallest room that fits batch size.</td><td>Medium</td></tr>
+<tr><td>FR-TT-05</td><td>Uses MRV heuristic to schedule most constrained sessions first.</td><td>Medium</td></tr>
+<tr><td>FR-TT-06</td><td>Supports backtracking (up to 50 iterations) to resolve failures.</td><td>Medium</td></tr>
+<tr><td>FR-TT-07</td><td>Reports errors for sessions that could not be placed.</td><td>High</td></tr>
+<tr><td>FR-TT-08</td><td>Supports generating timetable for a specific batch.</td><td>Medium</td></tr>
+<tr><td>FR-TT-09</td><td>Generate timetables for all semesters (1–8) of a department at once.</td><td>Medium</td></tr>
+<tr><td>FR-TT-10</td><td>Delete all timetable entries for a specific department+semester.</td><td>Medium</td></tr>
+</table>
+
+<h3>3.10 Functional Requirements — Timetable Viewing</h3>
+<table>
+<tr><th>REQ-ID</th><th>Requirement</th><th>Priority</th></tr>
+<tr><td>FR-TV-01</td><td>Admin can view timetables for any department and semester.</td><td>High</td></tr>
+<tr><td>FR-TV-02</td><td>Admin can view all timetable entries system-wide.</td><td>Medium</td></tr>
+<tr><td>FR-TV-03</td><td>Teachers can view personal daily timetable.</td><td>High</td></tr>
+<tr><td>FR-TV-04</td><td>Teachers can view personal weekly timetable.</td><td>High</td></tr>
+<tr><td>FR-TV-05</td><td>Students can view department daily timetable.</td><td>High</td></tr>
+<tr><td>FR-TV-06</td><td>Students can view department weekly timetable.</td><td>High</td></tr>
+<tr><td>FR-TV-07</td><td>Entries sorted by day order (Mon→Sat) then by time slot.</td><td>Medium</td></tr>
+<tr><td>FR-TV-08</td><td>Each entry displays: course name, code, teacher, classroom, time slot, type.</td><td>High</td></tr>
+</table>
+
+<h3>3.11 Functional Requirements — Lecture Management (Teacher)</h3>
+<table>
+<tr><th>REQ-ID</th><th>Requirement</th><th>Priority</th></tr>
+<tr><td>FR-LM-01</td><td>Teacher can cancel a scheduled lecture (status → "cancelled").</td><td>High</td></tr>
+<tr><td>FR-LM-02</td><td>Teacher can restore a cancelled lecture (status → "active").</td><td>High</td></tr>
+<tr><td>FR-LM-03</td><td>Cancelled lectures remain in timetable but visually distinguished.</td><td>Medium</td></tr>
+</table>
+
+<h3>3.12 Functional Requirements — Change Requests</h3>
+<table>
+<tr><th>REQ-ID</th><th>Requirement</th><th>Priority</th></tr>
+<tr><td>FR-CR-01</td><td>Teacher can submit a change request with details and reason.</td><td>High</td></tr>
+<tr><td>FR-CR-02</td><td>Each request has status: "pending", "approved", or "rejected".</td><td>High</td></tr>
+<tr><td>FR-CR-03</td><td>Admin can view all change requests with teacher names.</td><td>High</td></tr>
+<tr><td>FR-CR-04</td><td>Admin can approve or reject a change request.</td><td>High</td></tr>
+<tr><td>FR-CR-05</td><td>Change requests are timestamped at creation.</td><td>Low</td></tr>
+</table>
+
+<h3>3.13 Functional Requirements — Elective Enrollment (Student)</h3>
+<table>
+<tr><th>REQ-ID</th><th>Requirement</th><th>Priority</th></tr>
+<tr><td>FR-EL-01</td><td>Student can view available elective courses.</td><td>Medium</td></tr>
+<tr><td>FR-EL-02</td><td>Student can enroll in an elective course.</td><td>Medium</td></tr>
+<tr><td>FR-EL-03</td><td>Student can unenroll from an elective course.</td><td>Medium</td></tr>
+<tr><td>FR-EL-04</td><td>System prevents duplicate enrollments (same user + same course).</td><td>Medium</td></tr>
+<tr><td>FR-EL-05</td><td>Each enrollment is timestamped.</td><td>Low</td></tr>
+</table>
+
+<h3>3.14 Non-Functional Requirements — Performance</h3>
+<table>
+<tr><th>REQ-ID</th><th>Requirement</th></tr>
+<tr><td>NFR-PERF-01</td><td>Timetable generation for single department+semester shall complete within 10 seconds.</td></tr>
+<tr><td>NFR-PERF-02</td><td>API response time for CRUD operations shall be under 500ms.</td></tr>
+<tr><td>NFR-PERF-03</td><td>System shall support concurrent access by at least 50 users.</td></tr>
+<tr><td>NFR-PERF-04</td><td>React client shall render initial page within 3 seconds.</td></tr>
+</table>
+
+<h3>3.15 Non-Functional Requirements — Reliability</h3>
+<table>
+<tr><th>REQ-ID</th><th>Requirement</th></tr>
+<tr><td>NFR-REL-01</td><td>System shall not lose data during normal operations.</td></tr>
+<tr><td>NFR-REL-02</td><td>Handle server errors gracefully with appropriate HTTP status codes.</td></tr>
+<tr><td>NFR-REL-03</td><td>Timetable generator reports unplaceable sessions as errors rather than crashing.</td></tr>
+</table>
+
+<h3>3.16 Non-Functional Requirements — Usability</h3>
+<table>
+<tr><th>REQ-ID</th><th>Requirement</th></tr>
+<tr><td>NFR-USE-01</td><td>Modern, dark-themed UI with clear navigation.</td></tr>
+<tr><td>NFR-USE-02</td><td>Role-specific dashboards present only relevant information.</td></tr>
+<tr><td>NFR-USE-03</td><td>Forms include input validation and error feedback.</td></tr>
+<tr><td>NFR-USE-04</td><td>Timetable grid uses color coding for lecture vs lab sessions.</td></tr>
+</table>
+
+<h3>3.17 Non-Functional Requirements — Security</h3>
+<table>
+<tr><th>REQ-ID</th><th>Requirement</th></tr>
+<tr><td>NFR-SEC-01</td><td>Role-based access control (RBAC) with three roles: admin, teacher, student.</td></tr>
+<tr><td>NFR-SEC-02</td><td>Route guards prevent unauthorized access to restricted pages.</td></tr>
+<tr><td>NFR-SEC-03</td><td>Password fields excluded from API responses.</td></tr>
+</table>
+
+<h3>3.18 Non-Functional Requirements — Maintainability</h3>
+<table>
+<tr><th>REQ-ID</th><th>Requirement</th></tr>
+<tr><td>NFR-MNT-01</td><td>Modular architecture with separate client and server directories.</td></tr>
+<tr><td>NFR-MNT-02</td><td>Generic database abstraction layer (db.js) to enable future migration to relational DB.</td></tr>
+<tr><td>NFR-MNT-03</td><td>Scheduling algorithm encapsulated in separate module (generator.js).</td></tr>
+</table>
+
+<hr>
+
+<h2>4. Database Requirements</h2>
+
+<h3>4.1 Data Collections</h3>
+<table>
+<tr><th>Collection</th><th>File</th><th>Description</th></tr>
+<tr><td>departments</td><td>departments.json</td><td>University departments</td></tr>
+<tr><td>courses</td><td>courses.json</td><td>Academic courses</td></tr>
+<tr><td>teachers</td><td>teachers.json</td><td>Faculty members</td></tr>
+<tr><td>classrooms</td><td>classrooms.json</td><td>Lecture rooms and labs</td></tr>
+<tr><td>batches</td><td>batches.json</td><td>Student sections/batches</td></tr>
+<tr><td>timetables</td><td>timetables.json</td><td>Generated timetable entries</td></tr>
+<tr><td>users</td><td>users.json</td><td>System user accounts</td></tr>
+<tr><td>changeRequests</td><td>change_requests.json</td><td>Teacher change requests</td></tr>
+<tr><td>enrollments</td><td>enrollments.json</td><td>Student elective enrollments</td></tr>
+</table>
+
+<h3>4.2 Data Schemas</h3>
+
+<h4>Department Schema</h4>
+<table>
+<tr><th>Field</th><th>Type</th><th>Description</th></tr>
+<tr><td>id</td><td>String (auto, prefix: dept-)</td><td>Unique identifier</td></tr>
+<tr><td>name</td><td>String</td><td>Department name</td></tr>
+<tr><td>code</td><td>String</td><td>Short code (e.g., CS, IT)</td></tr>
+<tr><td>hod</td><td>String (optional)</td><td>Head of Department name</td></tr>
+<tr><td>description</td><td>String (optional)</td><td>Description</td></tr>
+<tr><td>years</td><td>Integer (default: 4)</td><td>Number of academic years</td></tr>
+</table>
+
+<h4>Course Schema</h4>
+<table>
+<tr><th>Field</th><th>Type</th><th>Description</th></tr>
+<tr><td>id</td><td>String (auto, prefix: c-)</td><td>Unique identifier</td></tr>
+<tr><td>name</td><td>String</td><td>Course name</td></tr>
+<tr><td>code</td><td>String</td><td>Course code</td></tr>
+<tr><td>departmentIds</td><td>Array of Strings</td><td>Department IDs (supports shared courses)</td></tr>
+<tr><td>year</td><td>Integer</td><td>Academic year</td></tr>
+<tr><td>semester</td><td>Integer</td><td>Semester number</td></tr>
+<tr><td>weeklyLectures</td><td>Integer</td><td>Lectures per week</td></tr>
+<tr><td>weeklyLabs</td><td>Integer</td><td>Labs per week</td></tr>
+<tr><td>lectureDuration</td><td>Integer (default: 1)</td><td>Slots per lecture</td></tr>
+<tr><td>labDuration</td><td>Integer (default: 2)</td><td>Slots per lab</td></tr>
+<tr><td>teacherId</td><td>String (optional)</td><td>Assigned teacher ID</td></tr>
+<tr><td>type</td><td>String (core/elective)</td><td>Course type</td></tr>
+</table>
+
+<h4>Teacher Schema</h4>
+<table>
+<tr><th>Field</th><th>Type</th><th>Description</th></tr>
+<tr><td>id</td><td>String (auto, prefix: t-)</td><td>Unique identifier</td></tr>
+<tr><td>name</td><td>String</td><td>Teacher name</td></tr>
+<tr><td>title</td><td>String</td><td>Title (Prof., Dr., Mr., Ms.)</td></tr>
+<tr><td>email</td><td>String</td><td>Email address</td></tr>
+<tr><td>phone</td><td>String</td><td>Phone number</td></tr>
+<tr><td>departmentIds</td><td>Array of Strings</td><td>Assigned department IDs</td></tr>
+<tr><td>specialization</td><td>String (optional)</td><td>Area of specialization</td></tr>
+<tr><td>office</td><td>String (optional)</td><td>Office location</td></tr>
+<tr><td>bio</td><td>String (optional)</td><td>Biography</td></tr>
+<tr><td>courseIds</td><td>Array of Strings</td><td>Assigned course IDs</td></tr>
+</table>
+
+<h4>Classroom Schema</h4>
+<table>
+<tr><th>Field</th><th>Type</th><th>Description</th></tr>
+<tr><td>id</td><td>String (auto, prefix: r-)</td><td>Unique identifier</td></tr>
+<tr><td>name</td><td>String</td><td>Room name</td></tr>
+<tr><td>type</td><td>String (lecture/lab)</td><td>Room type</td></tr>
+<tr><td>capacity</td><td>Integer</td><td>Seating capacity</td></tr>
+</table>
+
+<h4>Batch Schema</h4>
+<table>
+<tr><th>Field</th><th>Type</th><th>Description</th></tr>
+<tr><td>id</td><td>String (auto, prefix: b-)</td><td>Unique identifier</td></tr>
+<tr><td>name</td><td>String</td><td>Batch name</td></tr>
+<tr><td>section</td><td>String</td><td>Section letter (A, B, C…)</td></tr>
+<tr><td>departmentId</td><td>String</td><td>Department ID</td></tr>
+<tr><td>year</td><td>Integer</td><td>Academic year</td></tr>
+<tr><td>studentCount</td><td>Integer</td><td>Number of students</td></tr>
+</table>
+
+<h4>Timetable Entry Schema</h4>
+<table>
+<tr><th>Field</th><th>Type</th><th>Description</th></tr>
+<tr><td>id</td><td>String (auto, prefix: tt-)</td><td>Unique identifier</td></tr>
+<tr><td>courseId</td><td>String</td><td>Course ID</td></tr>
+<tr><td>courseName</td><td>String</td><td>Course name (with batch label)</td></tr>
+<tr><td>courseCode</td><td>String</td><td>Course code</td></tr>
+<tr><td>teacherId</td><td>String</td><td>Teacher ID</td></tr>
+<tr><td>classroomId</td><td>String</td><td>Classroom ID</td></tr>
+<tr><td>classroomName</td><td>String</td><td>Classroom name</td></tr>
+<tr><td>day</td><td>String</td><td>Day (Monday–Saturday)</td></tr>
+<tr><td>slotId</td><td>Integer (1–7)</td><td>Time slot ID</td></tr>
+<tr><td>slotLabel</td><td>String</td><td>Human-readable slot label</td></tr>
+<tr><td>startTime</td><td>String (HH:MM)</td><td>Start time</td></tr>
+<tr><td>endTime</td><td>String (HH:MM)</td><td>End time</td></tr>
+<tr><td>type</td><td>String (lecture/lab)</td><td>Session type</td></tr>
+<tr><td>departmentId</td><td>String</td><td>Department ID</td></tr>
+<tr><td>semester</td><td>Integer</td><td>Semester number</td></tr>
+<tr><td>year</td><td>Integer</td><td>Academic year</td></tr>
+<tr><td>status</td><td>String (active/cancelled)</td><td>Entry status</td></tr>
+<tr><td>batchId</td><td>String (optional)</td><td>Batch ID</td></tr>
+<tr><td>batchSection</td><td>String (optional)</td><td>Section letter</td></tr>
+<tr><td>labGroup</td><td>String (optional)</td><td>Groups multi-slot lab entries</td></tr>
+</table>
+
+<h4>User Schema</h4>
+<table>
+<tr><th>Field</th><th>Type</th><th>Description</th></tr>
+<tr><td>id</td><td>String (auto, prefix: u-)</td><td>Unique identifier</td></tr>
+<tr><td>username</td><td>String</td><td>Login username</td></tr>
+<tr><td>password</td><td>String</td><td>Login password</td></tr>
+<tr><td>role</td><td>String (admin/teacher/student)</td><td>User role</td></tr>
+<tr><td>name</td><td>String</td><td>Display name</td></tr>
+<tr><td>linkedId</td><td>String (optional)</td><td>Linked teacher ID</td></tr>
+<tr><td>departmentId</td><td>String (students only)</td><td>Student department</td></tr>
+<tr><td>year</td><td>Integer (students only)</td><td>Student year</td></tr>
+<tr><td>semester</td><td>Integer (students only)</td><td>Student semester</td></tr>
+</table>
+
+<h4>Change Request Schema</h4>
+<table>
+<tr><th>Field</th><th>Type</th><th>Description</th></tr>
+<tr><td>id</td><td>String (auto, prefix: cr-)</td><td>Unique identifier</td></tr>
+<tr><td>teacherId</td><td>String</td><td>Requesting teacher ID</td></tr>
+<tr><td>status</td><td>String (pending/approved/rejected)</td><td>Request status</td></tr>
+<tr><td>createdAt</td><td>String (ISO 8601)</td><td>Creation timestamp</td></tr>
+<tr><td>details</td><td>String</td><td>Request details</td></tr>
+<tr><td>reason</td><td>String</td><td>Reason for change</td></tr>
+</table>
+
+<h4>Enrollment Schema</h4>
+<table>
+<tr><th>Field</th><th>Type</th><th>Description</th></tr>
+<tr><td>id</td><td>String (auto, prefix: enr-)</td><td>Unique identifier</td></tr>
+<tr><td>userId</td><td>String</td><td>Student user ID</td></tr>
+<tr><td>courseId</td><td>String</td><td>Course ID</td></tr>
+<tr><td>enrolledAt</td><td>String (ISO 8601)</td><td>Enrollment timestamp</td></tr>
+</table>
+
+<hr>
+
+<h2>5. Technology Stack</h2>
+<table>
+<tr><th>Layer</th><th>Technology</th><th>Version</th></tr>
+<tr><td>Front-End Framework</td><td>React.js</td><td>18.2.0</td></tr>
+<tr><td>Front-End Routing</td><td>React Router DOM</td><td>6.22.0</td></tr>
+<tr><td>HTTP Client</td><td>Axios</td><td>1.6.7</td></tr>
+<tr><td>Build Tool</td><td>Create React App (react-scripts)</td><td>5.0.1</td></tr>
+<tr><td>Back-End Runtime</td><td>Node.js</td><td>14+</td></tr>
+<tr><td>Back-End Framework</td><td>Express.js</td><td>4.18.2</td></tr>
+<tr><td>CORS Middleware</td><td>cors</td><td>2.8.5</td></tr>
+<tr><td>Data Storage</td><td>JSON Files (fs module)</td><td>N/A</td></tr>
+<tr><td>Styling</td><td>Vanilla CSS</td><td>N/A</td></tr>
+</table>
+
+<hr>
+
+<h2>6. API Specifications</h2>
+
+<h3>6.1 Authentication</h3>
+<table>
+<tr><th>Method</th><th>Endpoint</th><th>Description</th><th>Request Body</th></tr>
+<tr><td>POST</td><td>/api/login</td><td>User login</td><td>{ username, password }</td></tr>
+</table>
+
+<h3>6.2 Departments</h3>
+<table>
+<tr><th>Method</th><th>Endpoint</th><th>Description</th></tr>
+<tr><td>GET</td><td>/api/departments</td><td>List all departments</td></tr>
+<tr><td>POST</td><td>/api/departments</td><td>Create a department</td></tr>
+<tr><td>PUT</td><td>/api/departments/:id</td><td>Update a department</td></tr>
+<tr><td>DELETE</td><td>/api/departments/:id</td><td>Delete a department</td></tr>
+</table>
+
+<h3>6.3 Courses</h3>
+<table>
+<tr><th>Method</th><th>Endpoint</th><th>Description</th><th>Query Params</th></tr>
+<tr><td>GET</td><td>/api/courses</td><td>List courses</td><td>departmentId, year, semester</td></tr>
+<tr><td>POST</td><td>/api/courses</td><td>Create a course</td><td>—</td></tr>
+<tr><td>PUT</td><td>/api/courses/:id</td><td>Update a course</td><td>—</td></tr>
+<tr><td>DELETE</td><td>/api/courses/:id</td><td>Delete a course</td><td>—</td></tr>
+</table>
+
+<h3>6.4 Teachers</h3>
+<table>
+<tr><th>Method</th><th>Endpoint</th><th>Description</th><th>Query Params</th></tr>
+<tr><td>GET</td><td>/api/teachers</td><td>List teachers</td><td>departmentId</td></tr>
+<tr><td>POST</td><td>/api/teachers</td><td>Create teacher + user</td><td>—</td></tr>
+<tr><td>PUT</td><td>/api/teachers/:id</td><td>Update a teacher</td><td>—</td></tr>
+<tr><td>DELETE</td><td>/api/teachers/:id</td><td>Delete teacher + user</td><td>—</td></tr>
+</table>
+
+<h3>6.5 Classrooms</h3>
+<table>
+<tr><th>Method</th><th>Endpoint</th><th>Description</th><th>Query Params</th></tr>
+<tr><td>GET</td><td>/api/classrooms</td><td>List classrooms</td><td>type</td></tr>
+<tr><td>POST</td><td>/api/classrooms</td><td>Create a classroom</td><td>—</td></tr>
+<tr><td>PUT</td><td>/api/classrooms/:id</td><td>Update a classroom</td><td>—</td></tr>
+<tr><td>DELETE</td><td>/api/classrooms/:id</td><td>Delete a classroom</td><td>—</td></tr>
+</table>
+
+<h3>6.6 Batches</h3>
+<table>
+<tr><th>Method</th><th>Endpoint</th><th>Description</th></tr>
+<tr><td>GET</td><td>/api/batches</td><td>List batches (params: departmentId, year)</td></tr>
+<tr><td>POST</td><td>/api/batches</td><td>Create a batch</td></tr>
+<tr><td>PUT</td><td>/api/batches/:id</td><td>Update a batch</td></tr>
+<tr><td>DELETE</td><td>/api/batches/:id</td><td>Delete a batch</td></tr>
+<tr><td>POST</td><td>/api/batches/auto-split</td><td>Auto-create batches</td></tr>
+</table>
+
+<h3>6.7 Timetable</h3>
+<table>
+<tr><th>Method</th><th>Endpoint</th><th>Description</th></tr>
+<tr><td>POST</td><td>/api/timetable/generate</td><td>Generate timetable for dept + semester</td></tr>
+<tr><td>GET</td><td>/api/timetable</td><td>Get entries (by dept+semester or teacherId)</td></tr>
+<tr><td>GET</td><td>/api/timetable/all</td><td>Get all timetable entries</td></tr>
+<tr><td>PUT</td><td>/api/timetable/:id</td><td>Update a timetable entry</td></tr>
+<tr><td>DELETE</td><td>/api/timetable/:id</td><td>Delete a timetable entry</td></tr>
+<tr><td>POST</td><td>/api/timetable/:id/cancel</td><td>Cancel a lecture</td></tr>
+<tr><td>POST</td><td>/api/timetable/:id/restore</td><td>Restore a cancelled lecture</td></tr>
+<tr><td>DELETE</td><td>/api/timetable/dept/:deptId/semester/:semester</td><td>Delete all entries for dept+semester</td></tr>
+</table>
+
+<h3>6.8 Change Requests</h3>
+<table>
+<tr><th>Method</th><th>Endpoint</th><th>Description</th></tr>
+<tr><td>GET</td><td>/api/change-requests</td><td>List all change requests</td></tr>
+<tr><td>POST</td><td>/api/change-requests</td><td>Submit a change request</td></tr>
+<tr><td>PUT</td><td>/api/change-requests/:id</td><td>Update status (approve/reject)</td></tr>
+</table>
+
+<h3>6.9 Enrollments</h3>
+<table>
+<tr><th>Method</th><th>Endpoint</th><th>Description</th></tr>
+<tr><td>GET</td><td>/api/enrollments</td><td>List enrollments (param: userId)</td></tr>
+<tr><td>POST</td><td>/api/enrollments</td><td>Enroll in a course</td></tr>
+<tr><td>DELETE</td><td>/api/enrollments/:id</td><td>Remove enrollment by ID</td></tr>
+<tr><td>POST</td><td>/api/enrollments/unenroll</td><td>Unenroll by userId+courseId</td></tr>
+</table>
+
+<h3>6.10 Metadata</h3>
+<table>
+<tr><th>Method</th><th>Endpoint</th><th>Description</th></tr>
+<tr><td>GET</td><td>/api/timeslots</td><td>Get time slot definitions</td></tr>
+<tr><td>GET</td><td>/api/days</td><td>Get working days list</td></tr>
+</table>
+
+<hr>
+
+<h2>7. Appendices</h2>
+
+<h3>7.1 Time Slot Configuration</h3>
+<table>
+<tr><th>Slot ID</th><th>Start</th><th>End</th><th>Label</th><th>Period</th></tr>
+<tr><td>1</td><td>09:00</td><td>10:00</td><td>09:00 – 10:00</td><td>Morning</td></tr>
+<tr><td>2</td><td>10:00</td><td>11:00</td><td>10:00 – 11:00</td><td>Morning</td></tr>
+<tr><td>3</td><td>11:00</td><td>12:00</td><td>11:00 – 12:00</td><td>Morning</td></tr>
+<tr><td>4</td><td>12:00</td><td>13:00</td><td>12:00 – 01:00</td><td>Morning</td></tr>
+<tr><td>—</td><td>13:00</td><td>14:00</td><td>Lunch Break</td><td>—</td></tr>
+<tr><td>5</td><td>14:00</td><td>15:00</td><td>02:00 – 03:00</td><td>Afternoon</td></tr>
+<tr><td>6</td><td>15:00</td><td>16:00</td><td>03:00 – 04:00</td><td>Afternoon</td></tr>
+<tr><td>7</td><td>16:00</td><td>17:00</td><td>04:00 – 05:00</td><td>Afternoon</td></tr>
+</table>
+
+<h3>7.2 Default User Accounts</h3>
+<table>
+<tr><th>Username</th><th>Password</th><th>Role</th><th>Name</th></tr>
+<tr><td>admin</td><td>admin123</td><td>Administrator</td><td>Administrator</td></tr>
+<tr><td>student1</td><td>student123</td><td>Student</td><td>Rahul Kumar (CS, Y1, Sem 1)</td></tr>
+<tr><td>student2</td><td>student123</td><td>Student</td><td>Priya Singh (CS, Y2, Sem 3)</td></tr>
+<tr><td>student3</td><td>student123</td><td>Student</td><td>Amit Patel (CS, Y3, Sem 5)</td></tr>
+<tr><td>student4</td><td>student123</td><td>Student</td><td>Sneha Gupta (CS, Y4, Sem 7)</td></tr>
+<tr><td>teacher</td><td>teacher123</td><td>Teacher</td><td>Harpreet k</td></tr>
+</table>
+
+<hr>
+<p class="center"><strong>End of Document</strong></p>
+<p class="center"><em>Software Requirements Specification — University Time Table Creation System v1.0</em></p>
+
+</body>
+</html>

@@ -1,1 +1,26 @@
-[]
+[
+  {
+    "id": "b-mm1tc9ks0ux4he",
+    "name": "Batch A",
+    "section": "A",
+    "departmentId": "dept-cs",
+    "year": 1,
+    "studentCount": 60
+  },
+  {
+    "id": "b-mm1tc9kt59yekd",
+    "name": "Batch B",
+    "section": "B",
+    "departmentId": "dept-cs",
+    "year": 1,
+    "studentCount": 60
+  },
+  {
+    "id": "b-mnbnrqr3ccwfox",
+    "name": "BATCH C",
+    "section": "C",
+    "departmentId": "dept-cs",
+    "year": 1,
+    "studentCount": 60
+  }
+]

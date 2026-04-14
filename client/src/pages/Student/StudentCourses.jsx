@@ -26,7 +26,11 @@ export default function StudentCourses() {
       .finally(() => setLoading(false));
   }, [user]);
 
-  const enrolledIds = useMemo(() => new Set(enrollments.map(e => e.courseId)), [enrollments]);
+  const enrolledIds = useMemo(() => {
+    const ids = new Set(enrollments.map(e => e.courseId));
+    (user?.selectedElectiveCourseIds || []).forEach(id => ids.add(id));
+    return ids;
+  }, [enrollments, user]);
 
   // Mandatory = not elective; Elective = isElective AND enrolled
   const mandatory = courses.filter(c => !c.isElective);

@@ -69,10 +69,60 @@ function buildSessions(courses, batches) {
   return sessions;
 }
 
+function sessionMatchesPreference(session, pref) {
+  if (!pref) return false;
+  if (pref.teacherId && session.teacherId !== pref.teacherId) return false;
+  if (pref.courseId && session.courseId !== pref.courseId) return false;
+  if (pref.batchId && session.batchId !== pref.batchId) return false;
+  if (pref.type && session.type !== pref.type) return false;
+  return true;
+}
+
+function attachPreferencesToSessions(sessions, preferences) {
+  const pending = Array.isArray(preferences) ? preferences : [];
+  const unmatched = [];
+  const usedSessionIndexes = new Set();
+
+  pending.forEach(pref => {
+    const candidateIndexes = sessions
+      .map((session, idx) => ({ session, idx }))
+      .filter(({ session, idx }) => !usedSessionIndexes.has(idx) && sessionMatchesPreference(session, pref))
+      .map(x => x.idx);
+
+    const prefDays = Array.isArray(pref.days) && pref.days.length > 0
+      ? pref.days
+      : (pref.day ? [pref.day] : []);
+
+    if (candidateIndexes.length === 0 || prefDays.length === 0) {
+      unmatched.push(pref);
+      return;
+    }
+
+    candidateIndexes.forEach((candidateIndex, i) => {
+      usedSessionIndexes.add(candidateIndex);
+      sessions[candidateIndex].preferredPlacement = {
+        day: prefDays[i % prefDays.length],
+        slotId: +pref.slotId,
+        classroomId: pref.classroomId || null,
+        note: pref.note || '',
+      };
+    });
+  });
+
+  return unmatched;
+}
+
 // ==================== HARD CONSTRAINT CHECKS ====================
 // Returns true if the placement is valid (no conflicts)
 function checkHardConstraints(session, day, slotId, room, schedule, departmentId, semester) {
   const slotsNeeded = session.slotCount || 1;
+  const targetSemester = Number(semester);
+
+  if (session.preferredPlacement) {
+    if (session.preferredPlacement.day !== day) return false;
+    if (+session.preferredPlacement.slotId !== +slotId) return false;
+    if (session.preferredPlacement.classroomId && session.preferredPlacement.classroomId !== room.id) return false;
+  }
 
   for (let s = 0; s < slotsNeeded; s++) {
     const sid = slotId + s;
@@ -82,7 +132,7 @@ function checkHardConstraints(session, day, slotId, room, schedule, departmentId
     // Lab slots must not cross lunch break (slot 4 to slot 5 crosses lunch)
     if (slotsNeeded > 1 && slotId <= 4 && slotId + slotsNeeded - 1 >= 5) return false;
 
-    const hits = schedule.filter(e => e.day === day && e.slotId === sid);
+    const hits = schedule.filter(e => e.day === day && Number(e.slotId) === Number(sid));
 
     // Teacher conflict
     if (session.teacherId && hits.some(e => e.teacherId === session.teacherId)) return false;
@@ -92,9 +142,9 @@ function checkHardConstraints(session, day, slotId, room, schedule, departmentId
 
     // Student group conflict (same dept + semester + batch)
     if (session.batchId) {
-      if (hits.some(e => e.departmentId === departmentId && e.semester === semester && e.batchId === session.batchId)) return false;
+      if (hits.some(e => e.departmentId === departmentId && Number(e.semester) === targetSemester && e.batchId === session.batchId)) return false;
     } else {
-      if (hits.some(e => e.departmentId === departmentId && e.semester === semester)) return false;
+      if (hits.some(e => e.departmentId === departmentId && Number(e.semester) === targetSemester)) return false;
     }
   }
 
@@ -110,6 +160,15 @@ function checkHardConstraints(session, day, slotId, room, schedule, departmentId
 function scoreSlot(session, day, slotId, room, schedule, departmentId, semester) {
   let score = 0;
   const slotsNeeded = session.slotCount || 1;
+  const targetSemester = Number(semester);
+
+  if (session.preferredPlacement) {
+    if (session.preferredPlacement.day === day && +session.preferredPlacement.slotId === +slotId) {
+      score += 1000;
+    } else {
+      score -= 1000;
+    }
+  }
 
   // ---- 1. DAY SPREAD: prefer days where this course doesn't already have a class ----
   const courseDayCount = schedule.filter(
@@ -121,16 +180,16 @@ function scoreSlot(session, day, slotId, room, schedule, departmentId, semester)
 
   // ---- 2. DAILY BALANCE: prefer days with fewer total classes for this group ----
   const groupDayLoad = schedule.filter(
-    e => e.departmentId === departmentId && e.semester === semester &&
+    e => e.departmentId === departmentId && Number(e.semester) === targetSemester &&
       e.batchId === session.batchId && e.day === day
   ).length;
   score -= groupDayLoad * 3; // Penalty for each existing class on this day
 
   // ---- 3. CONSECUTIVE CLASS PENALTY: avoid 3+ classes in a row ----
   const groupDaySlots = schedule
-    .filter(e => e.departmentId === departmentId && e.semester === semester &&
+    .filter(e => e.departmentId === departmentId && Number(e.semester) === targetSemester &&
       e.batchId === session.batchId && e.day === day)
-    .map(e => e.slotId);
+    .map(e => Number(e.slotId));
   // Add the proposed slot(s)
   const proposedSlots = [];
   for (let s = 0; s < slotsNeeded; s++) proposedSlots.push(slotId + s);
@@ -185,9 +244,14 @@ function scoreSlot(session, day, slotId, room, schedule, departmentId, semester)
 // Returns all valid (day, slot, room, score) options for a session
 function findValidPlacements(session, schedule, rooms, departmentId, semester, days) {
   const placements = [];
-  const roomPool = rooms.filter(r =>
+  let roomPool = rooms.filter(r =>
     session.type === 'lab' ? r.type === 'lab' : r.type === 'lecture'
   );
+
+  if (session.preferredPlacement?.classroomId) {
+    roomPool = roomPool.filter(r => r.id === session.preferredPlacement.classroomId);
+  }
+
   // Sort rooms by capacity ascending for best-fit preference
   const sortedRooms = [...roomPool].sort((a, b) => (a.capacity || 0) - (b.capacity || 0));
 
@@ -315,22 +379,27 @@ function scheduleWithBacktracking(sessions, rooms, existingSchedule, departmentI
   return { schedule: newEntries, errors, placed: newEntries.length, backtrackCount };
 }
 
-// ==================== PUBLIC API (unchanged interface) ====================
+// ==================== PUBLIC API (async version for PostgreSQL) ====================
 
-function generate(departmentId, semester, mode = 'week', batchId = null) {
-  const courses = db.read('courses').filter(c => {
+async function generate(departmentId, semester, mode = 'week', batchId = null, preferences = []) {
+  const courses = (await db.read('courses')).filter(c => {
     const cDepts = c.departmentIds || (c.departmentId ? [c.departmentId] : []);
     return cDepts.includes(departmentId) && c.semester === semester;
   });
-  const rooms = db.read('classrooms');
-  const allTT = db.read('timetables');
+  const rooms = await db.read('classrooms');
+  const allTT = await db.read('timetables');
 
-  // Keep other dept/semester entries as existing constraints
-  const others = allTT.filter(t => !(t.departmentId === departmentId && t.semester === semester));
+  // Replace scope: whole semester, or only the selected batch within that semester.
+  const shouldReplace = batchId
+    ? (t => t.departmentId === departmentId && t.semester === semester && t.batchId === batchId)
+    : (t => t.departmentId === departmentId && t.semester === semester);
+
+  // Everything outside replace-scope remains as hard constraints.
+  const existingConstraints = allTT.filter(t => !shouldReplace(t));
 
   // Determine batches
   const year = Math.ceil(semester / 2);
-  const allBatches = db.read('batches').filter(b => b.departmentId === departmentId && b.year === year);
+  const allBatches = (await db.read('batches')).filter(b => b.departmentId === departmentId && b.year === year);
 
   let batchList;
   if (batchId) {
@@ -347,21 +416,45 @@ function generate(departmentId, semester, mode = 'week', batchId = null) {
   // Tag each session with departmentId
   sessions.forEach(s => { s.departmentId = departmentId; });
 
-  // Run the scheduling algorithm
-  const result = scheduleWithBacktracking(sessions, rooms, others, departmentId, semester, days);
+  const normalizedPrefs = (Array.isArray(preferences) ? preferences : [])
+    .filter(p => p && p.teacherId && p.courseId && p.slotId && (p.day || (Array.isArray(p.days) && p.days.length > 0)))
+    .map(p => ({
+      teacherId: p.teacherId,
+      courseId: p.courseId,
+      day: p.day || null,
+      days: Array.isArray(p.days) && p.days.length > 0
+        ? p.days.filter(d => DAYS.includes(d))
+        : (p.day && DAYS.includes(p.day) ? [p.day] : []),
+      slotId: +p.slotId,
+      batchId: p.batchId || null,
+      type: p.type || null,
+      classroomId: p.classroomId || null,
+      note: p.note || '',
+    }));
 
-  // Save: remove old entries for this dept+semester (or batch), add new ones
-  let remaining;
-  if (batchId) {
-    remaining = allTT.filter(t => !(t.departmentId === departmentId && t.semester === semester && t.batchId === batchId));
-  } else {
-    remaining = allTT.filter(t => !(t.departmentId === departmentId && t.semester === semester));
+  const unmatchedPreferences = attachPreferencesToSessions(sessions, normalizedPrefs);
+
+  // Run the scheduling algorithm
+  const result = scheduleWithBacktracking(sessions, rooms, existingConstraints, departmentId, semester, days);
+
+  // Delete existing rows in replace-scope, then insert newly generated rows.
+  for (const oldEntry of allTT.filter(shouldReplace)) {
+    await db.remove('timetables', oldEntry.id);
   }
-  db.write('timetables', [...remaining, ...result.schedule]);
+
+  // Add new timetables to DB
+  for (const entry of result.schedule) {
+    await db.add('timetables', entry);
+  }
 
   return {
     schedule: result.schedule,
-    errors: result.errors,
+    errors: [
+      ...result.errors,
+      ...unmatchedPreferences.map(p =>
+        `Preference not applied: teacher ${p.teacherId}, course ${p.courseId}, ${p.day} slot ${p.slotId}${p.classroomId ? `, room ${p.classroomId}` : ''}`
+      ),
+    ],
     placed: result.placed,
     batches: batchList.filter(b => b.id).length,
     algorithm: 'CSP with backtracking',
@@ -369,21 +462,25 @@ function generate(departmentId, semester, mode = 'week', batchId = null) {
   };
 }
 
-function generateDept(departmentId) {
+async function generateDept(departmentId) {
   const r = {};
-  for (let s = 1; s <= 8; s++) r[`Semester ${s}`] = generate(departmentId, s);
+  for (let s = 1; s <= 8; s++) {
+    r[`Semester ${s}`] = await generate(departmentId, s);
+  }
   return r;
 }
 
-function getTT(departmentId, semester) {
-  return db.read('timetables').filter(t => t.departmentId === departmentId && t.semester === semester && t.status === 'active');
+async function getTT(departmentId, semester) {
+  const timetables = await db.read('timetables');
+  return timetables.filter(t => t.departmentId === departmentId && t.semester === semester && t.status === 'active');
 }
 
-function getTeacherTT(teacherId) {
-  return db.read('timetables').filter(t => t.teacherId === teacherId && t.status === 'active');
+async function getTeacherTT(teacherId) {
+  const timetables = await db.read('timetables');
+  return timetables.filter(t => t.teacherId === teacherId && t.status === 'active');
 }
 
-function cancel(id) { return db.update('timetables', id, { status: 'cancelled' }); }
-function restore(id) { return db.update('timetables', id, { status: 'active' }); }
+async function cancel(id) { return await db.update('timetables', id, { status: 'cancelled' }); }
+async function restore(id) { return await db.update('timetables', id, { status: 'active' }); }
 
 module.exports = { DAYS, SLOTS, generate, generateDept, getTT, getTeacherTT, cancel, restore };

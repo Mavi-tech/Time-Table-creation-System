@@ -1,20 +1,23 @@
 [
   {
     "id": "t-mlx88h3obhspg3",
-    "name": "Harpreet k",
+    "name": "Verma",
     "title": "Prof.",
-    "email": "hk@mssu.edu",
+    "email": "vr@mssu.edu",
     "phone": "7896541212",
     "departmentIds": [
       "dept-cs"
     ],
     "specialization": "Discrete Mathemat",
     "office": "",
-    "bio": ""
+    "bio": "",
+    "courseIds": [
+      "c-mlx8n5tk0hmgxi"
+    ]
   },
   {
     "id": "t-mlxbv57ldox0tb",
-    "name": "rathod",
+    "name": "Singh",
     "title": "Mr.",
     "email": "r@mssu.edu",
     "phone": "852366974",
@@ -30,7 +33,7 @@
   },
   {
     "id": "t-mlxc1kldj7325m",
-    "name": "sunil joshi",
+    "name": "Sharma",
     "title": "Prof.",
     "email": "sl@mssu.edu",
     "phone": "741258963",
@@ -46,7 +49,7 @@
   },
   {
     "id": "t-mlxcgoyz5g43af",
-    "name": "lomesh",
+    "name": "Patel",
     "title": "Prof.",
     "email": "l@mssu.edu",
     "phone": "796542321",
@@ -56,6 +59,23 @@
     ],
     "courseIds": [
       "c-mlx8q62fa1hd9e"
+    ],
+    "office": "",
+    "bio": ""
+  },
+  {
+    "id": "t-mm1t9lo8k1seut",
+    "name": "fhah@mssu.edu",
+    "title": "",
+    "email": "fh@mssu.edu",
+    "phone": "",
+    "departmentIds": [
+      "dept-cs",
+      "dept-mloz3lcydz5d3y"
+    ],
+    "courseIds": [
+      "c-mlx8o18dco62wh",
+      "c-mlx8p7au95poyy"
     ],
     "office": "",
     "bio": ""

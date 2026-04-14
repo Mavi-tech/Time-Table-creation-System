@@ -1,1 +1,38 @@
-[]
+[
+	{
+		"id": "enr-u-s5-cs101",
+		"userId": "u-s5",
+		"courseId": "c-mlx8n5tk0hmgxi",
+		"enrolledAt": "2026-04-12T09:00:00.000Z"
+	},
+	{
+		"id": "enr-u-s5-cs127",
+		"userId": "u-s5",
+		"courseId": "c-mlxa5virl7t909",
+		"enrolledAt": "2026-04-12T09:01:00.000Z"
+	},
+	{
+		"id": "enr-u-s6-cs116",
+		"userId": "u-s6",
+		"courseId": "c-mlx9gr2s0yppn0",
+		"enrolledAt": "2026-04-12T09:02:00.000Z"
+	},
+	{
+		"id": "enr-u-s6-it102",
+		"userId": "u-s6",
+		"courseId": "c-mlx9zztv7vkt74",
+		"enrolledAt": "2026-04-12T09:03:00.000Z"
+	},
+	{
+		"id": "enr-u-s7-cs125",
+		"userId": "u-s7",
+		"courseId": "c-mlxa42da2dyuhq",
+		"enrolledAt": "2026-04-12T09:04:00.000Z"
+	},
+	{
+		"id": "enr-u-s7-cs130",
+		"userId": "u-s7",
+		"courseId": "c-mlxbepjsrwanm4",
+		"enrolledAt": "2026-04-12T09:05:00.000Z"
+	}
+]

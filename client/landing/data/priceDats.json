@@ -1,0 +1,33 @@
+[
+  {
+    "title": "Starter",
+    "description": "Best option for personal use & for your next project.",
+    "price": 29,
+    "devCount": "1 developer",
+    "support": "6 months",
+    "update": "6 months",
+    "action": "Get started",
+    "link": "#"
+  },
+  {
+    "title": "Company",
+    "description": "Relevant for multiple users, extended & premium support.",
+    "price": 99,
+    "devCount": "5-10 developers",
+    "support": "24/7",
+    "update": "24 months",
+    "action": "Get started",
+    "link": "#"
+  },
+  {
+    "title": "Enterprise",
+    "description": "Best for large scale uses and extended redistribution rights.",
+    "price": 249,
+    "devCount": "10+ developers",
+    "support": "24/7",
+    "update": "36 months",
+    "action": "Get started",
+    "link": "#"
+  }
+]
+

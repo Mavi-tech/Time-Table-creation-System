@@ -20,7 +20,14 @@ export default function BatchesManager() {
   const [filterYear, setFilterYear] = useState('');
   const [errors, setErrors] = useState({});
   const [confirm, ConfirmDialog] = useConfirm();
-  const [autoSplit, setAutoSplit] = useState({ departmentId: '', year: 1, totalStudents: 120, maxPerBatch: 60 });
+  const [autoSplit, setAutoSplit] = useState({
+    departmentId: '',
+    year: 1,
+    totalStudents: 120,
+    splitMode: 'capacity',
+    maxPerBatch: 60,
+    targetBatchCount: 3,
+  });
 
   const blank = { name: '', section: '', departmentId: '', year: 1, studentCount: 60 };
 
@@ -151,12 +158,33 @@ export default function BatchesManager() {
   };
 
   const handleAutoSplit = async () => {
-    if (!autoSplit.departmentId || !autoSplit.year || !autoSplit.totalStudents || !autoSplit.maxPerBatch) {
+    const needsCapacity = autoSplit.splitMode === 'capacity';
+    if (
+      !autoSplit.departmentId ||
+      !autoSplit.year ||
+      !autoSplit.totalStudents ||
+      (needsCapacity ? !autoSplit.maxPerBatch : !autoSplit.targetBatchCount)
+    ) {
       toast('Please fill all fields', 'error');
       return;
     }
+
+    if (!needsCapacity && autoSplit.targetBatchCount > autoSplit.totalStudents) {
+      toast('Number of batches cannot be greater than total students', 'error');
+      return;
+    }
+
+    const payload = {
+      departmentId: autoSplit.departmentId,
+      year: autoSplit.year,
+      totalStudents: autoSplit.totalStudents,
+      ...(needsCapacity
+        ? { maxPerBatch: autoSplit.maxPerBatch }
+        : { targetBatchCount: autoSplit.targetBatchCount }),
+    };
+
     try {
-      const res = await api.autoSplitBatches(autoSplit);
+      const res = await api.autoSplitBatches(payload);
       toast(`Created ${res.data.numBatches} batches automatically`, 'success');
       setShowAutoSplit(false);
       load();
@@ -479,7 +507,7 @@ export default function BatchesManager() {
             background: '#eff6ff', borderRadius: 8, padding: '12px 16px', fontSize: 13,
             color: '#1e40af', marginBottom: 20
           }}>
-            ⚡ Automatically divide students into equal batches based on max classroom capacity.
+            ⚡ Automatically divide students into equal batches.
             This will <strong>replace</strong> any existing batches for the selected department and year.
           </div>
 
@@ -507,6 +535,19 @@ export default function BatchesManager() {
 
           <div className="form-row">
             <div className="form-group">
+              <label>Split Method</label>
+              <select
+                value={autoSplit.splitMode}
+                onChange={e => setAutoSplit(prev => ({ ...prev, splitMode: e.target.value }))}
+              >
+                <option value="capacity">By Max Students per Batch</option>
+                <option value="count">By Required Number of Batches</option>
+              </select>
+            </div>
+          </div>
+
+          <div className="form-row">
+            <div className="form-group">
               <label>Total Students</label>
               <input
                 type="number"
@@ -515,27 +556,40 @@ export default function BatchesManager() {
                 onChange={e => setAutoSplit(prev => ({ ...prev, totalStudents: Number(e.target.value) }))}
               />
             </div>
-            <div className="form-group">
-              <label>Max per Batch (classroom capacity)</label>
-              <input
-                type="number"
-                min={1}
-                value={autoSplit.maxPerBatch}
-                onChange={e => setAutoSplit(prev => ({ ...prev, maxPerBatch: Number(e.target.value) }))}
-              />
-              <span style={{ fontSize: 11, color: 'var(--text-secondary)' }}>
-                Largest lecture room: {maxClassroomCapacity} seats
-              </span>
-            </div>
+            {autoSplit.splitMode === 'capacity' ? (
+              <div className="form-group">
+                <label>Max per Batch (classroom capacity)</label>
+                <input
+                  type="number"
+                  min={1}
+                  value={autoSplit.maxPerBatch}
+                  onChange={e => setAutoSplit(prev => ({ ...prev, maxPerBatch: Number(e.target.value) }))}
+                />
+                <span style={{ fontSize: 11, color: 'var(--text-secondary)' }}>
+                  Largest lecture room: {maxClassroomCapacity} seats
+                </span>
+              </div>
+            ) : (
+              <div className="form-group">
+                <label>Required Number of Batches</label>
+                <input
+                  type="number"
+                  min={1}
+                  max={Math.max(autoSplit.totalStudents || 1, 1)}
+                  value={autoSplit.targetBatchCount}
+                  onChange={e => setAutoSplit(prev => ({ ...prev, targetBatchCount: Number(e.target.value) }))}
+                />
+              </div>
+            )}
           </div>
 
-          {autoSplit.totalStudents > 0 && autoSplit.maxPerBatch > 0 && (
+          {autoSplit.totalStudents > 0 && (autoSplit.splitMode === 'capacity' ? autoSplit.maxPerBatch > 0 : autoSplit.targetBatchCount > 0) && (
             <div style={{
               background: 'var(--bg)', borderRadius: 8, padding: '12px 16px', fontSize: 13,
               marginBottom: 8
             }}>
-              Will create <strong>{Math.ceil(autoSplit.totalStudents / autoSplit.maxPerBatch)}</strong> batches
-              (~<strong>{Math.ceil(autoSplit.totalStudents / Math.ceil(autoSplit.totalStudents / autoSplit.maxPerBatch))}</strong> students each)
+              Will create <strong>{autoSplit.splitMode === 'capacity' ? Math.ceil(autoSplit.totalStudents / autoSplit.maxPerBatch) : autoSplit.targetBatchCount}</strong> batches
+              (~<strong>{Math.ceil(autoSplit.totalStudents / (autoSplit.splitMode === 'capacity' ? Math.ceil(autoSplit.totalStudents / autoSplit.maxPerBatch) : autoSplit.targetBatchCount))}</strong> students each)
             </div>
           )}
 

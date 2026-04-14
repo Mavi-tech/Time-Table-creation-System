@@ -29,15 +29,24 @@ export default function StudentWeekly() {
   }, [user]);
 
   // Filter out elective courses the student hasn't enrolled in
-  const enrolledIds = useMemo(() => new Set(enrollments.map(e => e.courseId)), [enrollments]);
+  const enrolledIds = useMemo(() => {
+    const ids = new Set(enrollments.map(e => e.courseId));
+    (user?.selectedElectiveCourseIds || []).forEach(id => ids.add(id));
+    return ids;
+  }, [enrollments, user]);
   const electiveIds = useMemo(() => new Set(courses.filter(c => c.isElective).map(c => c.id)), [courses]);
   const active = useMemo(() => {
     return entries.filter(e => {
       if (e.status === 'cancelled') return false;
-      if (electiveIds.has(e.courseId) && !enrolledIds.has(e.courseId)) return false;
+
+      // When batch-specific entries exist, keep only the student's batch if available.
+      if (e.batchId && user?.batchId && e.batchId !== user.batchId) return false;
+
+      // Always show mandatory subjects. Electives are shown only when the student enrolled in them.
+      if (electiveIds.has(e.courseId)) return enrolledIds.has(e.courseId);
       return true;
     });
-  }, [entries, electiveIds, enrolledIds]);
+  }, [entries, electiveIds, enrolledIds, user]);
 
   return (
     <div>

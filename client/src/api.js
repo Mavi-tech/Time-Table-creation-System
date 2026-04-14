@@ -55,7 +55,8 @@ const api = {
   autoSplitBatches: (d) => http.post('/api/batches/auto-split', d),
 
   // Timetable
-  generateTimetable: (departmentId, semester, mode, batchId) => http.post('/api/timetable/generate', { departmentId, semester, mode, batchId }),
+  generateTimetable: (departmentId, semester, mode, batchId, options = {}) =>
+    http.post('/api/timetable/generate', { departmentId, semester, mode, batchId, ...options }),
   getTimetable: (deptId, semester, day) => {
     const params = { departmentId: deptId, semester };
     if (day) params.day = day;
@@ -72,6 +73,8 @@ const api = {
   cancelLecture: (id) => http.post(`/api/timetable/${id}/cancel`),
   restoreLecture: (id) => http.post(`/api/timetable/${id}/restore`),
   deleteDeptSemTT: (deptId, semester) => http.delete(`/api/timetable/dept/${deptId}/semester/${semester}`),
+  getTimeSlots: () => http.get('/api/timeslots'),
+  getDays: () => http.get('/api/days'),
 
   // Change requests
   getRequests: () => http.get('/api/change-requests'),

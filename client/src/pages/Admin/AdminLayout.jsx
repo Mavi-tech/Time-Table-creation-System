@@ -1,24 +1,36 @@
 import React from 'react';
 import { Outlet } from 'react-router-dom';
+import {
+  LayoutDashboard,
+  CalendarDays,
+  Eye,
+  BookOpen,
+  Users,
+  School,
+  Building2,
+  Layers,
+  MessagesSquare,
+} from 'lucide-react';
 import Sidebar from '../../components/Sidebar';
+import WorkspaceHeader from '../../components/WorkspaceHeader';
 
 const NAV = [
   { title: 'Main', links: [
-    { to: '/admin', icon: '📊', label: 'Dashboard', end: true },
+    { to: '/admin', icon: LayoutDashboard, label: 'Dashboard', end: true },
   ]},
   { title: 'Timetable', links: [
-    { to: '/admin/timetable', icon: '📅', label: 'Manage Timetables' },
-    { to: '/admin/view-all', icon: '👁️', label: 'View All' },
+    { to: '/admin/timetable', icon: CalendarDays, label: 'Manage Timetables' },
+    { to: '/admin/view-all', icon: Eye, label: 'View All' },
   ]},
   { title: 'Management', links: [
-    { to: '/admin/courses', icon: '📚', label: 'Courses' },
-    { to: '/admin/teachers', icon: '👨‍🏫', label: 'Teachers' },
-    { to: '/admin/classrooms', icon: '🏫', label: 'Classrooms' },
-    { to: '/admin/departments', icon: '🏛️', label: 'Departments' },
-    { to: '/admin/batches', icon: '👥', label: 'Student Batches' },
+    { to: '/admin/courses', icon: BookOpen, label: 'Courses' },
+    { to: '/admin/teachers', icon: Users, label: 'Teachers' },
+    { to: '/admin/classrooms', icon: School, label: 'Classrooms' },
+    { to: '/admin/departments', icon: Building2, label: 'Departments' },
+    { to: '/admin/batches', icon: Layers, label: 'Student Batches' },
   ]},
   { title: 'Requests', links: [
-    { to: '/admin/requests', icon: '📨', label: 'Change Requests' },
+    { to: '/admin/requests', icon: MessagesSquare, label: 'Change Requests' },
   ]},
 ];
 
@@ -27,7 +39,10 @@ export default function AdminLayout() {
     <div className="app-layout">
       <Sidebar items={NAV} role="Admin" />
       <div className="main-content">
-        <Outlet />
+        <WorkspaceHeader role="Admin" />
+        <div className="content-body">
+          <Outlet />
+        </div>
       </div>
     </div>
   );

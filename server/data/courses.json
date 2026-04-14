@@ -28,7 +28,7 @@
     "weeklyLabs": 2,
     "labDuration": 2,
     "lectureDuration": 1,
-    "teacherId": "t-mlxc1kldj7325m",
+    "teacherId": "t-mm1t9lo8k1seut",
     "type": "theory+lab",
     "credits": 3,
     "teacherName": "Unassigned",
@@ -47,7 +47,7 @@
     "weeklyLabs": 0,
     "labDuration": 2,
     "lectureDuration": 1,
-    "teacherId": "",
+    "teacherId": "t-mm1t9lo8k1seut",
     "type": "theory",
     "credits": 2,
     "departmentIds": [

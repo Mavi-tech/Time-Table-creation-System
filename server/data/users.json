@@ -8,6 +8,46 @@
     "linkedId": null
   },
   {
+    "id": "u-t1",
+    "username": "sharma",
+    "password": "teacher123",
+    "role": "teacher",
+    "name": "Dr. Sharma",
+    "linkedId": "t1"
+  },
+  {
+    "id": "u-t2",
+    "username": "verma",
+    "password": "teacher123",
+    "role": "teacher",
+    "name": "Dr. Verma",
+    "linkedId": "t2"
+  },
+  {
+    "id": "u-t3",
+    "username": "gupta",
+    "password": "teacher123",
+    "role": "teacher",
+    "name": "Dr. Gupta",
+    "linkedId": "t3"
+  },
+  {
+    "id": "u-t4",
+    "username": "singh",
+    "password": "teacher123",
+    "role": "teacher",
+    "name": "Prof. Singh",
+    "linkedId": "t4"
+  },
+  {
+    "id": "u-t5",
+    "username": "patel",
+    "password": "teacher123",
+    "role": "teacher",
+    "name": "Dr. Patel",
+    "linkedId": "t5"
+  },
+  {
     "id": "u-s1",
     "username": "student1",
     "password": "student123",
@@ -52,35 +92,37 @@
     "semester": 7
   },
   {
-    "id": "u-mlx88h3p1n55o6",
-    "username": "teacher",
-    "password": "teacher123",
-    "role": "teacher",
-    "name": "Harpreet k",
-    "linkedId": "t-mlx88h3obhspg3"
+    "id": "u-s5",
+    "username": "student_sem1_a",
+    "password": "student123",
+    "role": "student",
+    "name": "Arjun Mehta",
+    "linkedId": null,
+    "departmentId": "dept-cs",
+    "year": 1,
+    "semester": 1,
+    "batchId": "b-mm1tc9ks0ux4he"
   },
   {
-    "id": "u-mlxbv57naz0t3r",
-    "username": "r",
-    "password": "teacher123",
-    "role": "teacher",
-    "name": "rathod",
-    "linkedId": "t-mlxbv57ldox0tb"
+    "id": "u-s6",
+    "username": "student_sem3_b",
+    "password": "student123",
+    "role": "student",
+    "name": "Neha Rao",
+    "linkedId": null,
+    "departmentId": "dept-cs",
+    "year": 2,
+    "semester": 3
   },
   {
-    "id": "u-mlxc1klfp9n9uw",
-    "username": "sl",
-    "password": "teacher123",
-    "role": "teacher",
-    "name": "sunil joshi",
-    "linkedId": "t-mlxc1kldj7325m"
-  },
-  {
-    "id": "u-mlxcgoz14jm2h1",
-    "username": "l",
-    "password": "teacher123",
-    "role": "teacher",
-    "name": "lomesh",
-    "linkedId": "t-mlxcgoyz5g43af"
+    "id": "u-s7",
+    "username": "student_sem4_c",
+    "password": "student123",
+    "role": "student",
+    "name": "Karan Das",
+    "linkedId": null,
+    "departmentId": "dept-cs",
+    "year": 2,
+    "semester": 4
   }
 ]
