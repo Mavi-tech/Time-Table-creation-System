@@ -25,7 +25,24 @@ app.post('/api/login', async (req, res) => {
       console.log('Login failed for:', username);
       return res.status(401).json({ error: 'Invalid credentials' });
     }
-    const { password: _, ...safe } = user;
+    let resolvedLinkedId = user.linkedId;
+    if (user.role === 'teacher') {
+      const teachers = await db.read('teachers');
+      const hasValidLinkedId = resolvedLinkedId && teachers.some(t => t.id === resolvedLinkedId);
+      if (!hasValidLinkedId) {
+        const uname = (user.username || '').trim().toLowerCase();
+        const direct = teachers.find(t =>
+          (t.name || '').trim().toLowerCase() === uname ||
+          ((t.email || '').split('@')[0] || '').trim().toLowerCase() === uname
+        );
+        const loose = teachers.find(t =>
+          (t.name || '').toLowerCase().includes(uname) ||
+          ((t.email || '').split('@')[0] || '').toLowerCase().includes(uname)
+        );
+        resolvedLinkedId = (direct || loose || {}).id || resolvedLinkedId || null;
+      }
+    }
+    const { password: _, ...safe } = { ...user, linkedId: resolvedLinkedId };
     console.log('Login success for:', username, 'role:', user.role);
     res.json(safe);
   } catch (error) {
@@ -361,7 +378,8 @@ app.post('/api/timetable/generate', async (req, res) => {
   try {
     const { departmentId, semester, mode, batchId, preferences } = req.body;
     if (semester) {
-      const result = await gen.generate(departmentId, +semester, mode || 'week', batchId || null, preferences || []);
+      const requestedPrefs = Array.isArray(preferences) ? preferences : [];
+      const result = await gen.generate(departmentId, +semester, mode || 'week', batchId || null, requestedPrefs);
       res.json(result);
     } else {
       const result = await gen.generateDept(departmentId);
@@ -370,12 +388,64 @@ app.post('/api/timetable/generate', async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+// Returns conflict info for preference UI: which day+slot combos are occupied
+// for a given teacher and/or batch in the existing timetable.
+app.get('/api/timetable/conflicts', async (req, res) => {
+  try {
+    const { departmentId, semester, teacherId, batchId } = req.query;
+    const allTT = await db.read('timetables');
+    const active = allTT.filter(t => t.status === 'active');
+
+    const teacherConflicts = [];
+    const batchConflicts = [];
+
+    if (teacherId) {
+      active
+        .filter(t => t.teacherId === teacherId)
+        .forEach(t => {
+          teacherConflicts.push({
+            day: t.day,
+            slotId: Number(t.slotId),
+            courseName: t.courseName,
+            courseCode: t.courseCode,
+            classroomName: t.classroomName,
+            batchSection: t.batchSection || null,
+            departmentId: t.departmentId,
+            semester: t.semester,
+          });
+        });
+    }
+
+    if (batchId && departmentId && semester) {
+      active
+        .filter(t => t.batchId === batchId && t.departmentId === departmentId && Number(t.semester) === Number(semester))
+        .forEach(t => {
+          batchConflicts.push({
+            day: t.day,
+            slotId: Number(t.slotId),
+            courseName: t.courseName,
+            courseCode: t.courseCode,
+            teacherId: t.teacherId,
+            classroomName: t.classroomName,
+          });
+        });
+    }
+
+    res.json({ teacherConflicts, batchConflicts });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 app.get('/api/timetable', async (req, res) => {
   try {
-    const { departmentId, semester, teacherId, day } = req.query;
+    const { departmentId, semester, teacherId, day, batchId } = req.query;
     let entries;
     if (teacherId) entries = await gen.getTeacherTT(teacherId);
     else entries = await gen.getTT(departmentId, +semester);
+    if (batchId) {
+      entries = entries.filter(e => !e.batchId || e.batchId === batchId);
+    }
     if (day) entries = entries.filter(e => e.day === day);
     const teachers = await db.read('teachers');
     entries = entries.map(e => ({ ...e, teacherName: (teachers.find(t => t.id === e.teacherId) || {}).name || 'Unknown' }));
@@ -449,6 +519,15 @@ app.delete('/api/timetable/:id', async (req, res) => {
 app.post('/api/timetable/:id/cancel', async (req, res) => {
   try {
     const r = await gen.cancel(req.params.id);
+    r ? res.json(r) : res.status(404).json({ error: 'Not found' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post('/api/timetable/:id/cancel-temp', async (req, res) => {
+  try {
+    const r = await gen.cancelTemp(req.params.id);
     r ? res.json(r) : res.status(404).json({ error: 'Not found' });
   } catch (error) {
     res.status(500).json({ error: error.message });

@@ -22,7 +22,7 @@ export default function StudentDaily() {
     if (!user?.departmentId || !user?.semester) return;
     setLoading(true);
     Promise.all([
-      api.getTimetable(user.departmentId, user.semester),
+      api.getTimetable(user.departmentId, user.semester, undefined, user.batchId),
       api.getCourses(),
       api.getEnrollments(user.id),
     ])
@@ -45,8 +45,8 @@ export default function StudentDaily() {
   const myEntries = useMemo(() => {
     return entries.filter(e => {
       if (e.status === 'cancelled') return false;
-      // When batch-specific entries exist, keep only the student's batch if available.
-      if (e.batchId && user?.batchId && e.batchId !== user.batchId) return false;
+      // If an entry is batch-specific, it must match the logged-in student's batch.
+      if (e.batchId && e.batchId !== user?.batchId) return false;
 
       // Always show mandatory subjects. Electives are shown only when the student enrolled in them.
       if (electiveIds.has(e.courseId)) return enrolledIds.has(e.courseId);

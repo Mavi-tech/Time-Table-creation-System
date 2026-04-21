@@ -27,10 +27,13 @@ export default function TimetableGrid({ entries, showTeacher = true, showRoom = 
                 {cellEntries.map(entry => (
                   <div
                     key={entry.id}
-                    className={`tt-entry ${entry.status === 'cancelled' ? 'cancelled' : entry.type}`}
+                    className={`tt-entry ${(entry.status === 'cancelled' || entry.status === 'temp_cancelled') ? 'cancelled' : entry.type}`}
                     onClick={() => onCellClick && onCellClick(entry)}
                   >
-                    <div className="course-code">{entry.courseName || entry.courseCode}</div>
+                    <div className="course-code">
+                      {entry.courseName || entry.courseCode}
+                      {entry.status === 'temp_cancelled' && <div style={{ fontSize: '10px', color: '#ff4d4f', marginTop: 4 }}>(Cancelled This Week)</div>}
+                    </div>
                     {showTeacher && <div className="entry-info">{entry.teacherName}</div>}
                     {showRoom && <div className="entry-info">📍 {entry.classroomName}</div>}
                     <span className="type-tag">{entry.type}</span>

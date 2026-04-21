@@ -9,6 +9,7 @@ export default function TimetableManager() {
   const [selSem, setSelSem] = useState(1);
   const [timetable, setTimetable] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [coverageWarning, setCoverageWarning] = useState('');
   const [selBatch, setSelBatch] = useState('');
   const [deptBatches, setDeptBatches] = useState([]);
   const [showGenerateModal, setShowGenerateModal] = useState(false);
@@ -16,6 +17,7 @@ export default function TimetableManager() {
   const [generationPrefs, setGenerationPrefs] = useState([]);
   const [days, setDays] = useState(['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']);
   const [slots, setSlots] = useState([]);
+  const [conflictsCache, setConflictsCache] = useState({});  // keyed by prefId
 
   /* edit modal */
   const [editing, setEditing] = useState(null);
@@ -89,6 +91,33 @@ export default function TimetableManager() {
 
   const removePref = (id) => {
     setGenerationPrefs(prev => prev.filter(p => p.id !== id));
+    setConflictsCache(prev => { const next = { ...prev }; delete next[id]; return next; });
+  };
+
+  // Fetch conflicts for a preference row when teacher/batch changes
+  const fetchConflictsForPref = async (prefId, teacherId, batchId) => {
+    if (!teacherId && !batchId) {
+      setConflictsCache(prev => { const next = { ...prev }; delete next[prefId]; return next; });
+      return;
+    }
+    try {
+      const r = await api.getConflicts(selDept, selSem, teacherId || null, batchId || null);
+      setConflictsCache(prev => ({ ...prev, [prefId]: r.data }));
+    } catch {
+      // silently ignore
+    }
+  };
+
+  // Helper: check if a day+slot is conflicting for a pref
+  const getSlotConflict = (prefId, day, slotId) => {
+    const c = conflictsCache[prefId];
+    if (!c) return null;
+    const teacherHit = (c.teacherConflicts || []).find(x => x.day === day && x.slotId === Number(slotId));
+    const batchHit = (c.batchConflicts || []).find(x => x.day === day && x.slotId === Number(slotId));
+    if (teacherHit && batchHit) return { type: 'both', teacher: teacherHit, batch: batchHit };
+    if (teacherHit) return { type: 'teacher', teacher: teacherHit };
+    if (batchHit) return { type: 'batch', batch: batchHit };
+    return null;
   };
 
   const generate = async () => {
@@ -139,6 +168,9 @@ export default function TimetableManager() {
       if (r.data.errors && r.data.errors.length > 0) {
         r.data.errors.forEach(err => toast(err, 'warning'));
       }
+      if (!targetBatchId && semBatches.length > 0 && r.data.batches && r.data.batches < semBatches.length) {
+        toast(`Warning: only ${r.data.batches} of ${semBatches.length} batches received active entries for this semester.`, 'warning');
+      }
       load();
     } catch (e) {
       toast(e.response?.data?.error || 'Generation failed', 'error');
@@ -187,6 +219,38 @@ export default function TimetableManager() {
     });
     return Array.from(seen.values());
   }, [timetable]);
+
+  const activeTimetable = React.useMemo(() => {
+    if (!timetable) return [];
+    return timetable.filter(e => e.status !== 'cancelled' && e.status !== 'temp_cancelled');
+  }, [timetable]);
+
+  const batchCoverage = React.useMemo(() => {
+    const counts = new Map();
+    activeTimetable.forEach(entry => {
+      if (!entry.batchId) return;
+      counts.set(entry.batchId, (counts.get(entry.batchId) || 0) + 1);
+    });
+    return counts;
+  }, [activeTimetable]);
+
+  const missingBatches = React.useMemo(() => {
+    return semBatches.filter(batch => (batchCoverage.get(batch.id) || 0) === 0);
+  }, [semBatches, batchCoverage]);
+
+  React.useEffect(() => {
+    if (!selDept || !selSem || loading || !timetable) {
+      setCoverageWarning('');
+      return;
+    }
+
+    if (missingBatches.length > 0) {
+      const batchNames = missingBatches.map(b => `Section ${b.section}`).join(', ');
+      setCoverageWarning(`No active timetable entries were found for ${batchNames} in Year ${Math.ceil(selSem / 2)} Semester ${selSem}.`);
+    } else {
+      setCoverageWarning('');
+    }
+  }, [selDept, selSem, timetable, loading, missingBatches]);
 
   // Filter timetable by selected batch
   const displayedEntries = React.useMemo(() => {
@@ -273,6 +337,21 @@ export default function TimetableManager() {
         </div>
       </div>
 
+      {coverageWarning && (
+        <div style={{
+          margin: '0 0 14px',
+          padding: '12px 14px',
+          borderRadius: 10,
+          border: '1px solid #f59e0b',
+          background: '#fffbeb',
+          color: '#92400e',
+          fontSize: 13,
+          fontWeight: 600,
+        }}>
+          ⚠️ {coverageWarning}
+        </div>
+      )}
+
       {loading && <div className="loading">Loading…</div>}
 
       {!loading && timetable && timetable.length > 0 && (
@@ -284,7 +363,9 @@ export default function TimetableManager() {
           <p>
             {timetable.length === 0
               ? 'No timetable generated yet for this department/semester.'
-              : 'No entries match the current view filters.'}
+              : selBatch && missingBatches.some(b => b.id === selBatch)
+                ? 'This batch currently has no active timetable entries. Generate the semester again or select another batch.'
+                : 'No entries match the current view filters.'}
           </p>
           <button className="btn btn-primary" onClick={() => openGenerateModal()}>Generate Now</button>
         </div>
@@ -323,7 +404,10 @@ export default function TimetableManager() {
                 <div className="form-row">
                   <div className="form-group">
                     <label>Teacher</label>
-                    <select value={pref.teacherId} onChange={e => updatePref(pref.id, 'teacherId', e.target.value)}>
+                    <select value={pref.teacherId} onChange={e => {
+                      updatePref(pref.id, 'teacherId', e.target.value);
+                      fetchConflictsForPref(pref.id, e.target.value, pref.batchId);
+                    }}>
                       <option value="">Select Teacher</option>
                       {teachers.filter(t => {
                         const tDepts = t.departmentIds || (t.departmentId ? [t.departmentId] : []);
@@ -359,19 +443,51 @@ export default function TimetableManager() {
                   {(pref.dayMode || 'single') === 'single' && (
                     <div className="form-group">
                       <label>Day</label>
-                      <select value={pref.day} onChange={e => {
-                        updatePref(pref.id, 'day', e.target.value);
-                        updatePref(pref.id, 'days', [e.target.value]);
-                      }}>
-                        {days.map(d => <option key={d} value={d}>{d}</option>)}
+                      <select
+                        value={pref.day}
+                        onChange={e => {
+                          updatePref(pref.id, 'day', e.target.value);
+                          updatePref(pref.id, 'days', [e.target.value]);
+                        }}
+                        style={{
+                          ...(getSlotConflict(pref.id, pref.day, pref.slotId)
+                            ? { borderColor: getSlotConflict(pref.id, pref.day, pref.slotId).type === 'teacher' || getSlotConflict(pref.id, pref.day, pref.slotId).type === 'both' ? '#ef4444' : '#f59e0b', borderWidth: 2 }
+                            : {}),
+                        }}
+                      >
+                        {days.map(d => {
+                          const conflict = getSlotConflict(pref.id, d, pref.slotId);
+                          return (
+                            <option key={d} value={d}>
+                              {d}{conflict ? (conflict.type === 'teacher' || conflict.type === 'both' ? ' 🔴' : ' 🟡') : ''}
+                            </option>
+                          );
+                        })}
                       </select>
                     </div>
                   )}
 
                   <div className="form-group">
                     <label>Time Slot</label>
-                    <select value={pref.slotId} onChange={e => updatePref(pref.id, 'slotId', Number(e.target.value))}>
-                      {slots.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
+                    <select
+                      value={pref.slotId}
+                      onChange={e => updatePref(pref.id, 'slotId', Number(e.target.value))}
+                      style={{
+                        ...((pref.dayMode || 'single') === 'single' && getSlotConflict(pref.id, pref.day, pref.slotId)
+                          ? { borderColor: getSlotConflict(pref.id, pref.day, pref.slotId).type === 'teacher' || getSlotConflict(pref.id, pref.day, pref.slotId).type === 'both' ? '#ef4444' : '#f59e0b', borderWidth: 2 }
+                          : {}),
+                      }}
+                    >
+                      {slots.map(s => {
+                        // For single-day mode, show conflict per slot
+                        const selectedDay = (pref.dayMode || 'single') === 'single' ? pref.day : null;
+                        const conflict = selectedDay ? getSlotConflict(pref.id, selectedDay, s.id) : null;
+                        return (
+                          <option key={s.id} value={s.id}>
+                            {s.label}{conflict ? (conflict.type === 'teacher' || conflict.type === 'both' ? ' 🔴 Teacher busy' : ' 🟡 Batch busy') : ''}
+                          </option>
+                        );
+                      })}
                     </select>
                   </div>
                 </div>
@@ -382,6 +498,7 @@ export default function TimetableManager() {
                     <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
                       {days.map(d => {
                         const selected = (pref.days || []).includes(d);
+                        const conflict = getSlotConflict(pref.id, d, pref.slotId);
                         return (
                           <label key={d} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12 }}>
                             <input
@@ -394,12 +511,45 @@ export default function TimetableManager() {
                               }}
                             />
                             {d.slice(0, 3)}
+                            {conflict && (
+                              <span title={conflict.type === 'teacher' || conflict.type === 'both' ? `Teacher busy: ${conflict.teacher?.courseName || ''}` : `Batch busy: ${conflict.batch?.courseName || ''}`} style={{ cursor: 'help' }}>
+                                {conflict.type === 'teacher' || conflict.type === 'both' ? '🔴' : '🟡'}
+                              </span>
+                            )}
                           </label>
                         );
                       })}
                     </div>
                   </div>
                 )}
+
+                {/* Conflict summary for current selection */}
+                {(() => {
+                  const currentConflict = (pref.dayMode || 'single') === 'single'
+                    ? getSlotConflict(pref.id, pref.day, pref.slotId)
+                    : null;
+                  if (!currentConflict) return null;
+                  return (
+                    <div style={{
+                      padding: '6px 10px', borderRadius: 6, fontSize: 12, marginBottom: 8,
+                      background: currentConflict.type === 'teacher' || currentConflict.type === 'both' ? '#fef2f2' : '#fffbeb',
+                      border: `1px solid ${currentConflict.type === 'teacher' || currentConflict.type === 'both' ? '#fca5a5' : '#fcd34d'}`,
+                      color: currentConflict.type === 'teacher' || currentConflict.type === 'both' ? '#991b1b' : '#92400e',
+                    }}>
+                      {currentConflict.type === 'teacher' || currentConflict.type === 'both'
+                        ? `⚠️ Teacher already teaches "${currentConflict.teacher.courseName || ''}" (${currentConflict.teacher.courseCode || ''}) at this slot${currentConflict.teacher.classroomName ? ` in ${currentConflict.teacher.classroomName}` : ''}`
+                        : `⚠️ Batch already has "${currentConflict.batch.courseName || ''}" (${currentConflict.batch.courseCode || ''}) at this slot`}
+                      {currentConflict.type === 'both' && (
+                        <div style={{ marginTop: 2 }}>
+                          Also: Batch has "{currentConflict.batch.courseName || ''}" ({currentConflict.batch.courseCode || ''}) at this slot
+                        </div>
+                      )}
+                      <div style={{ marginTop: 4, fontStyle: 'italic', opacity: 0.8 }}>
+                        The scheduler will attempt your preference but may place this class in a different slot to avoid conflicts.
+                      </div>
+                    </div>
+                  );
+                })()}
 
                 <div style={{
                   marginBottom: 10,
@@ -439,7 +589,10 @@ export default function TimetableManager() {
                   {semBatches.length > 0 && (
                     <div className="form-group">
                       <label>Batch (optional)</label>
-                      <select value={pref.batchId} onChange={e => updatePref(pref.id, 'batchId', e.target.value)}>
+                      <select value={pref.batchId} onChange={e => {
+                        updatePref(pref.id, 'batchId', e.target.value);
+                        fetchConflictsForPref(pref.id, pref.teacherId, e.target.value);
+                      }}>
                         <option value="">Any Batch</option>
                         {semBatches.map(b => <option key={b.id} value={b.id}>{b.name} ({b.section})</option>)}
                       </select>

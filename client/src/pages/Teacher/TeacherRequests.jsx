@@ -8,17 +8,70 @@ export default function TeacherRequests() {
   const { user } = useAuth();
   const [requests, setRequests] = useState([]);
   const [entries, setEntries] = useState([]);
+  const [teacherId, setTeacherId] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [form, setForm] = useState({ entryId: '', type: 'reschedule', reason: '', newDay: '', newSlot: '' });
 
-  const load = useCallback(() => {
-    api.getRequests().then(r => {
-      setRequests(r.data.filter(req => req.teacherId === user?.linkedId));
-    });
-    if (user?.linkedId) {
-      api.getTeacherTimetable(user.linkedId).then(r => setEntries(r.data.filter(e => e.status !== 'cancelled')));
+  const resolveTeacherId = useCallback(async () => {
+    if (!user) return '';
+
+    if (user.linkedId) {
+      try {
+        const tr = await api.getTeachers();
+        const exists = (tr.data || []).some(t => t.id === user.linkedId);
+        if (exists) return user.linkedId;
+      } catch {
+        return user.linkedId;
+      }
+    }
+
+    try {
+      const tr = await api.getTeachers();
+      const teachers = tr.data || [];
+      const uname = (user.username || '').trim().toLowerCase();
+      const display = (user.name || '').trim().toLowerCase();
+
+      const direct = teachers.find(t =>
+        (t.name || '').trim().toLowerCase() === uname ||
+        (t.name || '').trim().toLowerCase() === display ||
+        ((t.email || '').split('@')[0] || '').trim().toLowerCase() === uname
+      );
+
+      const loose = teachers.find(t =>
+        (uname && (t.name || '').toLowerCase().includes(uname)) ||
+        (display && (t.name || '').toLowerCase().includes(display)) ||
+        (uname && ((t.email || '').split('@')[0] || '').toLowerCase().includes(uname))
+      );
+
+      return (direct || loose || {}).id || user.linkedId || '';
+    } catch {
+      return user.linkedId || '';
     }
   }, [user]);
+
+  const getTeacherIdCandidates = useCallback(async () => {
+    const ids = new Set();
+    if (user?.linkedId) ids.add(user.linkedId);
+    const resolvedId = await resolveTeacherId();
+    if (resolvedId) ids.add(resolvedId);
+    return [...ids];
+  }, [resolveTeacherId, user?.linkedId]);
+
+  const load = useCallback(() => {
+    getTeacherIdCandidates().then((teacherIds) => {
+      setTeacherId(teacherIds[0] || '');
+      api.getRequests().then(r => {
+        const all = r.data || [];
+        const mine = all.filter(req => teacherIds.includes(req.teacherId));
+        setRequests(mine);
+      });
+      if (teacherIds.length > 0) {
+        api.getAllTimetables().then(r => setEntries((r.data || []).filter(e => teacherIds.includes(e.teacherId) && e.status !== 'cancelled')));
+      } else {
+        setEntries([]);
+      }
+    });
+  }, [resolveTeacherId]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -27,7 +80,7 @@ export default function TeacherRequests() {
     const entry = entries.find(e => e.id === form.entryId);
     try {
       await api.createRequest({
-        teacherId: user.linkedId,
+        teacherId,
         teacherName: user.name,
         entryId: form.entryId,
         courseCode: entry?.courseCode,
@@ -134,7 +187,7 @@ export default function TeacherRequests() {
           </div>
           <div className="modal-actions">
             <button className="btn btn-secondary" onClick={() => setShowModal(false)}>Cancel</button>
-            <button className="btn btn-primary" onClick={submit}>Submit</button>
+            <button className="btn btn-primary" onClick={submit} disabled={!teacherId}>Submit</button>
           </div>
         </div>
       </Modal>

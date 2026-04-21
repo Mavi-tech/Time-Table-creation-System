@@ -31,6 +31,7 @@ export default function DailyView({ entries, showTeacher = true, showRoom = true
                     {entry.courseName}{' '}
                     <span className={`badge ${entry.type === 'lab' ? 'badge-success' : 'badge-primary'}`}>{entry.type}</span>
                     {entry.status === 'cancelled' && <span className="badge badge-danger" style={{ marginLeft:4 }}>Cancelled</span>}
+                    {entry.status === 'temp_cancelled' && <span className="badge badge-danger" style={{ marginLeft:4}}>Cancelled This Week</span>}
                   </h4>
                   <p>
                     {showTeacher && <>👨‍🏫 {entry.teacherName} &nbsp;|&nbsp;</>}

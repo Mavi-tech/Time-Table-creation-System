@@ -98,10 +98,14 @@ function attachPreferencesToSessions(sessions, preferences) {
       return;
     }
 
-    candidateIndexes.forEach((candidateIndex, i) => {
+    // A single preference row should not lock every matching session.
+    // Assign at most one session per preferred day to avoid over-constraining.
+    const assignmentCount = Math.min(candidateIndexes.length, Math.max(1, prefDays.length));
+
+    candidateIndexes.slice(0, assignmentCount).forEach((candidateIndex, i) => {
       usedSessionIndexes.add(candidateIndex);
       sessions[candidateIndex].preferredPlacement = {
-        day: prefDays[i % prefDays.length],
+        days: prefDays,           // all acceptable days (not just one)
         slotId: +pref.slotId,
         classroomId: pref.classroomId || null,
         note: pref.note || '',
@@ -114,15 +118,11 @@ function attachPreferencesToSessions(sessions, preferences) {
 
 // ==================== HARD CONSTRAINT CHECKS ====================
 // Returns true if the placement is valid (no conflicts)
+// NOTE: Preferences are NOT enforced here — they are soft constraints
+// handled entirely by the scoring function (scoreSlot).
 function checkHardConstraints(session, day, slotId, room, schedule, departmentId, semester) {
   const slotsNeeded = session.slotCount || 1;
   const targetSemester = Number(semester);
-
-  if (session.preferredPlacement) {
-    if (session.preferredPlacement.day !== day) return false;
-    if (+session.preferredPlacement.slotId !== +slotId) return false;
-    if (session.preferredPlacement.classroomId && session.preferredPlacement.classroomId !== room.id) return false;
-  }
 
   for (let s = 0; s < slotsNeeded; s++) {
     const sid = slotId + s;
@@ -163,10 +163,20 @@ function scoreSlot(session, day, slotId, room, schedule, departmentId, semester)
   const targetSemester = Number(semester);
 
   if (session.preferredPlacement) {
-    if (session.preferredPlacement.day === day && +session.preferredPlacement.slotId === +slotId) {
+    const prefDays = session.preferredPlacement.days || [];
+    const slotMatch = +session.preferredPlacement.slotId === +slotId;
+    const dayMatch = prefDays.includes(day);
+    if (dayMatch && slotMatch) {
       score += 1000;
+    } else if (slotMatch) {
+      // Right slot, wrong day — mild penalty
+      score -= 50;
+    } else if (dayMatch) {
+      // Right day, wrong slot — moderate penalty
+      score -= 200;
     } else {
-      score -= 1000;
+      // Wrong day AND wrong slot — significant penalty
+      score -= 500;
     }
   }
 
@@ -275,23 +285,40 @@ function findValidPlacements(session, schedule, rooms, departmentId, semester, d
 }
 
 // ==================== DIFFICULTY SORTING (MRV Heuristic) ====================
-// Sessions with fewer valid placements are harder to place → schedule them first
+// Sessions with preferences go FIRST (they need their specific slot).
+// Then remaining sessions sorted by number of valid placements (most constrained first).
 function sortByDifficulty(sessions, rooms, existingSchedule, departmentId, semester, days) {
-  const sessionDifficulty = sessions.map(session => {
+  const withPrefs = [];
+  const withoutPrefs = [];
+
+  sessions.forEach(session => {
     const placements = findValidPlacements(session, existingSchedule, rooms, departmentId, semester, days);
-    return { session, difficulty: placements.length };
+    const entry = { session, difficulty: placements.length };
+    if (session.preferredPlacement) {
+      withPrefs.push(entry);
+    } else {
+      withoutPrefs.push(entry);
+    }
   });
-  // Sort ascending by number of valid placements (most constrained first)
-  sessionDifficulty.sort((a, b) => a.difficulty - b.difficulty);
-  return sessionDifficulty.map(sd => sd.session);
+
+  // Sort each group by difficulty (most constrained first)
+  withPrefs.sort((a, b) => a.difficulty - b.difficulty);
+  withoutPrefs.sort((a, b) => a.difficulty - b.difficulty);
+
+  // Preferred sessions first, then the rest
+  return [...withPrefs, ...withoutPrefs].map(sd => sd.session);
 }
 
 // ==================== MAIN SCHEDULING ENGINE ====================
-function scheduleWithBacktracking(sessions, rooms, existingSchedule, departmentId, semester, days, maxBacktrack = 50) {
+function scheduleWithBacktracking(sessions, rooms, existingSchedule, departmentId, semester, days, maxBacktrack = 200) {
   const schedule = [...existingSchedule];
   const placed = []; // Stack of placed session indices for backtracking
   const errors = [];
   let backtrackCount = 0;
+
+  // Use higher backtrack limit when preferences are involved
+  const hasPrefs = sessions.some(s => s.preferredPlacement);
+  const effectiveMaxBacktrack = hasPrefs ? Math.max(maxBacktrack, 500) : maxBacktrack;
 
   // Sort sessions by difficulty
   const sorted = sortByDifficulty(sessions, rooms, schedule, departmentId, semester, days);
@@ -353,7 +380,22 @@ function scheduleWithBacktracking(sessions, rooms, existingSchedule, departmentI
       i++;
     } else {
       // No valid placement — try backtracking
-      if (backtrackCount < maxBacktrack && placed.length > 0) {
+      // DEBUG: if preferred session, log why it can't be placed
+      if (session.preferredPlacement) {
+        const prefSlot = session.preferredPlacement.slotId;
+        const prefDays = session.preferredPlacement.days || [];
+        console.log(`  [STUCK] "${session.courseName}" batch=${session.batchSection} type=${session.type} teacher=${session.teacherId}`);
+        console.log(`    tried ${tried.size} options, raw valid left: ${findValidPlacements(session, schedule, rooms, departmentId, semester, days).length}`);
+        for (const d of prefDays) {
+          const hits = schedule.filter(e => e.day === d && Number(e.slotId) === prefSlot);
+          const teacherBlock = hits.find(e => e.teacherId === session.teacherId);
+          const batchBlock = hits.find(e => e.departmentId === departmentId && Number(e.semester) === Number(semester) && e.batchId === session.batchId);
+          if (teacherBlock || batchBlock) {
+            console.log(`    ${d} slot ${prefSlot}: ${teacherBlock ? 'TEACHER CONFLICT (' + teacherBlock.courseName + ')' : ''} ${batchBlock ? 'BATCH CONFLICT (' + batchBlock.courseName + ')' : ''}`);
+          }
+        }
+      }
+      if (backtrackCount < effectiveMaxBacktrack && placed.length > 0) {
         backtrackCount++;
         // Undo the last placed session
         const last = placed.pop();
@@ -366,6 +408,19 @@ function scheduleWithBacktracking(sessions, rooms, existingSchedule, departmentI
         // The tried set for that session still has the old choice,
         // so it will pick a different option next time
       } else {
+        // Backtracking exhausted — if this session has a preferred placement,
+        // clear the tried set and let it fall back to any valid slot.
+        if (session.preferredPlacement) {
+          const fallbackPlacements = findValidPlacements(session, schedule, rooms, departmentId, semester, days);
+          if (fallbackPlacements.length > 0) {
+            // Remove preference so it takes the best available without penalty
+            delete session.preferredPlacement;
+            // Clear tried so all options are fresh
+            tried.clear();
+            // Don't increment i — re-run this session without preference
+            continue;
+          }
+        }
         // Cannot place this session at all
         const batchLabel = session.batchSection ? ` [${session.batchSection}]` : '';
         errors.push(`Could not place ${session.type} for ${session.courseName}${batchLabel} (session ${session.lectureIndex ?? session.labIndex ?? '?'})`);
@@ -434,8 +489,54 @@ async function generate(departmentId, semester, mode = 'week', batchId = null, p
 
   const unmatchedPreferences = attachPreferencesToSessions(sessions, normalizedPrefs);
 
+  // DEBUG: Log preference attachment results
+  const prefSessions = sessions.filter(s => s.preferredPlacement);
+  console.log(`[GEN DEBUG] Total sessions: ${sessions.length}, With preferences: ${prefSessions.length}, Unmatched prefs: ${unmatchedPreferences.length}`);
+  prefSessions.forEach(s => {
+    console.log(`  → Session "${s.courseName}" (${s.type}) teacher=${s.teacherId} batch=${s.batchId} pref=days:${s.preferredPlacement.days?.join(',')} slot:${s.preferredPlacement.slotId} room:${s.preferredPlacement.classroomId || 'any'}`);
+  });
+  if (unmatchedPreferences.length > 0) {
+    unmatchedPreferences.forEach(p => console.log(`  ✗ Unmatched pref: teacher=${p.teacherId} course=${p.courseId}`));
+  }
+
   // Run the scheduling algorithm
-  const result = scheduleWithBacktracking(sessions, rooms, existingConstraints, departmentId, semester, days);
+  let result = scheduleWithBacktracking(sessions, rooms, existingConstraints, departmentId, semester, days);
+
+  // DEBUG: Log placement results
+  console.log(`[GEN DEBUG] Result: placed=${result.placed}/${sessions.length}, errors=${result.errors.length}, backtracks=${result.backtrackCount}`);
+  if (result.errors.length > 0) result.errors.forEach(e => console.log(`  ERR: ${e}`));
+  // Log where preferred sessions ended up
+  const prefEntries = result.schedule.filter(e => {
+    return prefSessions.some(ps => ps.courseId === e.courseId && ps.teacherId === e.teacherId);
+  });
+  prefEntries.forEach(e => {
+    console.log(`  Placed: "${e.courseName}" → ${e.day} slot ${e.slotId} (${e.slotLabel}) room=${e.classroomName}`);
+  });
+
+  const preferenceWarnings = [];
+
+  // If preferences caused fewer sessions to be placed, retry without them
+  // and keep whichever result placed more sessions.
+  if (normalizedPrefs.length > 0 && result.placed < sessions.length) {
+    const fallbackSessions = buildSessions(courses, batchList);
+    fallbackSessions.forEach(s => { s.departmentId = departmentId; });
+
+    const fallback = scheduleWithBacktracking(
+      fallbackSessions,
+      rooms,
+      existingConstraints,
+      departmentId,
+      semester,
+      days
+    );
+
+    if (fallback.placed > result.placed) {
+      result = fallback;
+      preferenceWarnings.push(
+        `Some preferences could not be honored — relaxed to place ${fallback.placed}/${sessions.length} sessions.`
+      );
+    }
+  }
 
   // Delete existing rows in replace-scope, then insert newly generated rows.
   for (const oldEntry of allTT.filter(shouldReplace)) {
@@ -450,6 +551,7 @@ async function generate(departmentId, semester, mode = 'week', batchId = null, p
   return {
     schedule: result.schedule,
     errors: [
+      ...preferenceWarnings,
       ...result.errors,
       ...unmatchedPreferences.map(p =>
         `Preference not applied: teacher ${p.teacherId}, course ${p.courseId}, ${p.day} slot ${p.slotId}${p.classroomId ? `, room ${p.classroomId}` : ''}`
@@ -477,10 +579,20 @@ async function getTT(departmentId, semester) {
 
 async function getTeacherTT(teacherId) {
   const timetables = await db.read('timetables');
-  return timetables.filter(t => t.teacherId === teacherId && t.status === 'active');
+  return timetables.filter(t => t.teacherId === teacherId);
 }
 
 async function cancel(id) { return await db.update('timetables', id, { status: 'cancelled' }); }
-async function restore(id) { return await db.update('timetables', id, { status: 'active' }); }
+async function cancelTemp(id) {
+  const cancelledAt = new Date().toISOString().slice(0, 19).replace('T', ' ');
+  return await db.update('timetables', id, {
+    status: 'temp_cancelled',
+    tempCancelledDate: cancelledAt,
+  });
+}
 
-module.exports = { DAYS, SLOTS, generate, generateDept, getTT, getTeacherTT, cancel, restore };
+async function restore(id) {
+  return await db.update('timetables', id, { status: 'active', tempCancelledDate: null });
+}
+
+module.exports = { DAYS, SLOTS, generate, generateDept, getTT, getTeacherTT, cancel, cancelTemp, restore };

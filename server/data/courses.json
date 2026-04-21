@@ -671,5 +671,1175 @@
     "type": "theory",
     "credits": 3,
     "isElective": false
+  },
+  {
+    "id": "c-mo70pr2tug3kh88e207",
+    "name": "Compiler Design",
+    "code": "CS201",
+    "year": 3,
+    "semester": 5,
+    "weeklyLectures": 3,
+    "weeklyLabs": 2,
+    "labDuration": 1,
+    "lectureDuration": 1,
+    "teacherId": "t-mm1ta1k2l1m2n",
+    "type": "theory+lab",
+    "credits": 3,
+    "departmentIds": [
+      "dept-cs"
+    ],
+    "teacherName": "Unassigned"
+  },
+  {
+    "id": "c-mo70pr2tce0kugcixr",
+    "name": "Advanced Algorithms",
+    "code": "CS202",
+    "year": 3,
+    "semester": 5,
+    "weeklyLectures": 3,
+    "weeklyLabs": 0,
+    "labDuration": 2,
+    "lectureDuration": 1,
+    "teacherId": "",
+    "type": "theory",
+    "credits": 3,
+    "departmentIds": [
+      "dept-cs"
+    ],
+    "teacherName": "Unassigned"
+  },
+  {
+    "id": "c-mo70pr2tiy98ofxily",
+    "name": "Microprocessor and Microcontroller",
+    "code": "CS203",
+    "year": 3,
+    "semester": 5,
+    "weeklyLectures": 3,
+    "weeklyLabs": 2,
+    "labDuration": 1,
+    "lectureDuration": 1,
+    "teacherId": "",
+    "type": "theory+lab",
+    "credits": 3,
+    "departmentIds": [
+      "dept-cs"
+    ],
+    "teacherName": "Unassigned"
+  },
+  {
+    "id": "c-mo70pr2t2xath8b85t",
+    "name": "Big Data Analytics",
+    "code": "CS204",
+    "year": 3,
+    "semester": 5,
+    "weeklyLectures": 3,
+    "weeklyLabs": 2,
+    "labDuration": 1,
+    "lectureDuration": 1,
+    "teacherId": "t-mm1td4k7l8m9n",
+    "type": "theory+lab",
+    "credits": 3,
+    "departmentIds": [
+      "dept-cs"
+    ],
+    "teacherName": "Unassigned"
+  },
+  {
+    "id": "c-mo70pr2tz9a7896pgx",
+    "name": "Cryptography and Network Security",
+    "code": "CS205",
+    "year": 3,
+    "semester": 6,
+    "weeklyLectures": 3,
+    "weeklyLabs": 0,
+    "labDuration": 2,
+    "lectureDuration": 1,
+    "teacherId": "",
+    "type": "theory",
+    "credits": 3,
+    "departmentIds": [
+      "dept-cs"
+    ],
+    "teacherName": "Unassigned"
+  },
+  {
+    "id": "c-mo70pr2t4nzewpilow8",
+    "name": "Advanced Database Systems",
+    "code": "CS206",
+    "year": 3,
+    "semester": 6,
+    "weeklyLectures": 2,
+    "weeklyLabs": 2,
+    "labDuration": 1,
+    "lectureDuration": 1,
+    "teacherId": "",
+    "type": "theory+lab",
+    "credits": 3,
+    "departmentIds": [
+      "dept-cs"
+    ],
+    "teacherName": "Unassigned"
+  },
+  {
+    "id": "c-mo70pr2tm07inetxmih",
+    "name": "Pattern Recognition",
+    "code": "CS207",
+    "year": 3,
+    "semester": 6,
+    "weeklyLectures": 3,
+    "weeklyLabs": 2,
+    "labDuration": 1,
+    "lectureDuration": 1,
+    "teacherId": "",
+    "type": "theory+lab",
+    "credits": 3,
+    "departmentIds": [
+      "dept-cs"
+    ],
+    "teacherName": "Unassigned"
+  },
+  {
+    "id": "c-mo70pr2t2k793z9c8tj",
+    "name": "Internet of Things",
+    "code": "CS208",
+    "year": 3,
+    "semester": 5,
+    "weeklyLectures": 2,
+    "weeklyLabs": 2,
+    "labDuration": 1,
+    "lectureDuration": 1,
+    "teacherId": "",
+    "type": "theory+lab",
+    "credits": 2,
+    "departmentIds": [
+      "dept-cs"
+    ],
+    "teacherName": "Unassigned"
+  },
+  {
+    "id": "c-mo70pr2tgsafwho9nw",
+    "name": "Project I",
+    "code": "CS301",
+    "year": 4,
+    "semester": 7,
+    "weeklyLectures": 0,
+    "weeklyLabs": 6,
+    "labDuration": 1,
+    "lectureDuration": 1,
+    "teacherId": "",
+    "type": "project",
+    "credits": 4,
+    "departmentIds": [
+      "dept-cs"
+    ],
+    "teacherName": "Unassigned"
+  },
+  {
+    "id": "c-mo70pr2tr3kfce0q75c",
+    "name": "Advanced AI and ML",
+    "code": "CS302",
+    "year": 4,
+    "semester": 7,
+    "weeklyLectures": 3,
+    "weeklyLabs": 2,
+    "labDuration": 1,
+    "lectureDuration": 1,
+    "teacherId": "",
+    "type": "theory+lab",
+    "credits": 3,
+    "departmentIds": [
+      "dept-cs"
+    ],
+    "teacherName": "Unassigned"
+  },
+  {
+    "id": "c-mo70pr2tu1a20hp11d",
+    "name": "Distributed Systems",
+    "code": "CS303",
+    "year": 4,
+    "semester": 7,
+    "weeklyLectures": 3,
+    "weeklyLabs": 0,
+    "labDuration": 2,
+    "lectureDuration": 1,
+    "teacherId": "",
+    "type": "theory",
+    "credits": 3,
+    "departmentIds": [
+      "dept-cs"
+    ],
+    "teacherName": "Unassigned"
+  },
+  {
+    "id": "c-mo70pr2tyjz1xdlx8",
+    "name": "Project II",
+    "code": "CS304",
+    "year": 4,
+    "semester": 8,
+    "weeklyLectures": 0,
+    "weeklyLabs": 6,
+    "labDuration": 1,
+    "lectureDuration": 1,
+    "teacherId": "",
+    "type": "project",
+    "credits": 4,
+    "departmentIds": [
+      "dept-cs"
+    ],
+    "teacherName": "Unassigned"
+  },
+  {
+    "id": "c-mo70pr2trtle8l4dnt",
+    "name": "Internship",
+    "code": "CS305",
+    "year": 4,
+    "semester": 8,
+    "weeklyLectures": 0,
+    "weeklyLabs": 0,
+    "labDuration": 1,
+    "lectureDuration": 1,
+    "teacherId": "",
+    "type": "internship",
+    "credits": 2,
+    "departmentIds": [
+      "dept-cs"
+    ],
+    "teacherName": "Unassigned"
+  },
+  {
+    "id": "c-mo70pr2t005kv47pkhgy",
+    "name": "Cloud Infrastructure",
+    "code": "IT301",
+    "year": 3,
+    "semester": 5,
+    "weeklyLectures": 3,
+    "weeklyLabs": 2,
+    "labDuration": 1,
+    "lectureDuration": 1,
+    "teacherId": "",
+    "type": "theory+lab",
+    "credits": 3,
+    "departmentIds": [
+      "dept-mloz3lcydz5d3y"
+    ],
+    "teacherName": "Unassigned"
+  },
+  {
+    "id": "c-mo70pr2ttg2c55ky6ck",
+    "name": "Ethical Hacking",
+    "code": "IT302",
+    "year": 3,
+    "semester": 5,
+    "weeklyLectures": 3,
+    "weeklyLabs": 2,
+    "labDuration": 1,
+    "lectureDuration": 1,
+    "teacherId": "",
+    "type": "theory+lab",
+    "credits": 3,
+    "departmentIds": [
+      "dept-mloz3lcydz5d3y"
+    ],
+    "teacherName": "Unassigned"
+  },
+  {
+    "id": "c-mo70pr2tir9wc14chdc",
+    "name": "DevOps and Containerization",
+    "code": "IT303",
+    "year": 3,
+    "semester": 6,
+    "weeklyLectures": 2,
+    "weeklyLabs": 2,
+    "labDuration": 1,
+    "lectureDuration": 1,
+    "teacherId": "",
+    "type": "theory+lab",
+    "credits": 2,
+    "departmentIds": [
+      "dept-mloz3lcydz5d3y"
+    ],
+    "teacherName": "Unassigned"
+  },
+  {
+    "id": "c-mo70pr2t6227n938vva",
+    "name": "Enterprise Architecture",
+    "code": "IT304",
+    "year": 3,
+    "semester": 6,
+    "weeklyLectures": 3,
+    "weeklyLabs": 0,
+    "labDuration": 2,
+    "lectureDuration": 1,
+    "teacherId": "",
+    "type": "theory",
+    "credits": 3,
+    "departmentIds": [
+      "dept-mloz3lcydz5d3y"
+    ],
+    "teacherName": "Unassigned"
+  },
+  {
+    "id": "c-mo70pr2t1huj1fs8fuk",
+    "name": "IT Project I",
+    "code": "IT401",
+    "year": 4,
+    "semester": 7,
+    "weeklyLectures": 0,
+    "weeklyLabs": 6,
+    "labDuration": 1,
+    "lectureDuration": 1,
+    "teacherId": "",
+    "type": "project",
+    "credits": 4,
+    "departmentIds": [
+      "dept-mloz3lcydz5d3y"
+    ],
+    "teacherName": "Unassigned"
+  },
+  {
+    "id": "c-mo70pr2tqw4ang6p3rr",
+    "name": "Advanced Security",
+    "code": "IT402",
+    "year": 4,
+    "semester": 7,
+    "weeklyLectures": 3,
+    "weeklyLabs": 2,
+    "labDuration": 1,
+    "lectureDuration": 1,
+    "teacherId": "",
+    "type": "theory+lab",
+    "credits": 3,
+    "departmentIds": [
+      "dept-mloz3lcydz5d3y"
+    ],
+    "teacherName": "Unassigned"
+  },
+  {
+    "id": "c-mo70pr2t1hzjnwwuh43",
+    "name": "IT Project II",
+    "code": "IT403",
+    "year": 4,
+    "semester": 8,
+    "weeklyLectures": 0,
+    "weeklyLabs": 6,
+    "labDuration": 1,
+    "lectureDuration": 1,
+    "teacherId": "",
+    "type": "project",
+    "credits": 4,
+    "departmentIds": [
+      "dept-mloz3lcydz5d3y"
+    ],
+    "teacherName": "Unassigned"
+  },
+  {
+    "id": "c-mo70pr2tgyoier78gh",
+    "name": "Advanced Robotics",
+    "code": "MTX301",
+    "year": 3,
+    "semester": 5,
+    "weeklyLectures": 3,
+    "weeklyLabs": 2,
+    "labDuration": 1,
+    "lectureDuration": 1,
+    "teacherId": "",
+    "type": "theory+lab",
+    "credits": 3,
+    "departmentIds": [
+      "dept-mloz3xrwsk11fr"
+    ],
+    "teacherName": "Unassigned"
+  },
+  {
+    "id": "c-mo70pr2tid8py03lhxk",
+    "name": "VLSI Design",
+    "code": "MTX302",
+    "year": 3,
+    "semester": 5,
+    "weeklyLectures": 3,
+    "weeklyLabs": 2,
+    "labDuration": 1,
+    "lectureDuration": 1,
+    "teacherId": "",
+    "type": "theory+lab",
+    "credits": 3,
+    "departmentIds": [
+      "dept-mloz3xrwsk11fr"
+    ],
+    "teacherName": "Unassigned"
+  },
+  {
+    "id": "c-mo70pr2tfch6w1nejbn",
+    "name": "Advanced Control Theory",
+    "code": "MTX303",
+    "year": 3,
+    "semester": 6,
+    "weeklyLectures": 3,
+    "weeklyLabs": 0,
+    "labDuration": 2,
+    "lectureDuration": 1,
+    "teacherId": "",
+    "type": "theory",
+    "credits": 3,
+    "departmentIds": [
+      "dept-mloz3xrwsk11fr"
+    ],
+    "teacherName": "Unassigned"
+  },
+  {
+    "id": "c-mo70pr2t21911rq0huk",
+    "name": "Real-time Systems",
+    "code": "MTX304",
+    "year": 3,
+    "semester": 6,
+    "weeklyLectures": 2,
+    "weeklyLabs": 2,
+    "labDuration": 1,
+    "lectureDuration": 1,
+    "teacherId": "",
+    "type": "theory+lab",
+    "credits": 2,
+    "departmentIds": [
+      "dept-mloz3xrwsk11fr"
+    ],
+    "teacherName": "Unassigned"
+  },
+  {
+    "id": "c-mo70pr2txyuozr2daq",
+    "name": "Mechatronics Project I",
+    "code": "MTX401",
+    "year": 4,
+    "semester": 7,
+    "weeklyLectures": 0,
+    "weeklyLabs": 6,
+    "labDuration": 1,
+    "lectureDuration": 1,
+    "teacherId": "",
+    "type": "project",
+    "credits": 4,
+    "departmentIds": [
+      "dept-mloz3xrwsk11fr"
+    ],
+    "teacherName": "Unassigned"
+  },
+  {
+    "id": "c-mo70pr2tc5c0zv12t9t",
+    "name": "Industrial Automation",
+    "code": "MTX402",
+    "year": 4,
+    "semester": 7,
+    "weeklyLectures": 3,
+    "weeklyLabs": 2,
+    "labDuration": 1,
+    "lectureDuration": 1,
+    "teacherId": "",
+    "type": "theory+lab",
+    "credits": 3,
+    "departmentIds": [
+      "dept-mloz3xrwsk11fr"
+    ],
+    "teacherName": "Unassigned"
+  },
+  {
+    "id": "c-mo70pr2tydj679josx",
+    "name": "Mechatronics Project II",
+    "code": "MTX403",
+    "year": 4,
+    "semester": 8,
+    "weeklyLectures": 0,
+    "weeklyLabs": 6,
+    "labDuration": 1,
+    "lectureDuration": 1,
+    "teacherId": "",
+    "type": "project",
+    "credits": 4,
+    "departmentIds": [
+      "dept-mloz3xrwsk11fr"
+    ],
+    "teacherName": "Unassigned"
+  },
+  {
+    "id": "c-mo70pr2tjjpigo4h0c8",
+    "name": "Advanced 3D Design",
+    "code": "DS301",
+    "year": 3,
+    "semester": 5,
+    "weeklyLectures": 2,
+    "weeklyLabs": 3,
+    "labDuration": 1,
+    "lectureDuration": 1,
+    "teacherId": "",
+    "type": "theory+lab",
+    "credits": 3,
+    "departmentIds": [
+      "dept-mlx760uqos09cv"
+    ],
+    "teacherName": "Unassigned"
+  },
+  {
+    "id": "c-mo70pr2tvsyr5g5kuao",
+    "name": "Motion Graphics",
+    "code": "DS302",
+    "year": 3,
+    "semester": 5,
+    "weeklyLectures": 2,
+    "weeklyLabs": 3,
+    "labDuration": 1,
+    "lectureDuration": 1,
+    "teacherId": "",
+    "type": "theory+lab",
+    "credits": 3,
+    "departmentIds": [
+      "dept-mlx760uqos09cv"
+    ],
+    "teacherName": "Unassigned"
+  },
+  {
+    "id": "c-mo70pr2toe00y9puxj",
+    "name": "User Experience Design",
+    "code": "DS303",
+    "year": 3,
+    "semester": 6,
+    "weeklyLectures": 2,
+    "weeklyLabs": 3,
+    "labDuration": 1,
+    "lectureDuration": 1,
+    "teacherId": "",
+    "type": "theory+lab",
+    "credits": 2,
+    "departmentIds": [
+      "dept-mlx760uqos09cv"
+    ],
+    "teacherName": "Unassigned"
+  },
+  {
+    "id": "c-mo70pr2trplobxg996",
+    "name": "Brand Design",
+    "code": "DS304",
+    "year": 3,
+    "semester": 6,
+    "weeklyLectures": 2,
+    "weeklyLabs": 2,
+    "labDuration": 1,
+    "lectureDuration": 2,
+    "teacherId": "",
+    "type": "theory+lab",
+    "credits": 2,
+    "departmentIds": [
+      "dept-mlx760uqos09cv"
+    ],
+    "teacherName": "Unassigned"
+  },
+  {
+    "id": "c-mo70pr2txhlxktap0p",
+    "name": "Design Project I",
+    "code": "DS401",
+    "year": 4,
+    "semester": 7,
+    "weeklyLectures": 0,
+    "weeklyLabs": 6,
+    "labDuration": 1,
+    "lectureDuration": 1,
+    "teacherId": "",
+    "type": "project",
+    "credits": 4,
+    "departmentIds": [
+      "dept-mlx760uqos09cv"
+    ],
+    "teacherName": "Unassigned"
+  },
+  {
+    "id": "c-mo70pr2tybjk7bae2m",
+    "name": "Product Design",
+    "code": "DS402",
+    "year": 4,
+    "semester": 7,
+    "weeklyLectures": 2,
+    "weeklyLabs": 3,
+    "labDuration": 1,
+    "lectureDuration": 1,
+    "teacherId": "",
+    "type": "theory+lab",
+    "credits": 3,
+    "departmentIds": [
+      "dept-mlx760uqos09cv"
+    ],
+    "teacherName": "Unassigned"
+  },
+  {
+    "id": "c-mo70pr2t13dns9ye6ays",
+    "name": "Design Project II",
+    "code": "DS403",
+    "year": 4,
+    "semester": 8,
+    "weeklyLectures": 0,
+    "weeklyLabs": 6,
+    "labDuration": 1,
+    "lectureDuration": 1,
+    "teacherId": "",
+    "type": "project",
+    "credits": 4,
+    "departmentIds": [
+      "dept-mlx760uqos09cv"
+    ],
+    "teacherName": "Unassigned"
+  },
+  {
+    "id": "c-mo70pr2tei5h5sl422d",
+    "name": "Financial Management",
+    "code": "BBA301",
+    "year": 3,
+    "semester": 5,
+    "weeklyLectures": 3,
+    "weeklyLabs": 0,
+    "labDuration": 2,
+    "lectureDuration": 1,
+    "teacherId": "",
+    "type": "theory",
+    "credits": 3,
+    "departmentIds": [
+      "dept-mlx76w007nakx1"
+    ],
+    "teacherName": "Unassigned"
+  },
+  {
+    "id": "c-mo70pr2tu4byqpxs44h",
+    "name": "Strategic Management",
+    "code": "BBA302",
+    "year": 3,
+    "semester": 5,
+    "weeklyLectures": 3,
+    "weeklyLabs": 0,
+    "labDuration": 2,
+    "lectureDuration": 1,
+    "teacherId": "",
+    "type": "theory",
+    "credits": 3,
+    "departmentIds": [
+      "dept-mlx76w007nakx1"
+    ],
+    "teacherName": "Unassigned"
+  },
+  {
+    "id": "c-mo70pr2tjgnclrboyjb",
+    "name": "Organizational Behavior Advanced",
+    "code": "BBA303",
+    "year": 3,
+    "semester": 6,
+    "weeklyLectures": 2,
+    "weeklyLabs": 0,
+    "labDuration": 2,
+    "lectureDuration": 1,
+    "teacherId": "",
+    "type": "theory",
+    "credits": 2,
+    "departmentIds": [
+      "dept-mlx76w007nakx1"
+    ],
+    "teacherName": "Unassigned"
+  },
+  {
+    "id": "c-mo70pr2tir8te72ro4",
+    "name": "Business Analytics",
+    "code": "BBA304",
+    "year": 3,
+    "semester": 6,
+    "weeklyLectures": 3,
+    "weeklyLabs": 2,
+    "labDuration": 1,
+    "lectureDuration": 1,
+    "teacherId": "",
+    "type": "theory+lab",
+    "credits": 3,
+    "departmentIds": [
+      "dept-mlx76w007nakx1"
+    ],
+    "teacherName": "Unassigned"
+  },
+  {
+    "id": "c-mo70pr2tl2h1lpov8ng",
+    "name": "BBA Project I",
+    "code": "BBA401",
+    "year": 4,
+    "semester": 7,
+    "weeklyLectures": 0,
+    "weeklyLabs": 6,
+    "labDuration": 1,
+    "lectureDuration": 1,
+    "teacherId": "",
+    "type": "project",
+    "credits": 4,
+    "departmentIds": [
+      "dept-mlx76w007nakx1"
+    ],
+    "teacherName": "Unassigned"
+  },
+  {
+    "id": "c-mo70pr2tfa3pebugarg",
+    "name": "Entrepreneurship",
+    "code": "BBA402",
+    "year": 4,
+    "semester": 7,
+    "weeklyLectures": 3,
+    "weeklyLabs": 0,
+    "labDuration": 2,
+    "lectureDuration": 1,
+    "teacherId": "",
+    "type": "theory",
+    "credits": 3,
+    "departmentIds": [
+      "dept-mlx76w007nakx1"
+    ],
+    "teacherName": "Unassigned"
+  },
+  {
+    "id": "c-mo70pr2t9kr9aexgko6",
+    "name": "BBA Project II",
+    "code": "BBA403",
+    "year": 4,
+    "semester": 8,
+    "weeklyLectures": 0,
+    "weeklyLabs": 6,
+    "labDuration": 1,
+    "lectureDuration": 1,
+    "teacherId": "",
+    "type": "project",
+    "credits": 4,
+    "departmentIds": [
+      "dept-mlx76w007nakx1"
+    ],
+    "teacherName": "Unassigned"
+  },
+  {
+    "id": "c-mo73ghji8bs36ep6",
+    "name": "Engineering Mathematics I",
+    "code": "MTX101",
+    "year": 1,
+    "semester": 1,
+    "weeklyLectures": 3,
+    "weeklyLabs": 0,
+    "labDuration": 2,
+    "lectureDuration": 1,
+    "teacherId": "t-mm1th8kc3l4m5n",
+    "type": "theory",
+    "credits": 3,
+    "teacherName": "Unassigned",
+    "departmentIds": [
+      "dept-mloz3xrwsk11fr"
+    ]
+  },
+  {
+    "id": "c-mo73ghjin3s8cmo7",
+    "name": "Engineering Physics",
+    "code": "MTX102",
+    "year": 1,
+    "semester": 1,
+    "weeklyLectures": 2,
+    "weeklyLabs": 2,
+    "labDuration": 2,
+    "lectureDuration": 1,
+    "teacherId": "t-mm1ti9kd4l5m6n",
+    "type": "theory+lab",
+    "credits": 3,
+    "teacherName": "Unassigned",
+    "departmentIds": [
+      "dept-mloz3xrwsk11fr"
+    ]
+  },
+  {
+    "id": "c-mo73ghjicvtw5bl7",
+    "name": "Engineering Graphics",
+    "code": "MTX103",
+    "year": 1,
+    "semester": 2,
+    "weeklyLectures": 2,
+    "weeklyLabs": 2,
+    "labDuration": 2,
+    "lectureDuration": 1,
+    "teacherId": "t-mm1tj0ke5l6m7n",
+    "type": "theory+lab",
+    "credits": 2,
+    "teacherName": "Unassigned",
+    "departmentIds": [
+      "dept-mloz3xrwsk11fr"
+    ]
+  },
+  {
+    "id": "c-mo73ghjil6khcmz0",
+    "name": "Programming Fundamentals",
+    "code": "MTX104",
+    "year": 1,
+    "semester": 2,
+    "weeklyLectures": 2,
+    "weeklyLabs": 2,
+    "labDuration": 2,
+    "lectureDuration": 1,
+    "teacherId": "t-mm1th8kc3l4m5n",
+    "type": "theory+lab",
+    "credits": 2,
+    "teacherName": "Unassigned",
+    "departmentIds": [
+      "dept-mloz3xrwsk11fr"
+    ]
+  },
+  {
+    "id": "c-mo73ghjijjueon8c",
+    "name": "Mechanics of Machines",
+    "code": "MTX201",
+    "year": 2,
+    "semester": 3,
+    "weeklyLectures": 3,
+    "weeklyLabs": 0,
+    "labDuration": 2,
+    "lectureDuration": 1,
+    "teacherId": "t-mm1ti9kd4l5m6n",
+    "type": "theory",
+    "credits": 3,
+    "teacherName": "Unassigned",
+    "departmentIds": [
+      "dept-mloz3xrwsk11fr"
+    ]
+  },
+  {
+    "id": "c-mo73ghjivpm5btl0",
+    "name": "Sensors and Actuators",
+    "code": "MTX202",
+    "year": 2,
+    "semester": 3,
+    "weeklyLectures": 2,
+    "weeklyLabs": 2,
+    "labDuration": 2,
+    "lectureDuration": 1,
+    "teacherId": "t-mm1tj0ke5l6m7n",
+    "type": "theory+lab",
+    "credits": 3,
+    "teacherName": "Unassigned",
+    "departmentIds": [
+      "dept-mloz3xrwsk11fr"
+    ]
+  },
+  {
+    "id": "c-mo73ghjisc2xt6ah",
+    "name": "Manufacturing Processes",
+    "code": "MTX203",
+    "year": 2,
+    "semester": 4,
+    "weeklyLectures": 2,
+    "weeklyLabs": 0,
+    "labDuration": 2,
+    "lectureDuration": 1,
+    "teacherId": "t-mm1th8kc3l4m5n",
+    "type": "theory",
+    "credits": 3,
+    "teacherName": "Unassigned",
+    "departmentIds": [
+      "dept-mloz3xrwsk11fr"
+    ]
+  },
+  {
+    "id": "c-mo73ghji6tfbkbv2",
+    "name": "Embedded C for Mechatronics",
+    "code": "MTX204",
+    "year": 2,
+    "semester": 4,
+    "weeklyLectures": 1,
+    "weeklyLabs": 1,
+    "labDuration": 2,
+    "lectureDuration": 1,
+    "teacherId": "t-mm1ti9kd4l5m6n",
+    "type": "theory+lab",
+    "credits": 2,
+    "teacherName": "Unassigned",
+    "departmentIds": [
+      "dept-mloz3xrwsk11fr"
+    ]
+  },
+  {
+    "id": "c-mo73ghji9mhk0ogo",
+    "name": "Design Fundamentals",
+    "code": "DS101",
+    "year": 1,
+    "semester": 1,
+    "weeklyLectures": 2,
+    "weeklyLabs": 3,
+    "labDuration": 2,
+    "lectureDuration": 1,
+    "teacherId": "t-mm1tk1kf6l7m8n",
+    "type": "theory+lab",
+    "credits": 3,
+    "teacherName": "Unassigned",
+    "departmentIds": [
+      "dept-mlx760uqos09cv"
+    ]
+  },
+  {
+    "id": "c-mo73ghjieox3yj4c",
+    "name": "Color Theory",
+    "code": "DS102",
+    "year": 1,
+    "semester": 1,
+    "weeklyLectures": 2,
+    "weeklyLabs": 0,
+    "labDuration": 2,
+    "lectureDuration": 1,
+    "teacherId": "t-mm1tl2kg7l8m9n",
+    "type": "theory",
+    "credits": 2,
+    "teacherName": "Unassigned",
+    "departmentIds": [
+      "dept-mlx760uqos09cv"
+    ]
+  },
+  {
+    "id": "c-mo73ghji122a2lo8",
+    "name": "Typography Basics",
+    "code": "DS103",
+    "year": 1,
+    "semester": 2,
+    "weeklyLectures": 2,
+    "weeklyLabs": 2,
+    "labDuration": 2,
+    "lectureDuration": 1,
+    "teacherId": "t-mm1tk1kf6l7m8n",
+    "type": "theory+lab",
+    "credits": 2,
+    "teacherName": "Unassigned",
+    "departmentIds": [
+      "dept-mlx760uqos09cv"
+    ]
+  },
+  {
+    "id": "c-mo73ghji8lb3l816",
+    "name": "Digital Illustration",
+    "code": "DS104",
+    "year": 1,
+    "semester": 2,
+    "weeklyLectures": 2,
+    "weeklyLabs": 3,
+    "labDuration": 2,
+    "lectureDuration": 1,
+    "teacherId": "t-mm1tl2kg7l8m9n",
+    "type": "theory+lab",
+    "credits": 3,
+    "teacherName": "Unassigned",
+    "departmentIds": [
+      "dept-mlx760uqos09cv"
+    ]
+  },
+  {
+    "id": "c-mo73ghjipznkz441",
+    "name": "Visual Communication",
+    "code": "DS201",
+    "year": 2,
+    "semester": 3,
+    "weeklyLectures": 2,
+    "weeklyLabs": 2,
+    "labDuration": 2,
+    "lectureDuration": 1,
+    "teacherId": "t-mm1tk1kf6l7m8n",
+    "type": "theory+lab",
+    "credits": 3,
+    "teacherName": "Unassigned",
+    "departmentIds": [
+      "dept-mlx760uqos09cv"
+    ]
+  },
+  {
+    "id": "c-mo73ghjih0ssjlgi",
+    "name": "Interaction Design",
+    "code": "DS202",
+    "year": 2,
+    "semester": 3,
+    "weeklyLectures": 2,
+    "weeklyLabs": 3,
+    "labDuration": 2,
+    "lectureDuration": 1,
+    "teacherId": "t-mm1tl2kg7l8m9n",
+    "type": "theory+lab",
+    "credits": 3,
+    "teacherName": "Unassigned",
+    "departmentIds": [
+      "dept-mlx760uqos09cv"
+    ]
+  },
+  {
+    "id": "c-mo73ghjiug0aoplf",
+    "name": "Design Research Methods",
+    "code": "DS203",
+    "year": 2,
+    "semester": 4,
+    "weeklyLectures": 3,
+    "weeklyLabs": 0,
+    "labDuration": 2,
+    "lectureDuration": 1,
+    "teacherId": "t-mm1tk1kf6l7m8n",
+    "type": "theory",
+    "credits": 3,
+    "teacherName": "Unassigned",
+    "departmentIds": [
+      "dept-mlx760uqos09cv"
+    ]
+  },
+  {
+    "id": "c-mo73ghjizbesj09d",
+    "name": "Prototype Studio",
+    "code": "DS204",
+    "year": 2,
+    "semester": 4,
+    "weeklyLectures": 1,
+    "weeklyLabs": 4,
+    "labDuration": 2,
+    "lectureDuration": 1,
+    "teacherId": "t-mm1tl2kg7l8m9n",
+    "type": "theory+lab",
+    "credits": 3,
+    "teacherName": "Unassigned",
+    "departmentIds": [
+      "dept-mlx760uqos09cv"
+    ]
+  },
+  {
+    "id": "c-mo73ghjiinhe21zy",
+    "name": "Principles of Management",
+    "code": "BBA101",
+    "year": 1,
+    "semester": 1,
+    "weeklyLectures": 3,
+    "weeklyLabs": 0,
+    "labDuration": 2,
+    "lectureDuration": 1,
+    "teacherId": "t-mm1tm3kh8l9m0n",
+    "type": "theory",
+    "credits": 3,
+    "teacherName": "Unassigned",
+    "departmentIds": [
+      "dept-mlx76w007nakx1"
+    ]
+  },
+  {
+    "id": "c-mo73ghji970wbfpx",
+    "name": "Business Communication",
+    "code": "BBA102",
+    "year": 1,
+    "semester": 1,
+    "weeklyLectures": 2,
+    "weeklyLabs": 0,
+    "labDuration": 2,
+    "lectureDuration": 1,
+    "teacherId": "t-mm1tn4ki9l0m1n",
+    "type": "theory",
+    "credits": 2,
+    "teacherName": "Unassigned",
+    "departmentIds": [
+      "dept-mlx76w007nakx1"
+    ]
+  },
+  {
+    "id": "c-mo73ghjip4coes0z",
+    "name": "Business Mathematics",
+    "code": "BBA103",
+    "year": 1,
+    "semester": 2,
+    "weeklyLectures": 3,
+    "weeklyLabs": 0,
+    "labDuration": 2,
+    "lectureDuration": 1,
+    "teacherId": "t-mm1to5kj0l1m2n",
+    "type": "theory",
+    "credits": 3,
+    "teacherName": "Unassigned",
+    "departmentIds": [
+      "dept-mlx76w007nakx1"
+    ]
+  },
+  {
+    "id": "c-mo73ghji0q3d4u95",
+    "name": "Digital Business Tools",
+    "code": "BBA104",
+    "year": 1,
+    "semester": 2,
+    "weeklyLectures": 2,
+    "weeklyLabs": 2,
+    "labDuration": 2,
+    "lectureDuration": 1,
+    "teacherId": "t-mm1tm3kh8l9m0n",
+    "type": "theory+lab",
+    "credits": 2,
+    "teacherName": "Unassigned",
+    "departmentIds": [
+      "dept-mlx76w007nakx1"
+    ]
+  },
+  {
+    "id": "c-mo73ghjit5tfn4vj",
+    "name": "Managerial Economics",
+    "code": "BBA201",
+    "year": 2,
+    "semester": 3,
+    "weeklyLectures": 3,
+    "weeklyLabs": 0,
+    "labDuration": 2,
+    "lectureDuration": 1,
+    "teacherId": "t-mm1tn4ki9l0m1n",
+    "type": "theory",
+    "credits": 3,
+    "teacherName": "Unassigned",
+    "departmentIds": [
+      "dept-mlx76w007nakx1"
+    ]
+  },
+  {
+    "id": "c-mo73ghjiueo3bn2y",
+    "name": "Accounting for Managers",
+    "code": "BBA202",
+    "year": 2,
+    "semester": 3,
+    "weeklyLectures": 3,
+    "weeklyLabs": 0,
+    "labDuration": 2,
+    "lectureDuration": 1,
+    "teacherId": "t-mm1to5kj0l1m2n",
+    "type": "theory",
+    "credits": 3,
+    "teacherName": "Unassigned",
+    "departmentIds": [
+      "dept-mlx76w007nakx1"
+    ]
+  },
+  {
+    "id": "c-mo73ghjilqj2ygom",
+    "name": "Marketing Management",
+    "code": "BBA203",
+    "year": 2,
+    "semester": 4,
+    "weeklyLectures": 3,
+    "weeklyLabs": 0,
+    "labDuration": 2,
+    "lectureDuration": 1,
+    "teacherId": "t-mm1tm3kh8l9m0n",
+    "type": "theory",
+    "credits": 3,
+    "teacherName": "Unassigned",
+    "departmentIds": [
+      "dept-mlx76w007nakx1"
+    ]
+  },
+  {
+    "id": "c-mo73ghjijtme2z87",
+    "name": "Business Statistics",
+    "code": "BBA204",
+    "year": 2,
+    "semester": 4,
+    "weeklyLectures": 2,
+    "weeklyLabs": 2,
+    "labDuration": 2,
+    "lectureDuration": 1,
+    "teacherId": "t-mm1tn4ki9l0m1n",
+    "type": "theory+lab",
+    "credits": 3,
+    "teacherName": "Unassigned",
+    "departmentIds": [
+      "dept-mlx76w007nakx1"
+    ]
   }
 ]

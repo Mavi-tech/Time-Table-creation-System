@@ -22,5 +22,261 @@
     "departmentId": "dept-cs",
     "year": 1,
     "studentCount": 60
+  },
+  {
+    "id": "b-demo-it-y1-a",
+    "name": "IT Year 1 Batch A",
+    "section": "A",
+    "departmentId": "dept-mloz3lcydz5d3y",
+    "year": 1,
+    "studentCount": 60
+  },
+  {
+    "id": "b-demo-it-y1-b",
+    "name": "IT Year 1 Batch B",
+    "section": "B",
+    "departmentId": "dept-mloz3lcydz5d3y",
+    "year": 1,
+    "studentCount": 55
+  },
+  {
+    "id": "b-demo-it-y2-a",
+    "name": "IT Year 2 Batch A",
+    "section": "A",
+    "departmentId": "dept-mloz3lcydz5d3y",
+    "year": 2,
+    "studentCount": 60
+  },
+  {
+    "id": "b-demo-it-y2-b",
+    "name": "IT Year 2 Batch B",
+    "section": "B",
+    "departmentId": "dept-mloz3lcydz5d3y",
+    "year": 2,
+    "studentCount": 55
+  },
+  {
+    "id": "b-demo-it-y3-a",
+    "name": "IT Year 3 Batch A",
+    "section": "A",
+    "departmentId": "dept-mloz3lcydz5d3y",
+    "year": 3,
+    "studentCount": 60
+  },
+  {
+    "id": "b-demo-it-y3-b",
+    "name": "IT Year 3 Batch B",
+    "section": "B",
+    "departmentId": "dept-mloz3lcydz5d3y",
+    "year": 3,
+    "studentCount": 55
+  },
+  {
+    "id": "b-demo-it-y4-a",
+    "name": "IT Year 4 Batch A",
+    "section": "A",
+    "departmentId": "dept-mloz3lcydz5d3y",
+    "year": 4,
+    "studentCount": 60
+  },
+  {
+    "id": "b-demo-it-y4-b",
+    "name": "IT Year 4 Batch B",
+    "section": "B",
+    "departmentId": "dept-mloz3lcydz5d3y",
+    "year": 4,
+    "studentCount": 55
+  },
+  {
+    "id": "b-demo-mtx-y1-a",
+    "name": "MTX Year 1 Batch A",
+    "section": "A",
+    "departmentId": "dept-mloz3xrwsk11fr",
+    "year": 1,
+    "studentCount": 60
+  },
+  {
+    "id": "b-demo-mtx-y1-b",
+    "name": "MTX Year 1 Batch B",
+    "section": "B",
+    "departmentId": "dept-mloz3xrwsk11fr",
+    "year": 1,
+    "studentCount": 55
+  },
+  {
+    "id": "b-demo-mtx-y2-a",
+    "name": "MTX Year 2 Batch A",
+    "section": "A",
+    "departmentId": "dept-mloz3xrwsk11fr",
+    "year": 2,
+    "studentCount": 60
+  },
+  {
+    "id": "b-demo-mtx-y2-b",
+    "name": "MTX Year 2 Batch B",
+    "section": "B",
+    "departmentId": "dept-mloz3xrwsk11fr",
+    "year": 2,
+    "studentCount": 55
+  },
+  {
+    "id": "b-demo-mtx-y3-a",
+    "name": "MTX Year 3 Batch A",
+    "section": "A",
+    "departmentId": "dept-mloz3xrwsk11fr",
+    "year": 3,
+    "studentCount": 60
+  },
+  {
+    "id": "b-demo-mtx-y3-b",
+    "name": "MTX Year 3 Batch B",
+    "section": "B",
+    "departmentId": "dept-mloz3xrwsk11fr",
+    "year": 3,
+    "studentCount": 55
+  },
+  {
+    "id": "b-demo-mtx-y4-a",
+    "name": "MTX Year 4 Batch A",
+    "section": "A",
+    "departmentId": "dept-mloz3xrwsk11fr",
+    "year": 4,
+    "studentCount": 60
+  },
+  {
+    "id": "b-demo-mtx-y4-b",
+    "name": "MTX Year 4 Batch B",
+    "section": "B",
+    "departmentId": "dept-mloz3xrwsk11fr",
+    "year": 4,
+    "studentCount": 55
+  },
+  {
+    "id": "b-demo-ds-y1-a",
+    "name": "DS Year 1 Batch A",
+    "section": "A",
+    "departmentId": "dept-mlx760uqos09cv",
+    "year": 1,
+    "studentCount": 60
+  },
+  {
+    "id": "b-demo-ds-y1-b",
+    "name": "DS Year 1 Batch B",
+    "section": "B",
+    "departmentId": "dept-mlx760uqos09cv",
+    "year": 1,
+    "studentCount": 55
+  },
+  {
+    "id": "b-demo-ds-y2-a",
+    "name": "DS Year 2 Batch A",
+    "section": "A",
+    "departmentId": "dept-mlx760uqos09cv",
+    "year": 2,
+    "studentCount": 60
+  },
+  {
+    "id": "b-demo-ds-y2-b",
+    "name": "DS Year 2 Batch B",
+    "section": "B",
+    "departmentId": "dept-mlx760uqos09cv",
+    "year": 2,
+    "studentCount": 55
+  },
+  {
+    "id": "b-demo-ds-y3-a",
+    "name": "DS Year 3 Batch A",
+    "section": "A",
+    "departmentId": "dept-mlx760uqos09cv",
+    "year": 3,
+    "studentCount": 60
+  },
+  {
+    "id": "b-demo-ds-y3-b",
+    "name": "DS Year 3 Batch B",
+    "section": "B",
+    "departmentId": "dept-mlx760uqos09cv",
+    "year": 3,
+    "studentCount": 55
+  },
+  {
+    "id": "b-demo-ds-y4-a",
+    "name": "DS Year 4 Batch A",
+    "section": "A",
+    "departmentId": "dept-mlx760uqos09cv",
+    "year": 4,
+    "studentCount": 60
+  },
+  {
+    "id": "b-demo-ds-y4-b",
+    "name": "DS Year 4 Batch B",
+    "section": "B",
+    "departmentId": "dept-mlx760uqos09cv",
+    "year": 4,
+    "studentCount": 55
+  },
+  {
+    "id": "b-demo-bba-y1-a",
+    "name": "BBA Year 1 Batch A",
+    "section": "A",
+    "departmentId": "dept-mlx76w007nakx1",
+    "year": 1,
+    "studentCount": 60
+  },
+  {
+    "id": "b-demo-bba-y1-b",
+    "name": "BBA Year 1 Batch B",
+    "section": "B",
+    "departmentId": "dept-mlx76w007nakx1",
+    "year": 1,
+    "studentCount": 55
+  },
+  {
+    "id": "b-demo-bba-y2-a",
+    "name": "BBA Year 2 Batch A",
+    "section": "A",
+    "departmentId": "dept-mlx76w007nakx1",
+    "year": 2,
+    "studentCount": 60
+  },
+  {
+    "id": "b-demo-bba-y2-b",
+    "name": "BBA Year 2 Batch B",
+    "section": "B",
+    "departmentId": "dept-mlx76w007nakx1",
+    "year": 2,
+    "studentCount": 55
+  },
+  {
+    "id": "b-demo-bba-y3-a",
+    "name": "BBA Year 3 Batch A",
+    "section": "A",
+    "departmentId": "dept-mlx76w007nakx1",
+    "year": 3,
+    "studentCount": 60
+  },
+  {
+    "id": "b-demo-bba-y3-b",
+    "name": "BBA Year 3 Batch B",
+    "section": "B",
+    "departmentId": "dept-mlx76w007nakx1",
+    "year": 3,
+    "studentCount": 55
+  },
+  {
+    "id": "b-demo-bba-y4-a",
+    "name": "BBA Year 4 Batch A",
+    "section": "A",
+    "departmentId": "dept-mlx76w007nakx1",
+    "year": 4,
+    "studentCount": 60
+  },
+  {
+    "id": "b-demo-bba-y4-b",
+    "name": "BBA Year 4 Batch B",
+    "section": "B",
+    "departmentId": "dept-mlx76w007nakx1",
+    "year": 4,
+    "studentCount": 55
   }
 ]

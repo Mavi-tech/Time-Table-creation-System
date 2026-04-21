@@ -116,6 +116,8 @@ export default function LoginPage() {
       const nextUser = (userData.role === 'student' && isStudentLogin)
         ? {
           ...userData,
+          // Student login options intentionally override stored profile values
+          // so one demo account can preview different department/year/semester timetables.
           departmentId: studentDeptId || userData.departmentId || null,
           year: Number(studentYear) || Number(userData.year) || 1,
           semester: Number(studentSemester) || Number(userData.semester) || 1,
@@ -253,8 +255,8 @@ export default function LoginPage() {
             <div className="demo-card" onClick={() => setModeAndFill('admin', 'admin', 'admin123')}>
               <strong>Admin</strong><span>admin</span>
             </div>
-            <div className="demo-card" onClick={() => setModeAndFill('teacher', 'teacher', 'teacher123')}>
-              <strong>Teacher</strong><span>teacher</span>
+            <div className="demo-card" onClick={() => setModeAndFill('teacher', 'verma', 'teacher123')}>
+              <strong>Teacher</strong><span>verma</span>
             </div>
             <div className="demo-card" onClick={() => setModeAndFill('student', 'student1', 'student123')}>
               <strong>Student</strong><span>student1</span>

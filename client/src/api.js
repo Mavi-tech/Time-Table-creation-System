@@ -57,9 +57,10 @@ const api = {
   // Timetable
   generateTimetable: (departmentId, semester, mode, batchId, options = {}) =>
     http.post('/api/timetable/generate', { departmentId, semester, mode, batchId, ...options }),
-  getTimetable: (deptId, semester, day) => {
+  getTimetable: (deptId, semester, day, batchId) => {
     const params = { departmentId: deptId, semester };
     if (day) params.day = day;
+    if (batchId) params.batchId = batchId;
     return http.get('/api/timetable', { params });
   },
   getTeacherTimetable: (teacherId, day) => {
@@ -71,10 +72,19 @@ const api = {
   updateEntry: (id, d) => http.put(`/api/timetable/${id}`, d),
   deleteEntry: (id) => http.delete(`/api/timetable/${id}`),
   cancelLecture: (id) => http.post(`/api/timetable/${id}/cancel`),
+  cancelTempLecture: (id) => http.post(`/api/timetable/${id}/cancel-temp`),
   restoreLecture: (id) => http.post(`/api/timetable/${id}/restore`),
   deleteDeptSemTT: (deptId, semester) => http.delete(`/api/timetable/dept/${deptId}/semester/${semester}`),
   getTimeSlots: () => http.get('/api/timeslots'),
   getDays: () => http.get('/api/days'),
+  getConflicts: (departmentId, semester, teacherId, batchId) => {
+    const params = {};
+    if (departmentId) params.departmentId = departmentId;
+    if (semester) params.semester = semester;
+    if (teacherId) params.teacherId = teacherId;
+    if (batchId) params.batchId = batchId;
+    return http.get('/api/timetable/conflicts', { params });
+  },
 
   // Change requests
   getRequests: () => http.get('/api/change-requests'),

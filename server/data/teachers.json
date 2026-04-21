@@ -79,5 +79,229 @@
     ],
     "office": "",
     "bio": ""
+  },
+  {
+    "id": "t-mm1ta1k2l1m2n",
+    "name": "Dr. Rajesh Kumar",
+    "title": "Prof.",
+    "email": "rajesh@mssu.edu",
+    "phone": "9876543210",
+    "departmentIds": [
+      "dept-cs"
+    ],
+    "specialization": "Machine Learning",
+    "office": "A-301",
+    "bio": "Expert in ML and AI",
+    "courseIds": []
+  },
+  {
+    "id": "t-mm1tb2k3l4m5n",
+    "name": "Dr. Priya Singh",
+    "title": "Prof.",
+    "email": "priya@mssu.edu",
+    "phone": "9876543211",
+    "departmentIds": [
+      "dept-cs"
+    ],
+    "specialization": "Cloud Computing",
+    "office": "A-302",
+    "bio": "Cloud and DevOps specialist",
+    "courseIds": []
+  },
+  {
+    "id": "t-mm1tc3k5l6m7n",
+    "name": "Mr. Amit Patel",
+    "title": "Asst. Prof.",
+    "email": "amit@mssu.edu",
+    "phone": "9876543212",
+    "departmentIds": [
+      "dept-cs"
+    ],
+    "specialization": "Web Development",
+    "office": "A-303",
+    "bio": "Full Stack Developer",
+    "courseIds": []
+  },
+  {
+    "id": "t-mm1td4k7l8m9n",
+    "name": "Ms. Neha Gupta",
+    "title": "Asst. Prof.",
+    "email": "neha@mssu.edu",
+    "phone": "9876543213",
+    "departmentIds": [
+      "dept-cs"
+    ],
+    "specialization": "Data Science",
+    "office": "A-304",
+    "bio": "Data Science and Analytics",
+    "courseIds": []
+  },
+  {
+    "id": "t-mm1te5k9l0m1n",
+    "name": "Dr. Vikram Mishra",
+    "title": "Prof.",
+    "email": "vikram@mssu.edu",
+    "phone": "9876543214",
+    "departmentIds": [
+      "dept-mloz3lcydz5d3y"
+    ],
+    "specialization": "Network Security",
+    "office": "B-301",
+    "bio": "Cybersecurity Expert",
+    "courseIds": []
+  },
+  {
+    "id": "t-mm1tf6ka1l2m3n",
+    "name": "Dr. Anjali Joshi",
+    "title": "Prof.",
+    "email": "anjali@mssu.edu",
+    "phone": "9876543215",
+    "departmentIds": [
+      "dept-mloz3lcydz5d3y"
+    ],
+    "specialization": "Software Engineering",
+    "office": "B-302",
+    "bio": "Software Architecture Expert",
+    "courseIds": []
+  },
+  {
+    "id": "t-mm1tg7kb2l3m4n",
+    "name": "Mr. Sanjay Rao",
+    "title": "Asst. Prof.",
+    "email": "sanjay@mssu.edu",
+    "phone": "9876543216",
+    "departmentIds": [
+      "dept-mloz3lcydz5d3y"
+    ],
+    "specialization": "Mobile Development",
+    "office": "B-303",
+    "bio": "Android and iOS Developer",
+    "courseIds": []
+  },
+  {
+    "id": "t-mm1th8kc3l4m5n",
+    "name": "Ms. Divya Nair",
+    "title": "Asst. Prof.",
+    "email": "divya@mssu.edu",
+    "phone": "9876543217",
+    "departmentIds": [
+      "dept-mloz3xrwsk11fr"
+    ],
+    "specialization": "Robotics",
+    "office": "C-301",
+    "bio": "Robotics and Automation",
+    "courseIds": []
+  },
+  {
+    "id": "t-mm1ti9kd4l5m6n",
+    "name": "Dr. Suresh Yadav",
+    "title": "Prof.",
+    "email": "suresh@mssu.edu",
+    "phone": "9876543218",
+    "departmentIds": [
+      "dept-mloz3xrwsk11fr"
+    ],
+    "specialization": "Control Systems",
+    "office": "C-302",
+    "bio": "Expert in Control Systems",
+    "courseIds": []
+  },
+  {
+    "id": "t-mm1tj0ke5l6m7n",
+    "name": "Mr. Arun Deshmukh",
+    "title": "Asst. Prof.",
+    "email": "arun@mssu.edu",
+    "phone": "9876543219",
+    "departmentIds": [
+      "dept-mloz3xrwsk11fr"
+    ],
+    "specialization": "Embedded Systems",
+    "office": "C-303",
+    "bio": "Embedded Systems Expert",
+    "courseIds": []
+  },
+  {
+    "id": "t-mm1tk1kf6l7m8n",
+    "name": "Ms. Pooja Sharma",
+    "title": "Asst. Prof.",
+    "email": "pooja@mssu.edu",
+    "phone": "9876543220",
+    "departmentIds": [
+      "dept-mlx760uqos09cv"
+    ],
+    "specialization": "UI/UX Design",
+    "office": "D-301",
+    "bio": "Creative Design Specialist",
+    "courseIds": []
+  },
+  {
+    "id": "t-mm1tl2kg7l8m9n",
+    "name": "Dr. Ravi Kumar",
+    "title": "Prof.",
+    "email": "ravi@mssu.edu",
+    "phone": "9876543221",
+    "departmentIds": [
+      "dept-mlx760uqos09cv"
+    ],
+    "specialization": "Graphic Design",
+    "office": "D-302",
+    "bio": "Graphic Design Expert",
+    "courseIds": []
+  },
+  {
+    "id": "t-mm1tm3kh8l9m0n",
+    "name": "Mr. Karan Singh",
+    "title": "Asst. Prof.",
+    "email": "karan@mssu.edu",
+    "phone": "9876543222",
+    "departmentIds": [
+      "dept-mlx76w007nakx1"
+    ],
+    "specialization": "Finance Management",
+    "office": "E-301",
+    "bio": "Finance and MBA Expert",
+    "courseIds": []
+  },
+  {
+    "id": "t-mm1tn4ki9l0m1n",
+    "name": "Ms. Sneha Reddy",
+    "title": "Asst. Prof.",
+    "email": "sneha@mssu.edu",
+    "phone": "9876543223",
+    "departmentIds": [
+      "dept-mlx76w007nakx1"
+    ],
+    "specialization": "Human Resources",
+    "office": "E-302",
+    "bio": "HR Management Expert",
+    "courseIds": []
+  },
+  {
+    "id": "t-mm1to5kj0l1m2n",
+    "name": "Dr. Geeta Menon",
+    "title": "Prof.",
+    "email": "geeta@mssu.edu",
+    "phone": "9876543224",
+    "departmentIds": [
+      "dept-mlx76w007nakx1"
+    ],
+    "specialization": "Marketing",
+    "office": "E-303",
+    "bio": "Marketing and Brand Strategy",
+    "courseIds": []
+  },
+  {
+    "id": "t-mm1tp6kk1l2m3n",
+    "name": "Mr. Rohit Verma",
+    "title": "Asst. Prof.",
+    "email": "rohit@mssu.edu",
+    "phone": "9876543225",
+    "departmentIds": [
+      "dept-cs"
+    ],
+    "specialization": "Artificial Intelligence",
+    "office": "A-305",
+    "bio": "AI and Deep Learning",
+    "courseIds": []
   }
 ]

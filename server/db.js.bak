@@ -157,7 +157,7 @@ CREATE TABLE IF NOT EXISTS timetables (
   semester INT,
   year INT,
   status VARCHAR(20) DEFAULT 'active',
-  temp_cancelled_date DATETIME NULL,
+  temp_cancelled_date VARCHAR(20),
   batch_id VARCHAR(64),
   batch_section VARCHAR(50),
   lab_group VARCHAR(64)
@@ -227,8 +227,6 @@ async function init() {
     for (const stmt of statements) {
       await p.query(stmt);
     }
-
-    await p.query('ALTER TABLE timetables MODIFY temp_cancelled_date DATETIME NULL');
 
     // Seed default users if none exist
     const [users] = await p.query('SELECT id FROM users WHERE username = ?', ['admin']);
