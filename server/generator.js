@@ -583,16 +583,30 @@ async function getTeacherTT(teacherId) {
 }
 
 async function cancel(id) { return await db.update('timetables', id, { status: 'cancelled' }); }
+
+function getWeekKey(date = new Date()) {
+  const d = new Date(date);
+  d.setHours(0, 0, 0, 0);
+  const day = (d.getDay() + 6) % 7;
+  d.setDate(d.getDate() - day);
+  return `${d.getFullYear()}-W${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
 async function cancelTemp(id) {
   const cancelledAt = new Date().toISOString().slice(0, 19).replace('T', ' ');
   return await db.update('timetables', id, {
     status: 'temp_cancelled',
     tempCancelledDate: cancelledAt,
+    tempCancelledWeek: getWeekKey(),
   });
 }
 
 async function restore(id) {
-  return await db.update('timetables', id, { status: 'active', tempCancelledDate: null });
+  return await db.update('timetables', id, {
+    status: 'active',
+    tempCancelledDate: null,
+    tempCancelledWeek: null,
+  });
 }
 
 module.exports = { DAYS, SLOTS, generate, generateDept, getTT, getTeacherTT, cancel, cancelTemp, restore };

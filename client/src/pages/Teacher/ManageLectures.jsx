@@ -126,13 +126,29 @@ export default function ManageLectures() {
     }
   };
 
-  const active = entries.filter(e => e.status === 'active');
+  const cancelTakenLecture = async (entry) => {
+    const ok = await confirm(
+      'Cancel Taken Class?',
+      `Cancel your substitute class for ${entry.courseCode} on ${entry.day} ${entry.slotLabel}?`
+    );
+    if (!ok) return;
+    try {
+      await api.releaseCoveredLecture(entry.id);
+      toast('Taken class cancelled', 'success');
+      load();
+    } catch (e) {
+      toast(e.response?.data?.error || 'Failed', 'error');
+    }
+  };
+
+  const active = entries.filter(e => e.status === 'active' && !e.substituteForId);
   const tempCancelled = entries.filter(e => e.status === 'temp_cancelled');
   const cancelled = entries.filter(e => e.status === 'cancelled');
   const myTeacherIds = new Set(entries.map(e => e.teacherId));
+  const sourceById = new Map(allEntries.map(e => [e.id, e]));
   const coveredSourceIds = new Set(
     allEntries
-      .filter(e => e.substituteForId)
+      .filter(e => e.substituteForId && sourceById.get(e.substituteForId)?.status === 'temp_cancelled')
       .map(e => e.substituteForId)
   );
   const dayOrder = { Monday: 0, Tuesday: 1, Wednesday: 2, Thursday: 3, Friday: 4, Saturday: 5 };
@@ -145,7 +161,11 @@ export default function ManageLectures() {
       !coveredSourceIds.has(e.id) &&
       (dayOrder[e.day] ?? 99) >= todayIndex
   );
-  const coveredByMe = entries.filter(e => e.substituteForId);
+  const coveredByMe = allEntries.filter(e => {
+    if (!e.substituteForId || e.teacherId !== currentTeacherId) return false;
+    const source = sourceById.get(e.substituteForId);
+    return source?.status === 'temp_cancelled';
+  });
 
   if (loading) return <div className="loading">Loading…</div>;
 
@@ -248,7 +268,10 @@ export default function ManageLectures() {
 
       {coveredByMe.length > 0 && (
         <>
-          <h2 style={{ marginBottom: 12 }}>Substitute Classes Taken By Me ({coveredByMe.length})</h2>
+          <h2 style={{ marginBottom: 12 }}>Extra Lectures ({coveredByMe.length})</h2>
+          <div style={{ marginBottom: 12, color: 'var(--text-secondary)', fontSize: 13 }}>
+            These are temporary lectures you took from another teacher. They stay separate from your main schedule.
+          </div>
           <div className="table-wrapper" style={{ marginBottom: 32 }}>
             <table>
               <thead>
@@ -258,6 +281,7 @@ export default function ManageLectures() {
                   <th>Time</th>
                   <th>Room</th>
                   <th>Type</th>
+                  <th>Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -268,6 +292,11 @@ export default function ManageLectures() {
                     <td>{e.slotLabel}</td>
                     <td>{e.classroomName}</td>
                     <td><span className={`badge badge-${e.type}`}>{e.type}</span></td>
+                    <td>
+                      <button className="btn btn-sm btn-secondary" onClick={() => cancelTakenLecture(e)}>
+                        Cancel Extra Lecture
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>

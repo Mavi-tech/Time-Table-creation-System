@@ -16,6 +16,16 @@ services:
       timeout: 5s
       retries: 10
 
+  adminer:
+    image: adminer:4
+    container_name: timetable_adminer
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+
   server:
     build:
       context: ./server
@@ -32,6 +42,12 @@ services:
       NODE_ENV: production
     ports:
       - "5000:5000"
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://127.0.0.1:5000 || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
     depends_on:
       db:
         condition: service_healthy
@@ -50,8 +66,15 @@ services:
       WATCHPACK_POLLING: "true"
     ports:
       - "3000:3000"
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://127.0.0.1:3000 || exit 1"]
+      interval: 20s
+      timeout: 5s
+      retries: 10
+      start_period: 25s
     depends_on:
-      - server
+      server:
+        condition: service_healthy
 
 volumes:
   mysql_data:

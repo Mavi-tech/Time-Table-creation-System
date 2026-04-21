@@ -87,6 +87,7 @@ const api = {
   cancelTempLecture: (id) => http.post(`/api/timetable/${id}/cancel-temp`),
   restoreLecture: (id) => http.post(`/api/timetable/${id}/restore`),
   coverCancelledLecture: (id, teacherId) => http.post(`/api/timetable/${id}/cover`, { teacherId }),
+  releaseCoveredLecture: (id) => http.post(`/api/timetable/${id}/release-cover`),
   deleteDeptSemTT: (deptId, semester) => http.delete(`/api/timetable/dept/${deptId}/semester/${semester}`),
   getTimeSlots: () => http.get('/api/timeslots'),
   getDays: () => http.get('/api/days'),

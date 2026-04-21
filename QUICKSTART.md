@@ -1,48 +1,44 @@
-# Quick Start Guide - PostgreSQL Setup
+# Quick Start Guide - Docker + MySQL Setup
 
-## Option 1: Using Docker (Recommended - Easiest)
+## Option 1: Using Docker (Recommended)
 
-If you have Docker installed, this is the quickest way:
+If you have Docker installed, this is the fastest setup:
 
 ```bash
-# Start PostgreSQL and pgAdmin in Docker
+# Start MySQL, API server, client, and Adminer
 docker-compose up -d
-
-# That's it! Your database is running.
 ```
 
-Then:
-```bash
-cd server
-npm install
-npm start
-```
-
-**Access Database:**
-- Server: http://localhost:5000
-- Database Admin (pgAdmin): http://localhost:5050
-  - Email: admin@example.com
-  - Password: admin
+**Access Services:**
+- Client: http://localhost:3000
+- Server API: http://localhost:5000
+- Database Admin (Adminer): http://localhost:8080
+  - System: MySQL
+  - Server: db (inside Docker network)
+  - Username: root
+  - Password: root
+  - Database: timetable_db
 
 ---
 
-## Option 2: Native PostgreSQL Installation
+## Option 2: Native MySQL Installation
 
-1. **Install PostgreSQL** (see POSTGRES_SETUP.md for detailed instructions)
+1. **Install MySQL 8+**
 
 2. **Create Database:**
    ```bash
-   psql -U postgres -c "CREATE DATABASE timetable_db;"
+   mysql -uroot -proot -e "CREATE DATABASE IF NOT EXISTS timetable_db;"
    ```
 
-3. **Update Environment File:**
-   - Edit `server/.env`:
+3. **Set Environment Variables:**
+   - Create or edit `server/.env`:
      ```
-     DB_USER=postgres
-     DB_PASSWORD=postgres
+     DB_USER=root
+     DB_PASSWORD=root
      DB_HOST=localhost
-     DB_PORT=5432
+     DB_PORT=3306
      DB_NAME=timetable_db
+     PORT=5000
      ```
 
 4. **Start Server:**
@@ -52,48 +48,51 @@ npm start
    npm start
    ```
 
+5. **Start Client:**
+   ```bash
+   cd client
+   npm install
+   npm start
+   ```
+
 ---
 
 ## Testing the Connection
 
-Once server is running:
-
-1. Open http://localhost:5000 in your browser
-2. Login with: `admin` / `admin123`
-3. If you see the dashboard, PostgreSQL is connected! ✅
+1. Open http://localhost:3000 in your browser
+2. Login with `admin` / `admin123`
+3. If dashboard loads and data operations work, your setup is correct
 
 ---
 
-## Stopping Docker (if using Option 1)
+## Stopping Docker
 
 ```bash
 docker-compose down
 ```
 
-To remove all data:
+To remove all Docker volumes/data:
+
 ```bash
 docker-compose down -v
 ```
 
 ---
 
-## Useful PostgreSQL Commands
+## Useful MySQL Commands
 
 ```bash
-# Connect to database
-psql -U postgres -d timetable_db
+# Verify MySQL is reachable
+mysql -uroot -proot -e "SELECT NOW();"
 
-# List all databases
-\l
+# Open database shell
+mysql -uroot -proot timetable_db
 
-# List all tables
-\dt
+# List databases
+SHOW DATABASES;
 
-# View table structure
-\d table_name
-
-# Exit
-\q
+# List tables
+SHOW TABLES;
 ```
 
 ---
@@ -101,17 +100,17 @@ psql -U postgres -d timetable_db
 ## Troubleshooting
 
 **Error: "Connection refused"**
-- Ensure PostgreSQL/Docker is running
-- Check `.env` file settings
+- Ensure MySQL/Docker is running
+- Check DB settings in `server/.env`
 
 **Error: "Database does not exist"**
-- Run: `psql -U postgres -c "CREATE DATABASE timetable_db;"`
+- Run: `mysql -uroot -proot -e "CREATE DATABASE IF NOT EXISTS timetable_db;"`
 
 **Server won't start**
-- Run: `npm install` in server directory
-- Check that `.env` file exists
-- View error messages in console
+- Run `npm install` in `server`
+- Verify database credentials
+- Check server logs for specific errors
 
 ---
 
-For more detailed setup instructions, see [POSTGRES_SETUP.md](./POSTGRES_SETUP.md)
+For more backend setup details, see [server/README.md](./server/README.md)

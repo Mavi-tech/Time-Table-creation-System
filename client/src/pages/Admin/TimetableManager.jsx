@@ -267,7 +267,7 @@ export default function TimetableManager() {
     } else if (ttBatches.length === 0) {
       setSelBatch('');
     }
-  }, [ttBatches]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [ttBatches]);
 
   return (
     <div>

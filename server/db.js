@@ -158,9 +158,14 @@ CREATE TABLE IF NOT EXISTS timetables (
   year INT,
   status VARCHAR(20) DEFAULT 'active',
   temp_cancelled_date DATETIME NULL,
+  temp_cancelled_week VARCHAR(16) NULL,
   batch_id VARCHAR(64),
   batch_section VARCHAR(50),
-  lab_group VARCHAR(64)
+  lab_group VARCHAR(64),
+  substitute_for_id VARCHAR(64) NULL,
+  substitute_for_teacher_id VARCHAR(64) NULL,
+  substitute_for_teacher_name VARCHAR(255) NULL,
+  substitute_week VARCHAR(16) NULL
 );
 
 CREATE TABLE IF NOT EXISTS users (
@@ -229,6 +234,23 @@ async function init() {
     }
 
     await p.query('ALTER TABLE timetables MODIFY temp_cancelled_date DATETIME NULL');
+
+    const ttColumns = await getTableColumns('timetables');
+    if (!ttColumns.has('temp_cancelled_week')) {
+      await p.query('ALTER TABLE timetables ADD COLUMN temp_cancelled_week VARCHAR(16) NULL');
+    }
+    if (!ttColumns.has('substitute_for_id')) {
+      await p.query('ALTER TABLE timetables ADD COLUMN substitute_for_id VARCHAR(64) NULL');
+    }
+    if (!ttColumns.has('substitute_for_teacher_id')) {
+      await p.query('ALTER TABLE timetables ADD COLUMN substitute_for_teacher_id VARCHAR(64) NULL');
+    }
+    if (!ttColumns.has('substitute_for_teacher_name')) {
+      await p.query('ALTER TABLE timetables ADD COLUMN substitute_for_teacher_name VARCHAR(255) NULL');
+    }
+    if (!ttColumns.has('substitute_week')) {
+      await p.query('ALTER TABLE timetables ADD COLUMN substitute_week VARCHAR(16) NULL');
+    }
 
     // Seed default users if none exist
     const [users] = await p.query('SELECT id FROM users WHERE username = ?', ['admin']);

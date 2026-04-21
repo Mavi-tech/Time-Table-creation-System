@@ -68,7 +68,37 @@ export default function TeacherDaily() {
         return;
       }
       api.getAllTimetables()
-        .then(r => setEntries((r.data || []).filter(e => teacherIds.includes(e.teacherId))))
+        .then(r => {
+          const all = r.data || [];
+          const mySet = new Set(teacherIds);
+          const myEntries = all.filter(e => mySet.has(e.teacherId) && !e.substituteForId);
+          const sourceById = new Map(all.map(e => [e.id, e]));
+          const coversForMyCancelled = all.filter(e => {
+            if (!e.substituteForTeacherId || !mySet.has(e.substituteForTeacherId)) return false;
+            const source = sourceById.get(e.substituteForId);
+            return source?.status === 'temp_cancelled';
+          });
+          const coveredSourceIds = new Set(coversForMyCancelled.map(e => e.substituteForId));
+
+          const merged = [
+            ...myEntries.filter(e => !(e.status === 'temp_cancelled' && coveredSourceIds.has(e.id))),
+            ...coversForMyCancelled.map(cover => {
+              const source = myEntries.find(e => e.id === cover.substituteForId);
+              if (!source) return cover;
+              return {
+                ...source,
+                status: 'active',
+                teacherId: cover.teacherId,
+                teacherName: cover.teacherName,
+                substituteForId: cover.substituteForId,
+                substituteForTeacherId: cover.substituteForTeacherId,
+                substituteForTeacherName: cover.substituteForTeacherName,
+              };
+            }),
+          ];
+
+          setEntries(merged);
+        })
         .catch(() => toast('Failed to load timetable', 'error'))
         .finally(() => mounted && setLoading(false));
     });

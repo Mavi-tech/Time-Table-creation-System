@@ -9,6 +9,65 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+function getWeekKey(date = new Date()) {
+  const d = new Date(date);
+  d.setHours(0, 0, 0, 0);
+  const day = (d.getDay() + 6) % 7;
+  d.setDate(d.getDate() - day);
+  return `${d.getFullYear()}-W${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+function toDate(value) {
+  if (!value) return null;
+  const d = new Date(value);
+  return Number.isNaN(d.getTime()) ? null : d;
+}
+
+async function refreshWeeklyOverrides() {
+  const all = await db.read('timetables');
+  const currentWeek = getWeekKey();
+  const byId = new Map(all.map(e => [e.id, e]));
+
+  const toRestore = [];
+  const toRemove = [];
+
+  for (const e of all) {
+    if (e.status === 'temp_cancelled') {
+      const entryWeek = e.tempCancelledWeek || (toDate(e.tempCancelledDate) ? getWeekKey(toDate(e.tempCancelledDate)) : null);
+      if (entryWeek && entryWeek !== currentWeek) {
+        toRestore.push(e.id);
+      }
+    }
+
+    if (e.substituteForId) {
+      const subWeek = e.substituteWeek || (toDate(e.tempCancelledDate) ? getWeekKey(toDate(e.tempCancelledDate)) : null);
+      const source = byId.get(e.substituteForId);
+      const sourceStillCancelledThisWeek = source && source.status === 'temp_cancelled';
+      if ((subWeek && subWeek !== currentWeek) || !sourceStillCancelledThisWeek) {
+        toRemove.push(e.id);
+      }
+    }
+  }
+
+  for (const id of toRestore) {
+    await db.update('timetables', id, {
+      status: 'active',
+      tempCancelledDate: null,
+      tempCancelledWeek: null,
+    });
+  }
+
+  for (const id of toRemove) {
+    await db.remove('timetables', id);
+  }
+
+  if (toRestore.length > 0 || toRemove.length > 0) {
+    return await db.read('timetables');
+  }
+
+  return all;
+}
+
 // Serve React build
 const clientBuildDir = path.join(__dirname, '..', 'client', 'build');
 const clientIndexFile = path.join(clientBuildDir, 'index.html');
@@ -394,7 +453,7 @@ app.post('/api/timetable/generate', async (req, res) => {
 app.get('/api/timetable/conflicts', async (req, res) => {
   try {
     const { departmentId, semester, teacherId, batchId } = req.query;
-    const allTT = await db.read('timetables');
+    const allTT = await refreshWeeklyOverrides();
     const active = allTT.filter(t => t.status === 'active');
 
     const teacherConflicts = [];
@@ -440,6 +499,7 @@ app.get('/api/timetable/conflicts', async (req, res) => {
 
 app.get('/api/timetable', async (req, res) => {
   try {
+    await refreshWeeklyOverrides();
     const { departmentId, semester, teacherId, day, batchId } = req.query;
     let entries;
     if (teacherId) entries = await gen.getTeacherTT(teacherId);
@@ -460,7 +520,7 @@ app.get('/api/timetable', async (req, res) => {
 
 app.get('/api/timetable/all', async (_, res) => {
   try {
-    const all = await db.read('timetables');
+    const all = await refreshWeeklyOverrides();
     const teachers = await db.read('teachers');
     res.json(all.map(e => ({ ...e, teacherName: (teachers.find(t => t.id === e.teacherId) || {}).name || 'Unknown' })));
   } catch (error) {
@@ -511,6 +571,7 @@ app.put('/api/timetable/:id', async (req, res) => {
 
 app.post('/api/timetable/:id/cover', async (req, res) => {
   try {
+    await refreshWeeklyOverrides();
     const { teacherId } = req.body || {};
     if (!teacherId) return res.status(400).json({ error: 'teacherId required' });
 
@@ -575,11 +636,28 @@ app.post('/api/timetable/:id/cover', async (req, res) => {
       substituteForId: source.id,
       substituteForTeacherId: source.teacherId,
       substituteForTeacherName: (originalTeacher || {}).name || 'Unknown',
+      substituteWeek: source.tempCancelledWeek || getWeekKey(),
       tempCancelledDate: null,
+      tempCancelledWeek: null,
     };
 
     const created = await db.add('timetables', covered);
     res.json(created);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post('/api/timetable/:id/release-cover', async (req, res) => {
+  try {
+    const coverEntry = await db.findById('timetables', req.params.id);
+    if (!coverEntry) return res.status(404).json({ error: 'Lecture not found' });
+    if (!coverEntry.substituteForId) {
+      return res.status(409).json({ error: 'Only taken substitute lectures can be cancelled here' });
+    }
+
+    await db.remove('timetables', req.params.id);
+    res.json({ ok: true });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
