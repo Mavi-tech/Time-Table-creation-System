@@ -174,7 +174,7 @@ function SemesterCard({ deptId, semester }) {
     api.getClassrooms().then(r => setClassrooms(r.data || [])).catch(() => {});
     api.getDays().then(r => setDays(r.data || [])).catch(() => {});
     api.getTimeSlots().then(r => setSlots(r.data || [])).catch(() => {});
-  }, [deptId, semester]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [deptId, semester]);
 
   useEffect(() => {
     if (selectedBatchId && !batches.find(b => b.id === selectedBatchId)) {

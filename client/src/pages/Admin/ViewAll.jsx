@@ -63,7 +63,7 @@ export default function ViewAll() {
     } else if (batches.length === 0) {
       setSelBatch('');
     }
-  }, [batches]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [batches]);
 
   return (
     <div>
