@@ -43,6 +43,9 @@ services:
     container_name: timetable_client
     restart: unless-stopped
     environment:
+      HOST: 0.0.0.0
+      PORT: 3000
+      REACT_APP_API_URL: http://localhost:5000
       CHOKIDAR_USEPOLLING: "true"
       WATCHPACK_POLLING: "true"
     ports:

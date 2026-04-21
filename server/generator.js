@@ -574,7 +574,7 @@ async function generateDept(departmentId) {
 
 async function getTT(departmentId, semester) {
   const timetables = await db.read('timetables');
-  return timetables.filter(t => t.departmentId === departmentId && t.semester === semester && t.status === 'active');
+  return timetables.filter(t => t.departmentId === departmentId && t.semester === semester);
 }
 
 async function getTeacherTT(teacherId) {

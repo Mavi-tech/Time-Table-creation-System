@@ -1,6 +1,18 @@
 import axios from 'axios';
 
-const http = axios.create({ baseURL: 'http://localhost:5000' });
+const resolveBaseURL = () => {
+  if (process.env.REACT_APP_API_URL) {
+    return process.env.REACT_APP_API_URL;
+  }
+
+  if (typeof window !== 'undefined' && window.location?.hostname) {
+    return `${window.location.protocol}//${window.location.hostname}:5000`;
+  }
+
+  return 'http://localhost:5000';
+};
+
+const http = axios.create({ baseURL: resolveBaseURL() });
 
 const api = {
   // Auth — returns user object directly (unwrapped)
@@ -74,6 +86,7 @@ const api = {
   cancelLecture: (id) => http.post(`/api/timetable/${id}/cancel`),
   cancelTempLecture: (id) => http.post(`/api/timetable/${id}/cancel-temp`),
   restoreLecture: (id) => http.post(`/api/timetable/${id}/restore`),
+  coverCancelledLecture: (id, teacherId) => http.post(`/api/timetable/${id}/cover`, { teacherId }),
   deleteDeptSemTT: (deptId, semester) => http.delete(`/api/timetable/dept/${deptId}/semester/${semester}`),
   getTimeSlots: () => http.get('/api/timeslots'),
   getDays: () => http.get('/api/days'),

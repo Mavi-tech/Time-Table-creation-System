@@ -37,8 +37,6 @@ export default function StudentWeekly() {
   const electiveIds = useMemo(() => new Set(courses.filter(c => c.isElective).map(c => c.id)), [courses]);
   const active = useMemo(() => {
     return entries.filter(e => {
-      if (e.status === 'cancelled') return false;
-
       // If an entry is batch-specific, it must match the logged-in student's batch.
       if (e.batchId && e.batchId !== user?.batchId) return false;
 
@@ -48,12 +46,14 @@ export default function StudentWeekly() {
     });
   }, [entries, electiveIds, enrolledIds, user]);
 
+  const activeCount = active.filter(e => e.status !== 'cancelled' && e.status !== 'temp_cancelled');
+
   return (
     <div>
       <h1 className="page-title">Weekly Timetable</h1>
       <div style={{ marginBottom: 16 }}>
-        <span className="badge badge-lecture" style={{ marginRight: 8 }}>Lectures: {active.filter(e => e.type === 'lecture').length}</span>
-        <span className="badge badge-lab">Labs: {active.filter(e => e.type === 'lab').length}</span>
+        <span className="badge badge-lecture" style={{ marginRight: 8 }}>Lectures: {activeCount.filter(e => e.type === 'lecture').length}</span>
+        <span className="badge badge-lab">Labs: {activeCount.filter(e => e.type === 'lab').length}</span>
       </div>
       {loading ? (
         <div className="loading">Loading…</div>

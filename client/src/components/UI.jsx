@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 
 // Toast system
 let toastListeners = [];
@@ -25,13 +26,15 @@ export function ToastContainer() {
 // Modal
 export function Modal({ open, onClose, title, children }) {
   if (!open) return null;
-  return (
+
+  return createPortal(
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-box" onClick={e => e.stopPropagation()}>
         <h2>{title}</h2>
         {children}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 

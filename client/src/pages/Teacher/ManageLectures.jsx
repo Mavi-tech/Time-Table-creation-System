@@ -6,6 +6,8 @@ import { toast, useConfirm } from '../../components/UI';
 export default function ManageLectures() {
   const { user } = useAuth();
   const [entries, setEntries] = useState([]);
+  const [allEntries, setAllEntries] = useState([]);
+  const [currentTeacherId, setCurrentTeacherId] = useState('');
   const [loading, setLoading] = useState(true);
   const [confirm, ConfirmDialog] = useConfirm();
 
@@ -53,13 +55,19 @@ export default function ManageLectures() {
   const load = () => {
     setLoading(true);
     getTeacherIdCandidates().then((teacherIds) => {
+      setCurrentTeacherId(teacherIds[0] || '');
       if (teacherIds.length === 0) {
         setEntries([]);
+        setAllEntries([]);
         setLoading(false);
         return;
       }
       api.getAllTimetables()
-        .then(r => setEntries((r.data || []).filter(e => teacherIds.includes(e.teacherId))))
+        .then(r => {
+          const all = r.data || [];
+          setAllEntries(all);
+          setEntries(all.filter(e => teacherIds.includes(e.teacherId)));
+        })
         .catch(() => toast('Failed to load', 'error'))
         .finally(() => setLoading(false));
     });
@@ -99,9 +107,45 @@ export default function ManageLectures() {
     }
   };
 
+  const coverLecture = async (entry) => {
+    if (!currentTeacherId) {
+      toast('Could not resolve your teacher profile', 'error');
+      return;
+    }
+    const ok = await confirm(
+      'Take This Class?',
+      `Take ${entry.courseCode} on ${entry.day} ${entry.slotLabel} as a substitute class?`
+    );
+    if (!ok) return;
+    try {
+      await api.coverCancelledLecture(entry.id, currentTeacherId);
+      toast('Substitute class scheduled successfully', 'success');
+      load();
+    } catch (e) {
+      toast(e.response?.data?.error || 'Failed', 'error');
+    }
+  };
+
   const active = entries.filter(e => e.status === 'active');
   const tempCancelled = entries.filter(e => e.status === 'temp_cancelled');
   const cancelled = entries.filter(e => e.status === 'cancelled');
+  const myTeacherIds = new Set(entries.map(e => e.teacherId));
+  const coveredSourceIds = new Set(
+    allEntries
+      .filter(e => e.substituteForId)
+      .map(e => e.substituteForId)
+  );
+  const dayOrder = { Monday: 0, Tuesday: 1, Wednesday: 2, Thursday: 3, Friday: 4, Saturday: 5 };
+  const todayName = new Date().toLocaleDateString('en-US', { weekday: 'long' });
+  const todayIndex = dayOrder[todayName] ?? 0;
+  const cancelledByOthers = allEntries.filter(
+    e =>
+      e.status === 'temp_cancelled' &&
+      !myTeacherIds.has(e.teacherId) &&
+      !coveredSourceIds.has(e.id) &&
+      (dayOrder[e.day] ?? 99) >= todayIndex
+  );
+  const coveredByMe = entries.filter(e => e.substituteForId);
 
   if (loading) return <div className="loading">Loading…</div>;
 
@@ -201,6 +245,69 @@ export default function ManageLectures() {
           </div>
         </>
       )}
+
+      {coveredByMe.length > 0 && (
+        <>
+          <h2 style={{ marginBottom: 12 }}>Substitute Classes Taken By Me ({coveredByMe.length})</h2>
+          <div className="table-wrapper" style={{ marginBottom: 32 }}>
+            <table>
+              <thead>
+                <tr>
+                  <th>Course</th>
+                  <th>Day</th>
+                  <th>Time</th>
+                  <th>Room</th>
+                  <th>Type</th>
+                </tr>
+              </thead>
+              <tbody>
+                {coveredByMe.map(e => (
+                  <tr key={e.id} style={{ background: '#ecfdf5' }}>
+                    <td>{e.courseCode} - {e.courseName}</td>
+                    <td>{e.day}</td>
+                    <td>{e.slotLabel}</td>
+                    <td>{e.classroomName}</td>
+                    <td><span className={`badge badge-${e.type}`}>{e.type}</span></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
+      )}
+
+      <h2 style={{ marginBottom: 12 }}>Cancelled This Week By Other Teachers ({cancelledByOthers.length})</h2>
+      <div className="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Course</th>
+              <th>Teacher</th>
+              <th>Day</th>
+              <th>Time</th>
+              <th>Room</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {cancelledByOthers.map(e => (
+              <tr key={e.id} style={{ background: '#fff7ed' }}>
+                <td>{e.courseCode} - {e.courseName}</td>
+                <td>{e.teacherName || 'Unknown'}</td>
+                <td>{e.day}</td>
+                <td>{e.slotLabel}</td>
+                <td>{e.classroomName}</td>
+                <td>
+                  <button className="btn btn-sm btn-primary" onClick={() => coverLecture(e)}>Take This Class</button>
+                </td>
+              </tr>
+            ))}
+            {cancelledByOthers.length === 0 && (
+              <tr><td colSpan={6} className="text-center">No week-cancelled slots available right now</td></tr>
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

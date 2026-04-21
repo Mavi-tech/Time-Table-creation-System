@@ -44,7 +44,6 @@ export default function StudentDaily() {
   const electiveIds = useMemo(() => new Set(courses.filter(c => c.isElective).map(c => c.id)), [courses]);
   const myEntries = useMemo(() => {
     return entries.filter(e => {
-      if (e.status === 'cancelled') return false;
       // If an entry is batch-specific, it must match the logged-in student's batch.
       if (e.batchId && e.batchId !== user?.batchId) return false;
 

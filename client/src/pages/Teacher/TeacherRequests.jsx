@@ -57,27 +57,48 @@ export default function TeacherRequests() {
     return [...ids];
   }, [resolveTeacherId, user?.linkedId]);
 
-  const load = useCallback(() => {
-    getTeacherIdCandidates().then((teacherIds) => {
+  const load = useCallback(async () => {
+    try {
+      const teacherIds = await getTeacherIdCandidates();
       setTeacherId(teacherIds[0] || '');
-      api.getRequests().then(r => {
-        const all = r.data || [];
-        const mine = all.filter(req => teacherIds.includes(req.teacherId));
-        setRequests(mine);
-      });
-      if (teacherIds.length > 0) {
-        api.getAllTimetables().then(r => setEntries((r.data || []).filter(e => teacherIds.includes(e.teacherId) && e.status !== 'cancelled')));
-      } else {
-        setEntries([]);
-      }
-    });
-  }, [resolveTeacherId]);
+
+      const [requestsRes, entriesRes] = await Promise.all([
+        api.getRequests(),
+        teacherIds.length > 0 ? api.getAllTimetables() : Promise.resolve({ data: [] }),
+      ]);
+
+      const allRequests = requestsRes.data || [];
+      setRequests(allRequests.filter(req => teacherIds.includes(req.teacherId)));
+
+      const allEntries = entriesRes.data || [];
+      setEntries(
+        allEntries.filter(e =>
+          teacherIds.includes(e.teacherId) &&
+          e.status !== 'cancelled' &&
+          e.status !== 'temp_cancelled'
+        )
+      );
+    } catch {
+      toast('Failed to load change requests', 'error');
+      setRequests([]);
+      setEntries([]);
+    }
+  }, [getTeacherIdCandidates]);
 
   useEffect(() => { load(); }, [load]);
 
   const submit = async () => {
     if (!form.entryId) { toast('Select a lecture', 'error'); return; }
+    if (!form.reason?.trim()) { toast('Reason is required', 'error'); return; }
+    if (form.type === 'reschedule' && (!form.newDay || !form.newSlot)) {
+      toast('Select new day and new time for reschedule request', 'error');
+      return;
+    }
     const entry = entries.find(e => e.id === form.entryId);
+    if (!entry) {
+      toast('Selected lecture no longer exists', 'error');
+      return;
+    }
     try {
       await api.createRequest({
         teacherId,

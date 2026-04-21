@@ -32,7 +32,9 @@ export default function TimetableGrid({ entries, showTeacher = true, showRoom = 
                   >
                     <div className="course-code">
                       {entry.courseName || entry.courseCode}
+                      {entry.status === 'cancelled' && <div style={{ fontSize: '10px', color: '#ff4d4f', marginTop: 4 }}>(Cancelled)</div>}
                       {entry.status === 'temp_cancelled' && <div style={{ fontSize: '10px', color: '#ff4d4f', marginTop: 4 }}>(Cancelled This Week)</div>}
+                      {entry.substituteForId && <div style={{ fontSize: '10px', color: '#059669', marginTop: 4 }}>(Covered Class)</div>}
                     </div>
                     {showTeacher && <div className="entry-info">{entry.teacherName}</div>}
                     {showRoom && <div className="entry-info">📍 {entry.classroomName}</div>}

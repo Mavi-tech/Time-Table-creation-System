@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const fs = require('fs');
 const path = require('path');
 const db = require('./db');
 const gen = require('./generator');
@@ -9,9 +10,9 @@ app.use(cors());
 app.use(express.json());
 
 // Serve React build
-app.use(express.static(path.join(__dirname, '..', 'client', 'build')));
-
-db.init();
+const clientBuildDir = path.join(__dirname, '..', 'client', 'build');
+const clientIndexFile = path.join(clientBuildDir, 'index.html');
+app.use(express.static(clientBuildDir));
 
 // ==================== AUTH ====================
 app.post('/api/login', async (req, res) => {
@@ -477,6 +478,7 @@ app.put('/api/timetable/:id', async (req, res) => {
     const sameSlot = all.filter(e =>
       e.id !== req.params.id &&
       e.status !== 'cancelled' &&
+      e.status !== 'temp_cancelled' &&
       e.day === next.day &&
       Number(e.slotId) === Number(next.slotId)
     );
@@ -502,6 +504,82 @@ app.put('/api/timetable/:id', async (req, res) => {
 
     const r = await db.update('timetables', req.params.id, req.body);
     r ? res.json(r) : res.status(404).json({ error: 'Not found' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post('/api/timetable/:id/cover', async (req, res) => {
+  try {
+    const { teacherId } = req.body || {};
+    if (!teacherId) return res.status(400).json({ error: 'teacherId required' });
+
+    const source = await db.findById('timetables', req.params.id);
+    if (!source) return res.status(404).json({ error: 'Lecture not found' });
+    if (source.status !== 'temp_cancelled') {
+      return res.status(409).json({ error: 'Only week-cancelled lectures can be covered' });
+    }
+
+    const all = await db.read('timetables');
+
+    const existingCover = all.find(e => e.substituteForId === source.id);
+    if (existingCover) {
+      return res.status(409).json({ error: 'This lecture has already been covered by another teacher' });
+    }
+
+    const dayOrder = { Monday: 0, Tuesday: 1, Wednesday: 2, Thursday: 3, Friday: 4, Saturday: 5 };
+    const todayName = new Date().toLocaleDateString('en-US', { weekday: 'long' });
+    const todayIndex = dayOrder[todayName] ?? 0;
+    const lectureDayIndex = dayOrder[source.day];
+    if (lectureDayIndex != null && lectureDayIndex < todayIndex) {
+      return res.status(409).json({ error: 'Cannot take a class for a past day' });
+    }
+
+    const slotBusy = all.filter(e =>
+      e.id !== source.id &&
+      e.status !== 'cancelled' &&
+      e.status !== 'temp_cancelled' &&
+      e.day === source.day &&
+      Number(e.slotId) === Number(source.slotId)
+    );
+
+    if (slotBusy.some(e => e.teacherId === teacherId)) {
+      return res.status(409).json({ error: 'Selected teacher already has a class at this day/slot' });
+    }
+
+    if (source.classroomId && slotBusy.some(e => e.classroomId === source.classroomId)) {
+      return res.status(409).json({ error: 'Classroom is already occupied at this day/slot' });
+    }
+
+    if (source.batchId) {
+      const batchConflict = slotBusy.some(e =>
+        e.departmentId === source.departmentId &&
+        Number(e.semester) === Number(source.semester) &&
+        e.batchId === source.batchId
+      );
+      if (batchConflict) {
+        return res.status(409).json({ error: 'Batch already has another class at this day/slot' });
+      }
+    }
+
+    const teachers = await db.read('teachers');
+    const coveringTeacher = teachers.find(t => t.id === teacherId);
+    const originalTeacher = teachers.find(t => t.id === source.teacherId);
+
+    const covered = {
+      ...source,
+      id: db.uid('tt-'),
+      teacherId,
+      teacherName: (coveringTeacher || {}).name || 'Unknown',
+      status: 'active',
+      substituteForId: source.id,
+      substituteForTeacherId: source.teacherId,
+      substituteForTeacherName: (originalTeacher || {}).name || 'Unknown',
+      tempCancelledDate: null,
+    };
+
+    const created = await db.add('timetables', covered);
+    res.json(created);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -644,7 +722,13 @@ app.get('/api/timeslots', (_, res) => res.json(gen.SLOTS));
 app.get('/api/days', (_, res) => res.json(gen.DAYS));
 
 // SPA fallback
-app.get('*', (_, res) => res.sendFile(path.join(__dirname, '..', 'client', 'build', 'index.html')));
+app.get('*', (_, res) => {
+  if (fs.existsSync(clientIndexFile)) {
+    return res.sendFile(clientIndexFile);
+  }
+
+  return res.status(404).json({ error: 'Client build not available' });
+});
 
 const DEFAULT_PORT = 5000;
 const configuredPort = Number(process.env.PORT) || DEFAULT_PORT;
@@ -669,4 +753,12 @@ function startServer(port) {
   });
 }
 
-startServer(configuredPort);
+async function bootstrap() {
+  await db.init();
+  startServer(configuredPort);
+}
+
+bootstrap().catch((error) => {
+  console.error('Failed to start server:', error);
+  process.exit(1);
+});
