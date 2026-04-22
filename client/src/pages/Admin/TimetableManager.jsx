@@ -21,6 +21,7 @@ export default function TimetableManager() {
 
   /* edit modal */
   const [editing, setEditing] = useState(null);
+  const [editIssue, setEditIssue] = useState('');
   const [teachers, setTeachers] = useState([]);
   const [classrooms, setClassrooms] = useState([]);
   const [courses, setCourses] = useState([]);
@@ -180,17 +181,100 @@ export default function TimetableManager() {
 
   /* edit entry */
   const handleEntryClick = (entry) => {
+    setEditIssue('');
     setEditing({ ...entry });
   };
 
+  const editConflictReason = React.useMemo(() => {
+    if (!editing || !timetable) return '';
+
+    const sameSlot = timetable.filter(e =>
+      e.id !== editing.id &&
+      e.status !== 'cancelled' &&
+      e.status !== 'temp_cancelled' &&
+      e.day === editing.day &&
+      Number(e.slotId) === Number(editing.slotId)
+    );
+
+    if (editing.classroomId && sameSlot.some(e => e.classroomId === editing.classroomId)) {
+      return 'Selected classroom is already occupied at this day/slot.';
+    }
+
+    if (editing.teacherId && sameSlot.some(e => e.teacherId === editing.teacherId)) {
+      return 'Selected teacher already has a class at this day/slot.';
+    }
+
+    if (editing.batchId) {
+      const batchConflict = sameSlot.some(e =>
+        e.departmentId === editing.departmentId &&
+        Number(e.semester) === Number(editing.semester) &&
+        e.batchId === editing.batchId
+      );
+      if (batchConflict) {
+        return 'Selected batch already has another class at this day/slot.';
+      }
+    }
+
+    return '';
+  }, [editing, timetable]);
+
   const saveEntry = async () => {
+    if (editConflictReason) {
+      setEditIssue(editConflictReason);
+      toast(editConflictReason, 'warning');
+      return;
+    }
+
     try {
       await api.updateEntry(editing.id, editing);
       toast('Entry updated', 'success');
+      setEditIssue('');
       setEditing(null);
       load();
     } catch (e) {
-      toast(e.response?.data?.error || 'Update failed', 'error');
+      const msg = e.response?.data?.error || 'Update failed';
+      setEditIssue(msg);
+      toast(msg, 'error');
+    }
+  };
+
+  const cancelEntryForWeek = async () => {
+    if (!editing) return;
+    if (editing.status === 'temp_cancelled') {
+      toast('This lecture is already cancelled for this week', 'info');
+      return;
+    }
+    if (editing.status === 'cancelled') {
+      toast('This lecture is permanently cancelled', 'warning');
+      return;
+    }
+
+    if (!await confirm('Cancel Lecture (This Week)', 'Cancel this lecture for the current week only?')) return;
+    try {
+      await api.cancelTempLecture(editing.id);
+      toast('Lecture cancelled for this week', 'success');
+      setEditing(null);
+      load();
+    } catch (e) {
+      toast(e.response?.data?.error || 'Weekly cancellation failed', 'error');
+    }
+  };
+
+  const restoreEntry = async () => {
+    if (!editing) return;
+    if (editing.status !== 'cancelled' && editing.status !== 'temp_cancelled') {
+      toast('This lecture is already active', 'info');
+      return;
+    }
+
+    if (!await confirm('Restore Lecture', 'Restore this cancelled lecture to active status?')) return;
+    try {
+      await api.restoreLecture(editing.id);
+      toast('Lecture restored', 'success');
+      setEditing(null);
+      load();
+    } catch (e) {
+      toast(e.response?.data?.error || 'Restore failed', 'error');
     }
   };
 
@@ -630,6 +714,7 @@ export default function TimetableManager() {
               <label>Course</label>
               <select value={editing.courseId || ''} onChange={e => {
                 const c = courses.find(x => x.id === e.target.value);
+                setEditIssue('');
                 setEditing({ ...editing, courseId: e.target.value, courseName: c?.name || '', courseCode: c?.code || '' });
               }}>
                 <option value="">Select</option>
@@ -645,6 +730,7 @@ export default function TimetableManager() {
               <label>Teacher</label>
               <select value={editing.teacherId || ''} onChange={e => {
                 const t = teachers.find(x => x.id === e.target.value);
+                setEditIssue('');
                 setEditing({ ...editing, teacherId: e.target.value, teacherName: t?.name || '' });
               }}>
                 <option value="">Select</option>
@@ -655,6 +741,7 @@ export default function TimetableManager() {
               <label>Classroom</label>
               <select value={editing.classroomId || ''} onChange={e => {
                 const r = classrooms.find(x => x.id === e.target.value);
+                setEditIssue('');
                 setEditing({ ...editing, classroomId: e.target.value, classroomName: r?.name || '' });
               }}>
                 <option value="">Select</option>
@@ -664,23 +751,84 @@ export default function TimetableManager() {
             <div className="form-row">
               <div className="form-group">
                 <label>Day</label>
-                <input value={editing.day || ''} readOnly className="readonly" />
+                <select value={editing.day || ''} onChange={e => {
+                  setEditIssue('');
+                  setEditing({ ...editing, day: e.target.value });
+                }}>
+                  {days.map(d => <option key={d} value={d}>{d}</option>)}
+                </select>
               </div>
               <div className="form-group">
                 <label>Slot</label>
-                <input value={editing.slotLabel || ''} readOnly className="readonly" />
+                <select value={editing.slotId || ''} onChange={e => {
+                  const nextSlotId = Number(e.target.value);
+                  const slot = slots.find(s => Number(s.id) === nextSlotId);
+                  setEditIssue('');
+                  setEditing({
+                    ...editing,
+                    slotId: nextSlotId,
+                    slotLabel: slot?.label || editing.slotLabel,
+                    startTime: slot?.start || editing.startTime,
+                    endTime: slot?.end || editing.endTime,
+                  });
+                }}>
+                  {slots.map(s => <option key={s.id} value={s.id}>{s.label}</option>)}
+                </select>
               </div>
             </div>
             <div className="form-group">
               <label>Type</label>
-              <select value={editing.type || 'lecture'} onChange={e => setEditing({ ...editing, type: e.target.value })}>
+              <select value={editing.type || 'lecture'} onChange={e => {
+                setEditIssue('');
+                setEditing({ ...editing, type: e.target.value });
+              }}>
                 <option value="lecture">Lecture</option>
                 <option value="lab">Lab</option>
               </select>
             </div>
+
+            {(editConflictReason || editIssue) && (
+              <div style={{
+                marginTop: 4,
+                marginBottom: 8,
+                padding: '10px 12px',
+                borderRadius: 8,
+                border: '1px solid #fca5a5',
+                background: '#fef2f2',
+                color: '#991b1b',
+                fontSize: 12,
+                fontWeight: 600,
+              }}>
+                Change not possible: {editConflictReason || editIssue}
+              </div>
+            )}
+
             <div className="modal-actions">
               <button className="btn btn-danger" onClick={deleteEntry}>Delete</button>
-              <button className="btn btn-primary" onClick={saveEntry}>Save</button>
+              <button
+                className="btn btn-secondary"
+                onClick={cancelEntryForWeek}
+                disabled={editing.status === 'temp_cancelled' || editing.status === 'cancelled'}
+                title={editing.status === 'cancelled' ? 'Lecture is permanently cancelled' : (editing.status === 'temp_cancelled' ? 'Already cancelled for this week' : 'Cancel this lecture for current week')}
+              >
+                Cancel This Week
+              </button>
+              <button
+                className="btn btn-secondary"
+                onClick={restoreEntry}
+                disabled={editing.status !== 'temp_cancelled' && editing.status !== 'cancelled'}
+                title={editing.status === 'temp_cancelled' || editing.status === 'cancelled' ? 'Restore this cancelled lecture' : 'Lecture is already active'}
+              >
+                Restore
+              </button>
+              <button
+                className="btn btn-primary"
+                onClick={saveEntry}
+                disabled={!!editConflictReason}
+                title={editConflictReason || 'Save changes'}
+              >
+                Save
+              </button>
             </div>
           </div>
         )}

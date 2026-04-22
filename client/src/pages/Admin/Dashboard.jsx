@@ -19,19 +19,24 @@ export default function Dashboard() {
     api.getDepartments().then(r => setDepartments(r.data)).catch(() => toast('Failed to load departments', 'error'));
   }, []);
 
-  const handleGenerate = async (deptId) => {
+  const handleGenerate = async (deptId, semesterGroup) => {
     const dept = departments.find(d => d.id === deptId);
     const maxSem = (dept?.years || 4) * 2;
-    setGenerating(deptId);
+    const semesters = Array.from({ length: maxSem }, (_, i) => i + 1).filter(s =>
+      semesterGroup === 'odd' ? s % 2 !== 0 : s % 2 === 0
+    );
+
+    setGenerating(`${deptId}:${semesterGroup}`);
     try {
       const results = [];
-      for (let s = 1; s <= maxSem; s++) {
+      for (const s of semesters) {
         const r = await api.generateTimetable(deptId, s, 'week');
         results.push(r.data);
       }
       const total = results.reduce((s, r) => s + (r.placed || 0), 0);
       const errors = results.flatMap(r => r.errors || []);
-      toast(`Timetable generated — ${total} slots placed`, 'success');
+      const label = semesterGroup === 'odd' ? 'Odd semesters' : 'Even semesters';
+      toast(`${label} generated — ${total} slots placed`, 'success');
       if (errors.length > 0) errors.forEach(e => toast(e, 'error'));
     } catch {
       toast('Generation failed', 'error');
@@ -120,13 +125,22 @@ export default function Dashboard() {
             <h2 style={{ fontSize: 20, fontWeight: 700 }}>
               {deptName(selectedDept)} <span className="badge badge-primary">{departments.find(d => d.id === selectedDept)?.code}</span>
             </h2>
-            <button
-              className="btn btn-primary"
-              onClick={() => handleGenerate(selectedDept)}
-              disabled={generating === selectedDept}
-            >
-              {generating === selectedDept ? '⏳ Generating…' : '+ Generate All Semesters'}
-            </button>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              <button
+                className="btn btn-primary"
+                onClick={() => handleGenerate(selectedDept, 'odd')}
+                disabled={generating.startsWith(`${selectedDept}:`)}
+              >
+                {generating === `${selectedDept}:odd` ? '⏳ Generating Odd…' : '+ Generate 1,3,5,7'}
+              </button>
+              <button
+                className="btn btn-secondary"
+                onClick={() => handleGenerate(selectedDept, 'even')}
+                disabled={generating.startsWith(`${selectedDept}:`)}
+              >
+                {generating === `${selectedDept}:even` ? '⏳ Generating Even…' : '+ Generate 2,4,6,8'}
+              </button>
+            </div>
           </div>
 
           {Array.from({ length: departments.find(d => d.id === selectedDept)?.years || 4 }, (_, i) => i + 1).map(year => (

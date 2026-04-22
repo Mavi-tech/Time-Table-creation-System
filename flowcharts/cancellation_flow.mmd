@@ -1,0 +1,11 @@
+graph TD
+    A([Teacher logs into Dashboard]) --> B[View Interactive Daily Timetable]
+    B --> C{Select an Active Lecture}
+    C --> D[Click Cancel for this week only]
+    D --> E[API executes MySQL UPDATE command]
+    E --> F[Row Status changes from active to temp_cancelled]
+    F --> G[Teacher Dashboard auto-refreshes]
+    G --> H[Lecture visually turns RED - Strike-through]
+    F --> I[Student logs into Dashboard]
+    I --> J[Student queries same Database Row]
+    J --> K[Student Dashboard immediately reflects RED - Cancelled state]

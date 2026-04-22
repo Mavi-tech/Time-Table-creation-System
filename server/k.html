@@ -1,0 +1,131 @@
+<h1>7.2 Test Cases Table</h1>
+
+<table border="1" cellpadding="8" cellspacing="0"
+    style="table-layout: fixed; width: 100%; border-collapse: collapse; font-family: Arial, sans-serif; font-size: 11pt; word-wrap: break-word;">
+    <thead>
+        <tr style="background-color: #f2f2f2; text-align: left;">
+            <th style="width: 15%;">Test Case ID</th>
+            <th style="width: 20%;">Module</th>
+            <th style="width: 32%;">Scenario / Input</th>
+            <th style="width: 33%;">Expected Output</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><b>TC-001</b></td>
+            <td>Authentication</td>
+            <td>Enter valid Admin username and password.</td>
+            <td>System grants access and immediately redirects the user to the /admin dashboard.</td>
+        </tr>
+        <tr>
+            <td><b>TC-002</b></td>
+            <td>Authentication</td>
+            <td>Enter valid username with an incorrect password.</td>
+            <td>System denies access and displays an "Invalid Credentials" error message on the screen.</td>
+        </tr>
+        <tr>
+            <td><b>TC-003</b></td>
+            <td>Authorization</td>
+            <td>A user logged in as a 'Student' attempts to manually enter the /admin/generate URL.</td>
+            <td>The route-guard blocks access, throwing an unauthorized error, and forcibly redirects the user to the
+                Student dashboard.</td>
+        </tr>
+        <tr>
+            <td><b>TC-004</b></td>
+            <td>Admin (CRUD)</td>
+            <td>Admin submits 'Add Classroom' form with valid data (Name: Room 101, Capacity: 60, Type: Lecture).</td>
+            <td>API securely inserts the row into the MySQL database; the UI list updates instantly to show the new
+                room.</td>
+        </tr>
+        <tr>
+            <td><b>TC-005</b></td>
+            <td>Admin (CRUD)</td>
+            <td>Admin attempts to delete a Department that still contains active courses and enrolled students.</td>
+            <td>Database throws a Foreign Key restriction error; the system prevents deletion and shows a warning to the
+                Admin.</td>
+        </tr>
+        <tr>
+            <td><b>TC-006</b></td>
+            <td>Admin (Batches)</td>
+            <td>Admin inputs '150' as total student count and triggers 'Auto-Split'.</td>
+            <td>System algorithmically divides the count and creates Batch A (75 students) and Batch B (75 students).
+            </td>
+        </tr>
+        <tr>
+            <td><b>TC-007</b></td>
+            <td>Generator</td>
+            <td>Assign Dr. Sharma to teach CS-101 and CS-102 at the exact same physical timeslot.</td>
+            <td>Engine recognizes the Teacher Hard Constraint and refuses to overlap them, pushing one course to an
+                alternative slot.</td>
+        </tr>
+        <tr>
+            <td><b>TC-008</b></td>
+            <td>Generator</td>
+            <td>A 60-student batch course assigned to a classroom with a capacity limit of 40.</td>
+            <td>Engine recognizes the Capacity Hard Constraint and avoids placing the course in that under-sized room.
+            </td>
+        </tr>
+        <tr>
+            <td><b>TC-009</b></td>
+            <td>Generator</td>
+            <td>A 'Physics Lab' course specifically requiring 2 consecutive hours.</td>
+            <td>Engine strictly places the multi-slot session continuously without breaking for the standard lunch hour.
+            </td>
+        </tr>
+        <tr>
+            <td><b>TC-010</b></td>
+            <td>Generator</td>
+            <td>Generate schedule for 6 heavy courses on a single day.</td>
+            <td>The 'Soft Constraint' scoring kicks in and penalizes dense clustering, successfully balancing the
+                courses across the 6-day week.</td>
+        </tr>
+        <tr>
+            <td><b>TC-011</b></td>
+            <td>Generator (Fail)</td>
+            <td>Feed algorithm impossible overlapping constraints with no available rooms left.</td>
+            <td>The Backtracking engine triggers. Upon total failure, the Node server survives without crashing and
+                returns an "Unplaceable Session" error log.</td>
+        </tr>
+        <tr>
+            <td><b>TC-012</b></td>
+            <td>Teacher Portal</td>
+            <td>Teacher successfully authenticates and views the 'Daily' grid.</td>
+            <td>Grid displays strictly the lectures mapped to their specific teacher ID for the current day only.</td>
+        </tr>
+        <tr>
+            <td><b>TC-013</b></td>
+            <td>Teacher Portal</td>
+            <td>Teacher clicks a scheduled lecture block and selects "Cancel for this week".</td>
+            <td>The database row updates to temp_cancelled; the lecture block visually updates to display a RED
+                cancellation warning.</td>
+        </tr>
+        <tr>
+            <td><b>TC-014</b></td>
+            <td>Admin / Teacher</td>
+            <td>Teacher submits a schedule Change Request; Admin approves it.</td>
+            <td>System updates request status to 'Approved'; notification sent and Admin interface unlocks manual DB
+                editing for that specific slot.</td>
+        </tr>
+        <tr>
+            <td><b>TC-015</b></td>
+            <td>Student Portal</td>
+            <td>Student logs in and navigates to the weekly Timetable dashboard.</td>
+            <td>Grid exclusively fetches and displays rows perfectly matching the student's personal Department Semester
+                and Batch string.</td>
+        </tr>
+        <tr>
+            <td><b>TC-016</b></td>
+            <td>Student Portal</td>
+            <td>Student attempts to enroll in a multi-disciplinary Elective course.</td>
+            <td>System successfully registers the enrollment and the Elective populates onto their personal daily visual
+                timetable safely.</td>
+        </tr>
+        <tr>
+            <td><b>TC-017</b></td>
+            <td>Security</td>
+            <td>Submit a login form containing basic SQL injection string (e.g. ' OR 1=1 --).</td>
+            <td>The db.js abstraction sanitizes the query; the injection attack fails and is treated as a standard
+                invalid username.</td>
+        </tr>
+    </tbody>
+</table>

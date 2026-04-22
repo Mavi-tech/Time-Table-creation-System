@@ -436,13 +436,13 @@ app.post('/api/batches/auto-split', async (req, res) => {
 // ==================== TIMETABLE ====================
 app.post('/api/timetable/generate', async (req, res) => {
   try {
-    const { departmentId, semester, mode, batchId, preferences } = req.body;
+    const { departmentId, semester, mode, batchId, preferences, semesterGroup } = req.body;
     if (semester) {
       const requestedPrefs = Array.isArray(preferences) ? preferences : [];
       const result = await gen.generate(departmentId, +semester, mode || 'week', batchId || null, requestedPrefs);
       res.json(result);
     } else {
-      const result = await gen.generateDept(departmentId);
+      const result = await gen.generateDept(departmentId, semesterGroup || 'all');
       res.json(result);
     }
   } catch (e) { res.status(500).json({ error: e.message }); }

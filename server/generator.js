@@ -564,10 +564,19 @@ async function generate(departmentId, semester, mode = 'week', batchId = null, p
   };
 }
 
-async function generateDept(departmentId) {
-  const r = {};
+async function generateDept(departmentId, semesterGroup = 'all') {
+  const group = String(semesterGroup || 'all').toLowerCase();
+  const semesters = [];
+
   for (let s = 1; s <= 8; s++) {
-    r[`Semester ${s}`] = await generate(departmentId, s);
+    if (group === 'odd' && s % 2 === 0) continue;
+    if (group === 'even' && s % 2 !== 0) continue;
+    semesters.push(s);
+  }
+
+  const r = {};
+  for (const sem of semesters) {
+    r[`Semester ${sem}`] = await generate(departmentId, sem);
   }
   return r;
 }
