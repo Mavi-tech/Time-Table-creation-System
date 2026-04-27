@@ -436,13 +436,13 @@ function scheduleWithBacktracking(sessions, rooms, existingSchedule, departmentI
 
 // ==================== PUBLIC API (async version for PostgreSQL) ====================
 
-async function generate(departmentId, semester, mode = 'week', batchId = null, preferences = []) {
-  const courses = (await db.read('courses')).filter(c => {
+async function generate(departmentId, semester, mode = 'week', batchId = null, preferences = [], dbName) {
+  const courses = (await db.read('courses', dbName)).filter(c => {
     const cDepts = c.departmentIds || (c.departmentId ? [c.departmentId] : []);
     return cDepts.includes(departmentId) && c.semester === semester;
   });
-  const rooms = await db.read('classrooms');
-  const allTT = await db.read('timetables');
+  const rooms = await db.read('classrooms', dbName);
+  const allTT = await db.read('timetables', dbName);
 
   // Replace scope: whole semester, or only the selected batch within that semester.
   const shouldReplace = batchId
@@ -454,7 +454,7 @@ async function generate(departmentId, semester, mode = 'week', batchId = null, p
 
   // Determine batches
   const year = Math.ceil(semester / 2);
-  const allBatches = (await db.read('batches')).filter(b => b.departmentId === departmentId && b.year === year);
+  const allBatches = (await db.read('batches', dbName)).filter(b => b.departmentId === departmentId && b.year === year);
 
   let batchList;
   if (batchId) {
@@ -540,12 +540,12 @@ async function generate(departmentId, semester, mode = 'week', batchId = null, p
 
   // Delete existing rows in replace-scope, then insert newly generated rows.
   for (const oldEntry of allTT.filter(shouldReplace)) {
-    await db.remove('timetables', oldEntry.id);
+    await db.remove('timetables', oldEntry.id, dbName);
   }
 
   // Add new timetables to DB
   for (const entry of result.schedule) {
-    await db.add('timetables', entry);
+    await db.add('timetables', entry, dbName);
   }
 
   return {
@@ -564,7 +564,7 @@ async function generate(departmentId, semester, mode = 'week', batchId = null, p
   };
 }
 
-async function generateDept(departmentId, semesterGroup = 'all') {
+async function generateDept(departmentId, semesterGroup = 'all', dbName) {
   const group = String(semesterGroup || 'all').toLowerCase();
   const semesters = [];
 
@@ -576,22 +576,22 @@ async function generateDept(departmentId, semesterGroup = 'all') {
 
   const r = {};
   for (const sem of semesters) {
-    r[`Semester ${sem}`] = await generate(departmentId, sem);
+    r[`Semester ${sem}`] = await generate(departmentId, sem, 'week', null, [], dbName);
   }
   return r;
 }
 
-async function getTT(departmentId, semester) {
-  const timetables = await db.read('timetables');
+async function getTT(departmentId, semester, dbName) {
+  const timetables = await db.read('timetables', dbName);
   return timetables.filter(t => t.departmentId === departmentId && t.semester === semester);
 }
 
-async function getTeacherTT(teacherId) {
-  const timetables = await db.read('timetables');
+async function getTeacherTT(teacherId, dbName) {
+  const timetables = await db.read('timetables', dbName);
   return timetables.filter(t => t.teacherId === teacherId);
 }
 
-async function cancel(id) { return await db.update('timetables', id, { status: 'cancelled' }); }
+async function cancel(id, dbName) { return await db.update('timetables', id, { status: 'cancelled' }, dbName); }
 
 function getWeekKey(date = new Date()) {
   const d = new Date(date);
@@ -601,21 +601,21 @@ function getWeekKey(date = new Date()) {
   return `${d.getFullYear()}-W${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
-async function cancelTemp(id) {
+async function cancelTemp(id, dbName) {
   const cancelledAt = new Date().toISOString().slice(0, 19).replace('T', ' ');
   return await db.update('timetables', id, {
     status: 'temp_cancelled',
     tempCancelledDate: cancelledAt,
     tempCancelledWeek: getWeekKey(),
-  });
+  }, dbName);
 }
 
-async function restore(id) {
+async function restore(id, dbName) {
   return await db.update('timetables', id, {
     status: 'active',
     tempCancelledDate: null,
     tempCancelledWeek: null,
-  });
+  }, dbName);
 }
 
 module.exports = { DAYS, SLOTS, generate, generateDept, getTT, getTeacherTT, cancel, cancelTemp, restore };

@@ -1,7 +1,9 @@
 const mysql = require('mysql2/promise');
 require('dotenv').config();
+const tenants = require('./tenants');
 
-let pool = null;
+// Pool cache: dbName → mysql pool
+const pools = {};
 
 // camelCase → snake_case
 function toSnake(str) {
@@ -194,93 +196,137 @@ CREATE TABLE IF NOT EXISTS change_requests (
 );
 `;
 
-function getPool() {
-  if (!pool) {
-    pool = mysql.createPool({
+// ==================== POOL MANAGEMENT ====================
+
+const DEFAULT_DB = process.env.DB_NAME || 'timetable_db';
+
+/** Collect all unique dbNames from tenants config */
+function getAllDbNames() {
+  const names = new Set();
+  for (const uni of tenants.getAll()) {
+    for (const campus of uni.campuses) {
+      names.add(campus.dbName);
+    }
+  }
+  // Always include the default/env db
+  names.add(DEFAULT_DB);
+  return [...names];
+}
+
+/** Get or create a connection pool for a specific database */
+function getPool(dbName) {
+  const name = dbName || DEFAULT_DB;
+  if (!pools[name]) {
+    pools[name] = mysql.createPool({
       host: process.env.DB_HOST || 'localhost',
       user: process.env.DB_USER || 'root',
       password: process.env.DB_PASSWORD || '',
-      database: process.env.DB_NAME || 'timetable_db',
+      database: name,
       port: parseInt(process.env.DB_PORT, 10) || 3306,
       waitForConnections: true,
       connectionLimit: 10,
       queueLimit: 0,
     });
   }
-  return pool;
+  return pools[name];
 }
 
+/** Initialize a single tenant database (create db, tables, seed users) */
+async function initTenantDb(dbName) {
+  // Create the database if it doesn't exist (connect without selecting a db)
+  const tempPool = mysql.createPool({
+    host: process.env.DB_HOST || 'localhost',
+    user: process.env.DB_USER || 'root',
+    password: process.env.DB_PASSWORD || '',
+    port: parseInt(process.env.DB_PORT, 10) || 3306,
+    waitForConnections: true,
+    connectionLimit: 2,
+  });
+
+  await tempPool.query(`CREATE DATABASE IF NOT EXISTS \`${dbName}\``);
+  await tempPool.end();
+
+  // Now create tables inside that database
+  const p = getPool(dbName);
+  const statements = SCHEMA_SQL.split(';').map(s => s.trim()).filter(Boolean);
+  for (const stmt of statements) {
+    await p.query(stmt);
+  }
+
+  await p.query('ALTER TABLE timetables MODIFY temp_cancelled_date DATETIME NULL');
+
+  const ttColumns = await getTableColumns('timetables', dbName);
+  if (!ttColumns.has('temp_cancelled_week')) {
+    await p.query('ALTER TABLE timetables ADD COLUMN temp_cancelled_week VARCHAR(16) NULL');
+  }
+  if (!ttColumns.has('substitute_for_id')) {
+    await p.query('ALTER TABLE timetables ADD COLUMN substitute_for_id VARCHAR(64) NULL');
+  }
+  if (!ttColumns.has('substitute_for_teacher_id')) {
+    await p.query('ALTER TABLE timetables ADD COLUMN substitute_for_teacher_id VARCHAR(64) NULL');
+  }
+  if (!ttColumns.has('substitute_for_teacher_name')) {
+    await p.query('ALTER TABLE timetables ADD COLUMN substitute_for_teacher_name VARCHAR(255) NULL');
+  }
+  if (!ttColumns.has('substitute_week')) {
+    await p.query('ALTER TABLE timetables ADD COLUMN substitute_week VARCHAR(16) NULL');
+  }
+
+  // Seed default users if none exist
+  const [users] = await p.query('SELECT id FROM users WHERE username = ?', ['admin']);
+  if (users.length === 0) {
+    await p.query(
+      'INSERT INTO users (id, username, password, role, name) VALUES (?, ?, ?, ?, ?)',
+      ['u-admin', 'admin', 'admin123', 'admin', 'Administrator']
+    );
+    await p.query(
+      'INSERT INTO users (id, username, password, role, name) VALUES (?, ?, ?, ?, ?)',
+      ['u-teacher', 'sharma', 'teacher123', 'teacher', 'Dr. Sharma']
+    );
+    await p.query(
+      'INSERT INTO users (id, username, password, role, name) VALUES (?, ?, ?, ?, ?)',
+      ['u-student', 'student1', 'student123', 'student', 'Student User']
+    );
+    console.log(`  ✅ Default users seeded for ${dbName}`);
+  }
+
+  console.log(`  ✅ Database "${dbName}" initialized`);
+}
+
+/** Initialize ALL tenant databases on startup */
 async function init() {
   try {
-    // First, try to create the database if it doesn't exist
-    const tempPool = mysql.createPool({
-      host: process.env.DB_HOST || 'localhost',
-      user: process.env.DB_USER || 'root',
-      password: process.env.DB_PASSWORD || '',
-      port: parseInt(process.env.DB_PORT, 10) || 3306,
-      waitForConnections: true,
-      connectionLimit: 2,
-    });
-
-    const dbName = process.env.DB_NAME || 'timetable_db';
-    await tempPool.query(`CREATE DATABASE IF NOT EXISTS \`${dbName}\``);
-    await tempPool.end();
-
-    // Now create tables
-    const p = getPool();
-    const statements = SCHEMA_SQL.split(';').map(s => s.trim()).filter(Boolean);
-    for (const stmt of statements) {
-      await p.query(stmt);
+    const allDbs = getAllDbNames();
+    console.log(`\n🏫 Initializing ${allDbs.length} tenant database(s)...`);
+    for (const dbName of allDbs) {
+      await initTenantDb(dbName);
     }
-
-    await p.query('ALTER TABLE timetables MODIFY temp_cancelled_date DATETIME NULL');
-
-    const ttColumns = await getTableColumns('timetables');
-    if (!ttColumns.has('temp_cancelled_week')) {
-      await p.query('ALTER TABLE timetables ADD COLUMN temp_cancelled_week VARCHAR(16) NULL');
-    }
-    if (!ttColumns.has('substitute_for_id')) {
-      await p.query('ALTER TABLE timetables ADD COLUMN substitute_for_id VARCHAR(64) NULL');
-    }
-    if (!ttColumns.has('substitute_for_teacher_id')) {
-      await p.query('ALTER TABLE timetables ADD COLUMN substitute_for_teacher_id VARCHAR(64) NULL');
-    }
-    if (!ttColumns.has('substitute_for_teacher_name')) {
-      await p.query('ALTER TABLE timetables ADD COLUMN substitute_for_teacher_name VARCHAR(255) NULL');
-    }
-    if (!ttColumns.has('substitute_week')) {
-      await p.query('ALTER TABLE timetables ADD COLUMN substitute_week VARCHAR(16) NULL');
-    }
-
-    // Seed default users if none exist
-    const [users] = await p.query('SELECT id FROM users WHERE username = ?', ['admin']);
-    if (users.length === 0) {
-      await p.query(
-        'INSERT INTO users (id, username, password, role, name) VALUES (?, ?, ?, ?, ?)',
-        ['u-admin', 'admin', 'admin123', 'admin', 'Administrator']
-      );
-      await p.query(
-        'INSERT INTO users (id, username, password, role, name) VALUES (?, ?, ?, ?, ?)',
-        ['u-teacher', 'sharma', 'teacher123', 'teacher', 'Dr. Sharma']
-      );
-      await p.query(
-        'INSERT INTO users (id, username, password, role, name) VALUES (?, ?, ?, ?, ?)',
-        ['u-student', 'student1', 'student123', 'student', 'Student User']
-      );
-      console.log('Default users seeded.');
-    }
-
-    console.log('MySQL database initialized successfully');
+    console.log('✅ All tenant databases initialized successfully\n');
   } catch (error) {
-    console.error('Error initializing MySQL database:', error.message);
+    console.error('Error initializing databases:', error.message);
     console.error('Make sure MySQL is running and .env credentials are correct.');
-    // Fall back gracefully — don't crash the server
   }
 }
 
-async function read(collection) {
+async function ensureTenantDb(dbName) {
+  await initTenantDb(dbName || DEFAULT_DB);
+}
+
+// ==================== CRUD OPERATIONS (tenant-aware) ====================
+
+async function getTableColumns(table, dbName) {
+  const p = getPool(dbName);
+  const name = dbName || DEFAULT_DB;
+  const [cols] = await p.query(
+    `SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ?`,
+    [name, table]
+  );
+  return new Set(cols.map(c => c.COLUMN_NAME));
+}
+
+async function read(collection, dbName) {
   try {
-    const p = getPool();
+    const p = getPool(dbName);
     const table = tableName(collection);
     const [rows] = await p.query(`SELECT * FROM \`${table}\``);
     return rows.map(rowToCamel);
@@ -290,9 +336,9 @@ async function read(collection) {
   }
 }
 
-async function findById(collection, id) {
+async function findById(collection, id, dbName) {
   try {
-    const p = getPool();
+    const p = getPool(dbName);
     const table = tableName(collection);
     const [rows] = await p.query(`SELECT * FROM \`${table}\` WHERE id = ?`, [id]);
     return rows.length > 0 ? rowToCamel(rows[0]) : null;
@@ -302,18 +348,9 @@ async function findById(collection, id) {
   }
 }
 
-async function getTableColumns(table) {
-  const p = getPool();
-  const [cols] = await p.query(
-    `SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ?`,
-    [process.env.DB_NAME || 'timetable_db', table]
-  );
-  return new Set(cols.map(c => c.COLUMN_NAME));
-}
-
-async function add(collection, item) {
+async function add(collection, item, dbName) {
   try {
-    const p = getPool();
+    const p = getPool(dbName);
     const table = tableName(collection);
     const row = { ...item };
 
@@ -325,7 +362,7 @@ async function add(collection, item) {
     const snakeRow = keysToSnake(row);
 
     // Get allowed columns for this table
-    const allowedCols = await getTableColumns(table);
+    const allowedCols = await getTableColumns(table, dbName);
 
     // Filter to only known columns and serialize arrays/objects
     const filteredEntries = Object.entries(snakeRow)
@@ -349,13 +386,13 @@ async function add(collection, item) {
   }
 }
 
-async function update(collection, id, updates) {
+async function update(collection, id, updates, dbName) {
   try {
-    const p = getPool();
+    const p = getPool(dbName);
     const table = tableName(collection);
 
     // Get allowed columns
-    const allowedCols = await getTableColumns(table);
+    const allowedCols = await getTableColumns(table, dbName);
 
     // Convert to snake_case and filter
     const snakeUpdates = keysToSnake(updates);
@@ -363,7 +400,7 @@ async function update(collection, id, updates) {
       .filter(([k]) => allowedCols.has(k) && k !== 'id');
 
     if (filteredEntries.length === 0) {
-      return await findById(collection, id);
+      return await findById(collection, id, dbName);
     }
 
     const setClauses = filteredEntries.map(([k]) => `\`${k}\` = ?`);
@@ -375,16 +412,16 @@ async function update(collection, id, updates) {
 
     if (result.affectedRows === 0) return null;
 
-    return await findById(collection, id);
+    return await findById(collection, id, dbName);
   } catch (error) {
     console.error(`Error updating ${collection}:`, error.message);
     return null;
   }
 }
 
-async function remove(collection, id) {
+async function remove(collection, id, dbName) {
   try {
-    const p = getPool();
+    const p = getPool(dbName);
     const table = tableName(collection);
     const [result] = await p.query(`DELETE FROM \`${table}\` WHERE id = ?`, [id]);
     return result.affectedRows > 0;
@@ -394,4 +431,4 @@ async function remove(collection, id) {
   }
 }
 
-module.exports = { init, read, findById, add, update, remove, uid };
+module.exports = { init, ensureTenantDb, read, findById, add, update, remove, uid, getPool, DEFAULT_DB };

@@ -1,0 +1,43 @@
+[
+  {
+    "id": "mssu",
+    "name": "Ratan Tata Maharashtra State Skills University",
+    "shortName": "MSSU",
+    "logo": "https://mssu.ac.in/wp-content/uploads/2022/11/MSSU-Logo_home-1-430x330.png",
+    "campuses": [
+      {
+        "id": "main",
+        "name": "Main Campus",
+        "dbName": "timetable_db"
+      },
+      {
+        "id": "north",
+        "name": "North Campus",
+        "dbName": "timetable_mssu_north"
+      }
+    ]
+  },
+  {
+    "id": "pu",
+    "name": "Pune University",
+    "shortName": "PU",
+    "logo": "",
+    "campuses": [
+      {
+        "id": "main_campus",
+        "name": "Main Campus",
+        "dbName": "timetable_pu_main_campus"
+      },
+      {
+        "id": "north_campus",
+        "name": "north campus",
+        "dbName": "timetable_pu_north_campus"
+      },
+      {
+        "id": "south_campus",
+        "name": "south campus",
+        "dbName": "timetable_pu_south_campus"
+      }
+    ]
+  }
+]

@@ -8,9 +8,24 @@ export function AuthProvider({ children }) {
     return saved ? JSON.parse(saved) : null;
   });
 
+  const [tenant, setTenantState] = useState(() => {
+    const saved = sessionStorage.getItem('tt_tenant');
+    return saved ? JSON.parse(saved) : null;
+  });
+
   const login = (userData) => {
     sessionStorage.setItem('tt_user', JSON.stringify(userData));
     setUser(userData);
+  };
+
+  const setTenant = (tenantData) => {
+    sessionStorage.setItem('tt_tenant', JSON.stringify(tenantData));
+    setTenantState(tenantData);
+  };
+
+  const clearTenant = () => {
+    sessionStorage.removeItem('tt_tenant');
+    setTenantState(null);
   };
 
   const updateUser = (patch) => {
@@ -24,11 +39,13 @@ export function AuthProvider({ children }) {
 
   const logout = () => {
     sessionStorage.removeItem('tt_user');
+    sessionStorage.removeItem('tt_tenant');
     setUser(null);
+    setTenantState(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, updateUser }}>
+    <AuthContext.Provider value={{ user, login, logout, updateUser, tenant, setTenant, clearTenant }}>
       {children}
     </AuthContext.Provider>
   );

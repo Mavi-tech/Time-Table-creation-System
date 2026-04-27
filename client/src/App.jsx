@@ -2,7 +2,8 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 
-/* Login */
+/* Landing & Login */
+import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 
 /* Admin */
@@ -42,7 +43,7 @@ function RequireAuth({ children, allowedRoles }) {
 
 function RootRedirect() {
   const { user } = useAuth();
-  if (!user) return <Navigate to="/login" replace />;
+  if (!user) return <Navigate to="/landing" replace />;
   return <Navigate to={`/${user.role}`} replace />;
 }
 
@@ -50,6 +51,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
+        <Route path="/landing" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/" element={<RootRedirect />} />
 

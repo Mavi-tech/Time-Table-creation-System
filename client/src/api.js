@@ -14,9 +14,33 @@ const resolveBaseURL = () => {
 
 const http = axios.create({ baseURL: resolveBaseURL() });
 
+// Inject tenant header on every request
+http.interceptors.request.use((config) => {
+  const raw = sessionStorage.getItem('tt_tenant');
+  if (raw) {
+    try {
+      const tenant = JSON.parse(raw);
+      if (tenant?.dbName) {
+        config.headers['X-Tenant-Db'] = tenant.dbName;
+      }
+    } catch { /* ignore */ }
+  }
+  return config;
+});
+
 const api = {
+  // Tenants (public)
+  getTenants: () => http.get('/api/tenants').then(r => r.data),
+  addUniversity: (data) => http.post('/api/tenants', data).then(r => r.data),
+  updateUniversity: (uniId, data) => http.put(`/api/tenants/${uniId}`, data).then(r => r.data),
+  addCampus: (uniId, data) => http.post(`/api/tenants/${uniId}/campuses`, data).then(r => r.data),
+  updateCampus: (uniId, campusId, data) => http.put(`/api/tenants/${uniId}/campuses/${campusId}`, data).then(r => r.data),
+
   // Auth — returns user object directly (unwrapped)
   login: (username, password) => http.post('/api/login', { username, password }).then(r => r.data),
+
+  // Overview
+  getOverview: () => http.get('/api/overview'),
 
   // Departments
   getDepartments: () => http.get('/api/departments'),
