@@ -228,7 +228,7 @@ function getPool(dbName) {
       queueLimit: 0,
     };
     if (process.env.DB_SSL === 'true') {
-      poolConfig.ssl = { rejectUnauthorized: true };
+      poolConfig.ssl = { minVersion: 'TLSv1.2', rejectUnauthorized: true };
     }
     pools[name] = mysql.createPool(poolConfig);
   }
@@ -247,7 +247,7 @@ async function initTenantDb(dbName) {
     connectionLimit: 2,
   };
   if (process.env.DB_SSL === 'true') {
-    tempPoolConfig.ssl = { rejectUnauthorized: true };
+    tempPoolConfig.ssl = { minVersion: 'TLSv1.2', rejectUnauthorized: true };
   }
   const tempPool = mysql.createPool(tempPoolConfig);
 
@@ -311,7 +311,8 @@ async function init() {
     }
     console.log('✅ All tenant databases initialized successfully\n');
   } catch (error) {
-    console.error('Error initializing databases:', error.message);
+    console.error('Error initializing databases:');
+    console.error(error);
     console.error('Make sure MySQL is running and .env credentials are correct.');
     throw error;
   }
