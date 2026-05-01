@@ -251,7 +251,11 @@ async function initTenantDb(dbName) {
   }
   const tempPool = mysql.createPool(tempPoolConfig);
 
-  await tempPool.query(`CREATE DATABASE IF NOT EXISTS \`${dbName}\``);
+  try {
+    await tempPool.query(`CREATE DATABASE IF NOT EXISTS \`${dbName}\``);
+  } catch (err) {
+    console.warn(`⚠️ Could not auto-create database \`${dbName}\`. If you get further errors, please create it manually in your TiDB dashboard! Error:`, err.message);
+  }
   await tempPool.end();
 
   // Now create tables inside that database
