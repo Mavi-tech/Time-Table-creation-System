@@ -216,6 +216,7 @@ function getAllDbNames() {
 /** Get or create a connection pool for a specific database */
 function getPool(dbName) {
   const name = dbName || DEFAULT_DB;
+  if (!pools[name]) {
     const poolConfig = {
       host: process.env.DB_HOST || 'localhost',
       user: process.env.DB_USER || 'root',
