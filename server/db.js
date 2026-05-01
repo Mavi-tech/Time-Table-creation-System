@@ -216,8 +216,7 @@ function getAllDbNames() {
 /** Get or create a connection pool for a specific database */
 function getPool(dbName) {
   const name = dbName || DEFAULT_DB;
-  if (!pools[name]) {
-    pools[name] = mysql.createPool({
+    const poolConfig = {
       host: process.env.DB_HOST || 'localhost',
       user: process.env.DB_USER || 'root',
       password: process.env.DB_PASSWORD || '',
@@ -226,7 +225,11 @@ function getPool(dbName) {
       waitForConnections: true,
       connectionLimit: 10,
       queueLimit: 0,
-    });
+    };
+    if (process.env.DB_SSL === 'true') {
+      poolConfig.ssl = { rejectUnauthorized: true };
+    }
+    pools[name] = mysql.createPool(poolConfig);
   }
   return pools[name];
 }
@@ -234,14 +237,18 @@ function getPool(dbName) {
 /** Initialize a single tenant database (create db, tables, seed users) */
 async function initTenantDb(dbName) {
   // Create the database if it doesn't exist (connect without selecting a db)
-  const tempPool = mysql.createPool({
+  const tempPoolConfig = {
     host: process.env.DB_HOST || 'localhost',
     user: process.env.DB_USER || 'root',
     password: process.env.DB_PASSWORD || '',
     port: parseInt(process.env.DB_PORT, 10) || 3306,
     waitForConnections: true,
     connectionLimit: 2,
-  });
+  };
+  if (process.env.DB_SSL === 'true') {
+    tempPoolConfig.ssl = { rejectUnauthorized: true };
+  }
+  const tempPool = mysql.createPool(tempPoolConfig);
 
   await tempPool.query(`CREATE DATABASE IF NOT EXISTS \`${dbName}\``);
   await tempPool.end();
@@ -305,6 +312,7 @@ async function init() {
   } catch (error) {
     console.error('Error initializing databases:', error.message);
     console.error('Make sure MySQL is running and .env credentials are correct.');
+    throw error;
   }
 }
 

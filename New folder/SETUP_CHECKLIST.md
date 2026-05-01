@@ -97,6 +97,11 @@ Complete these steps in order to get your app running with PostgreSQL:
   pg_dump -U postgres timetable_db > backup.sql
   ```
 
+- [ ] **Configure the Frontend for Split Deployment**
+  - Set `REACT_APP_API_URL` in the Vercel project to the deployed backend URL
+  - Keep the backend and database on a separate host or container stack
+  - Verify browser requests go to the backend domain, not `localhost`
+
 - [ ] **Test Backup/Restore**
   ```bash
   psql -U postgres timetable_db < backup.sql

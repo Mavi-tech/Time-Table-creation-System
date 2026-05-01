@@ -1,12 +1,18 @@
 import axios from 'axios';
 
 const resolveBaseURL = () => {
-  if (process.env.REACT_APP_API_URL) {
-    return process.env.REACT_APP_API_URL;
+  const configuredUrl = process.env.REACT_APP_API_URL?.trim();
+  if (configuredUrl) {
+    return configuredUrl.replace(/\/$/, '');
   }
 
   if (typeof window !== 'undefined' && window.location?.hostname) {
-    return `${window.location.protocol}//${window.location.hostname}:5000`;
+    const isLocalhost = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+    if (isLocalhost) {
+      return `${window.location.protocol}//${window.location.hostname}:5000`;
+    }
+
+    throw new Error('REACT_APP_API_URL must be set to the backend URL for production deployments.');
   }
 
   return 'http://localhost:5000';

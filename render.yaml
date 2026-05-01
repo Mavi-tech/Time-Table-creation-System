@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: timetable-server
+    env: node
+    rootDir: server
+    buildCommand: npm install
+    startCommand: npm start
+    autoDeploy: true
+    healthCheckPath: /api/days

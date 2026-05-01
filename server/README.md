@@ -1,6 +1,6 @@
-# Timetable Server - PostgreSQL Edition
+# Timetable Server - MySQL Edition
 
-This is the backend server for the University Timetable System, running with PostgreSQL.
+This is the backend server for the University Timetable System, running with MySQL.
 
 ## Quick Start
 
@@ -12,29 +12,61 @@ npm install
 npm start
 ```
 
-### Option 2: Native PostgreSQL
+### Option 2: Native MySQL
 ```bash
 # Create database
-psql -U postgres -c "CREATE DATABASE timetable_db;"
+mysql -uroot -p -e "CREATE DATABASE timetable_db;"
 
 # Configure
 cd server
-cp .env.example .env
-# Edit .env with your PostgreSQL credentials
+# Create a .env file with your MySQL credentials
 
 # Install & Run
 npm install
 npm start
 ```
 
+## Render Deployment
+
+Render can host the backend as a Node web service, but it does not provide a managed MySQL database for this project. Use an external MySQL provider, then configure the Render service with those credentials.
+
+### Recommended Render settings
+
+- **Root directory**: `server`
+- **Build command**: `npm install`
+- **Start command**: `npm start`
+- **Health check path**: `/api/days`
+
+### Required environment variables
+
+Set these in the Render dashboard or as blueprint variables:
+
+```env
+PORT=10000
+NODE_ENV=production
+DB_HOST=<your-mysql-host>
+DB_PORT=3306
+DB_USER=<your-mysql-user>
+DB_PASSWORD=<your-mysql-password>
+DB_NAME=<your-mysql-database>
+```
+
+### Deployment steps
+
+1. Create the MySQL database on your chosen provider.
+2. Create a new Render Web Service from this repository.
+3. Point the service root to `server` and use the settings above.
+4. Add the environment variables.
+5. Deploy and verify `https://<your-service>.onrender.com/api/days` returns the available days.
+
 ## Configuration
 
 Create a `.env` file:
 ```env
-DB_USER=postgres
-DB_PASSWORD=postgres
+DB_USER=root
+DB_PASSWORD=root
 DB_HOST=localhost
-DB_PORT=5432
+DB_PORT=3306
 DB_NAME=timetable_db
 PORT=5000
 NODE_ENV=development
