@@ -254,7 +254,7 @@ app.get('/api/departments', async (req, res) => {
 
 app.post('/api/departments', async (req, res) => {
   try {
-    const result = await db.add('departments', { id: db.uid('dept-', req.dbName), ...req.body });
+    const result = await db.add('departments', { id: db.uid('dept-'), ...req.body }, req.dbName);
     res.json(result);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -351,7 +351,7 @@ app.post('/api/teachers', async (req, res) => {
   try {
     const t = { id: db.uid('t-'), ...req.body };
     await db.add('teachers', t, req.dbName);
-    await db.add('users', { id: db.uid('u-', req.dbName), username: req.body.email.split('@')[0], password: 'teacher123', role: 'teacher', name: req.body.name, linkedId: t.id });
+    await db.add('users', { id: db.uid('u-'), username: req.body.email.split('@')[0], password: 'teacher123', role: 'teacher', name: req.body.name, linkedId: t.id }, req.dbName);
     if (t.courseIds && t.courseIds.length > 0) {
       for (const cid of t.courseIds) {
         await db.update('courses', cid, { teacherId: t.id }, req.dbName);
@@ -910,7 +910,7 @@ app.get('/api/change-requests', async (req, res) => {
 
 app.post('/api/change-requests', async (req, res) => {
   try {
-    const result = await db.add('changeRequests', { id: db.uid('cr-', req.dbName), ...req.body, status: 'pending', createdAt: new Date().toISOString() });
+    const result = await db.add('changeRequests', { id: db.uid('cr-'), ...req.body, status: 'pending', createdAt: new Date().toISOString() }, req.dbName);
     res.json(result);
   } catch (error) {
     res.status(500).json({ error: error.message });
