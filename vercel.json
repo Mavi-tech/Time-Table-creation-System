@@ -6,6 +6,10 @@
   "outputDirectory": "client/build",
   "rewrites": [
     {
+      "source": "/api/(.*)",
+      "destination": "https://timetable-server.onrender.com/api/$1"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }

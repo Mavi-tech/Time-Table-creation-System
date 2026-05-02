@@ -12,7 +12,7 @@ const resolveBaseURL = () => {
       return `${window.location.protocol}//${window.location.hostname}:5000`;
     }
 
-    throw new Error('REACT_APP_API_URL must be set to the backend URL for production deployments.');
+    return '';
   }
 
   return 'http://localhost:5000';

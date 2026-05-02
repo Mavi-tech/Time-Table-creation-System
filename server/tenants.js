@@ -82,4 +82,13 @@ function removeUniversity(uniId) {
   save(all);
 }
 
-module.exports = { getAll, addUniversity, addCampus, updateUniversity, updateCampus, removeUniversity, load };
+function removeCampus(uniId, campusId) {
+  const all = load();
+  const uni = all.find(u => u.id === uniId);
+  if (!uni) return null;
+  uni.campuses = (uni.campuses || []).filter(c => c.id !== campusId);
+  save(all);
+  return uni;
+}
+
+module.exports = { getAll, addUniversity, addCampus, updateUniversity, updateCampus, removeUniversity, removeCampus, load };

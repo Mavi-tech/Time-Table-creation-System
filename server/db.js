@@ -280,23 +280,9 @@ async function initTenantDb(dbName) {
     await p.query('ALTER TABLE timetables ADD COLUMN substitute_week VARCHAR(16) NULL');
   }
 
-  // Seed default users if none exist
-  const [users] = await p.query('SELECT id FROM users WHERE username = ?', ['admin']);
-  if (users.length === 0) {
-    await p.query(
-      'INSERT INTO users (id, username, password, role, name) VALUES (?, ?, ?, ?, ?)',
-      ['u-admin', 'admin', 'admin123', 'admin', 'Administrator']
-    );
-    await p.query(
-      'INSERT INTO users (id, username, password, role, name) VALUES (?, ?, ?, ?, ?)',
-      ['u-teacher', 'sharma', 'teacher123', 'teacher', 'Dr. Sharma']
-    );
-    await p.query(
-      'INSERT INTO users (id, username, password, role, name) VALUES (?, ?, ?, ?, ?)',
-      ['u-student', 'student1', 'student123', 'student', 'Student User']
-    );
-    console.log(`  ✅ Default users seeded for ${dbName}`);
-  }
+  // NOTE: removed automatic demo data seeding so tenant databases start empty.
+  // If you want default admin/teacher/student accounts, add them explicitly
+  // via a migration script or the tenants admin UI.
 
   console.log(`  ✅ Database "${dbName}" initialized`);
 }
