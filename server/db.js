@@ -1,6 +1,79 @@
+const fs = require('fs');
+const path = require('path');
 const mysql = require('mysql2/promise');
 require('dotenv').config();
 const tenants = require('./tenants');
+
+// If USE_FILE_DB=true, use JSON files in server/data for persistence (easier local setup)
+const USE_FILE_DB = process.env.USE_FILE_DB === 'true';
+
+if (USE_FILE_DB) {
+  const dataDir = path.join(__dirname, 'data');
+
+  function readFile(col) {
+    try {
+      const p = path.join(dataDir, `${col}.json`);
+      if (!fs.existsSync(p)) return [];
+      const raw = fs.readFileSync(p, 'utf8');
+      return JSON.parse(raw || '[]');
+    } catch (e) {
+      console.error('File DB read error', e.message);
+      return [];
+    }
+  }
+
+  function writeFile(col, data) {
+    try {
+      const p = path.join(dataDir, `${col}.json`);
+      fs.writeFileSync(p, JSON.stringify(data, null, 2), 'utf8');
+      return true;
+    } catch (e) {
+      console.error('File DB write error', e.message);
+      return false;
+    }
+  }
+
+  function uid(prefix = '') {
+    return prefix + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+  }
+
+  module.exports = {
+    init: async () => { /* no-op for file DB */ },
+    ensureTenantDb: async () => { /* no-op */ },
+    uid,
+    DEFAULT_DB: 'file',
+    read: async (collection) => readFile(collection),
+    findById: async (collection, id) => {
+      const all = readFile(collection);
+      return all.find(x => x.id === id) || null;
+    },
+    add: async (collection, item) => {
+      const all = readFile(collection);
+      const row = { ...item };
+      if (!row.id) row.id = uid();
+      all.push(row);
+      writeFile(collection, all);
+      return row;
+    },
+    update: async (collection, id, updates) => {
+      const all = readFile(collection);
+      const idx = all.findIndex(x => x.id === id);
+      if (idx === -1) return null;
+      all[idx] = { ...all[idx], ...updates };
+      writeFile(collection, all);
+      return all[idx];
+    },
+    remove: async (collection, id) => {
+      const all = readFile(collection);
+      const kept = all.filter(x => x.id !== id);
+      if (kept.length === all.length) return false;
+      writeFile(collection, kept);
+      return true;
+    },
+    getPool: () => null,
+    getTableColumns: async () => new Set(),
+  };
+}
 
 // Pool cache: dbName → mysql pool
 const pools = {};
@@ -201,9 +274,10 @@ CREATE TABLE IF NOT EXISTS change_requests (
 const DEFAULT_DB = process.env.DB_NAME || 'timetable_db';
 
 /** Collect all unique dbNames from tenants config */
-function getAllDbNames() {
+async function getAllDbNames() {
   const names = new Set();
-  for (const uni of tenants.getAll()) {
+  const allTenants = await tenants.getAll();
+  for (const uni of allTenants) {
     for (const campus of uni.campuses) {
       names.add(campus.dbName);
     }
@@ -296,7 +370,10 @@ async function initTenantDb(dbName) {
 /** Initialize ALL tenant databases on startup */
 async function init() {
   try {
-    const allDbs = getAllDbNames();
+    // Initialize tenants table first (stores university/campus config in the DB)
+    await tenants.init();
+
+    const allDbs = await getAllDbNames();
     console.log(`\n🏫 Initializing ${allDbs.length} tenant database(s)...`);
     for (const dbName of allDbs) {
       await initTenantDb(dbName);

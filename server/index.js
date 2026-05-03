@@ -19,7 +19,14 @@ app.use((req, res, next) => {
 });
 
 // ==================== TENANTS (public) ====================
-app.get('/api/tenants', (_, res) => res.json(tenants.getAll()));
+app.get('/api/tenants', async (_, res) => {
+  try {
+    const all = await tenants.getAll();
+    res.json(all);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
 app.post('/api/tenants', async (req, res) => {
   try {
@@ -39,7 +46,7 @@ app.post('/api/tenants', async (req, res) => {
       campuses: [{ id: campusId, name: campusName, dbName }],
     };
 
-    tenants.addUniversity(uni);
+    await tenants.addUniversity(uni);
     // Initialize only the new tenant database
     await db.ensureTenantDb(dbName);
     res.json(uni);
@@ -55,7 +62,7 @@ app.post('/api/tenants/:uniId/campuses', async (req, res) => {
     const campusId = name.toLowerCase().replace(/[^a-z0-9 ]/g, '').replace(/\s+/g, '_');
     const dbName = `timetable_${req.params.uniId}_${campusId}`;
     const campus = { id: campusId, name, dbName };
-    const uni = tenants.addCampus(req.params.uniId, campus);
+    const uni = await tenants.addCampus(req.params.uniId, campus);
     if (!uni) return res.status(404).json({ error: 'University not found' });
     await db.ensureTenantDb(dbName);
     res.json(uni);
@@ -64,7 +71,7 @@ app.post('/api/tenants/:uniId/campuses', async (req, res) => {
   }
 });
 
-app.put('/api/tenants/:uniId', (req, res) => {
+app.put('/api/tenants/:uniId', async (req, res) => {
   try {
     const { name, shortName, logo } = req.body || {};
     if (name !== undefined && !String(name).trim()) {
@@ -74,7 +81,7 @@ app.put('/api/tenants/:uniId', (req, res) => {
       return res.status(400).json({ error: 'shortName cannot be empty' });
     }
 
-    const uni = tenants.updateUniversity(req.params.uniId, {
+    const uni = await tenants.updateUniversity(req.params.uniId, {
       name: name !== undefined ? String(name).trim() : undefined,
       shortName: shortName !== undefined ? String(shortName).trim() : undefined,
       logo: logo !== undefined ? String(logo).trim() : undefined,
@@ -87,14 +94,14 @@ app.put('/api/tenants/:uniId', (req, res) => {
   }
 });
 
-app.put('/api/tenants/:uniId/campuses/:campusId', (req, res) => {
+app.put('/api/tenants/:uniId/campuses/:campusId', async (req, res) => {
   try {
     const { name } = req.body || {};
     if (name !== undefined && !String(name).trim()) {
       return res.status(400).json({ error: 'name cannot be empty' });
     }
 
-    const uni = tenants.updateCampus(req.params.uniId, req.params.campusId, {
+    const uni = await tenants.updateCampus(req.params.uniId, req.params.campusId, {
       name: name !== undefined ? String(name).trim() : undefined,
     });
 
@@ -105,9 +112,13 @@ app.put('/api/tenants/:uniId/campuses/:campusId', (req, res) => {
   }
 });
 
-app.delete('/api/tenants/:uniId', (req, res) => {
-  tenants.removeUniversity(req.params.uniId);
-  res.json({ ok: true });
+app.delete('/api/tenants/:uniId', async (req, res) => {
+  try {
+    await tenants.removeUniversity(req.params.uniId);
+    res.json({ ok: true });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
 
