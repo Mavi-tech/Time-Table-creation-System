@@ -9,8 +9,18 @@ export function AuthProvider({ children }) {
   });
 
   const [tenant, setTenantState] = useState(() => {
-    const saved = localStorage.getItem('tt_tenant');
-    return saved ? JSON.parse(saved) : null;
+    const localSaved = localStorage.getItem('tt_tenant');
+    if (localSaved) return JSON.parse(localSaved);
+
+    // Backward compatibility: migrate older sessionStorage tenant data.
+    const legacySaved = sessionStorage.getItem('tt_tenant');
+    if (legacySaved) {
+      localStorage.setItem('tt_tenant', legacySaved);
+      sessionStorage.removeItem('tt_tenant');
+      return JSON.parse(legacySaved);
+    }
+
+    return null;
   });
 
   const login = (userData) => {
@@ -39,9 +49,7 @@ export function AuthProvider({ children }) {
 
   const logout = () => {
     sessionStorage.removeItem('tt_user');
-    localStorage.removeItem('tt_tenant');
     setUser(null);
-    setTenantState(null);
   };
 
   return (
