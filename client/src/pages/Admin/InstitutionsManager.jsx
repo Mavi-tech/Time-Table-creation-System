@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import api from '../../api';
 import { useAuth } from '../../context/AuthContext';
-import { toast, useConfirm } from '../../components/UI';
+import { toast, useConfirm, Modal } from '../../components/UI';
 
 export default function InstitutionsManager() {
   const { tenant } = useAuth();
@@ -10,6 +10,11 @@ export default function InstitutionsManager() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [confirm, ConfirmDialog] = useConfirm();
+
+  // Custom alert modal state
+  const [promptOpen, setPromptOpen] = useState(false);
+  const [pendingDelete, setPendingDelete] = useState(null);
+  const [authInput, setAuthInput] = useState('');
 
   const load = async () => {
     setLoading(true);
@@ -41,51 +46,68 @@ export default function InstitutionsManager() {
     });
   }, [universities, search, activeUniversityId]);
 
-  const handleDeleteUniversity = async (uni) => {
-    const authInput = window.prompt(`AUTHENTICATION REQUIRED: Please type the university name "${uni.name}" to confirm deletion:`);
-    if (authInput !== uni.name) {
-      if (authInput !== null) toast('Authentication failed. Name did not match.', 'error');
-      return;
-    }
-
-    const campusCount = uni.campuses?.length || 0;
-    const message = `Are you absolutely sure? This will remove ${campusCount} campus${campusCount === 1 ? '' : 'es'} and you will lose access.`;
-    if (!await confirm('Delete University', message)) return;
-
-    try {
-      await api.deleteUniversity(uni.id);
-      toast('University deleted', 'success');
-      // They just deleted their own university, they should probably be logged out
-      window.location.href = '/landing'; 
-    } catch (error) {
-      toast(error.response?.data?.error || 'Failed to delete university', 'error');
-    }
+  const initiateDeleteUniversity = (uni) => {
+    setPendingDelete({ type: 'university', uni });
+    setAuthInput('');
+    setPromptOpen(true);
   };
 
-  const handleDeleteCampus = async (uni, campus) => {
-    const authInput = window.prompt(`AUTHENTICATION REQUIRED: Please type the campus name "${campus.name}" to confirm deletion:`);
-    if (authInput !== campus.name) {
-      if (authInput !== null) toast('Authentication failed. Name did not match.', 'error');
+  const initiateDeleteCampus = (uni, campus) => {
+    setPendingDelete({ type: 'campus', uni, campus });
+    setAuthInput('');
+    setPromptOpen(true);
+  };
+
+  const executeDelete = async (e) => {
+    e.preventDefault();
+    if (!pendingDelete) return;
+
+    const { type, uni, campus } = pendingDelete;
+    const targetName = type === 'university' ? uni.name : campus.name;
+
+    if (authInput !== targetName) {
+      toast('Authentication failed. Name did not match.', 'error');
       return;
     }
 
-    const isLastCampus = (uni.campuses || []).length <= 1;
-    const message = isLastCampus
-      ? `Are you sure? This is the last campus, so the university entry will also be removed.`
-      : `Are you sure you want to delete ${campus.name}?`;
-    if (!await confirm('Delete Campus', message)) return;
-
-    try {
-      await api.deleteCampus(uni.id, campus.id);
-      toast('Campus deleted', 'success');
-      if (isLastCampus) {
-        window.location.href = '/landing';
-      } else {
-        await load();
+    if (type === 'university') {
+      const campusCount = uni.campuses?.length || 0;
+      const message = `Are you absolutely sure? This will remove ${campusCount} campus${campusCount === 1 ? '' : 'es'} and you will lose access.`;
+      if (!await confirm('Delete University', message)) {
+        setPromptOpen(false);
+        return;
       }
-    } catch (error) {
-      toast(error.response?.data?.error || 'Failed to delete campus', 'error');
+      try {
+        await api.deleteUniversity(uni.id);
+        toast('University deleted', 'success');
+        window.location.href = '/landing'; 
+      } catch (error) {
+        toast(error.response?.data?.error || 'Failed to delete university', 'error');
+      }
+    } else if (type === 'campus') {
+      const isLastCampus = (uni.campuses || []).length <= 1;
+      const message = isLastCampus
+        ? `Are you sure? This is the last campus, so the university entry will also be removed.`
+        : `Are you sure you want to delete ${campus.name}?`;
+      if (!await confirm('Delete Campus', message)) {
+        setPromptOpen(false);
+        return;
+      }
+      try {
+        await api.deleteCampus(uni.id, campus.id);
+        toast('Campus deleted', 'success');
+        if (isLastCampus) {
+          window.location.href = '/landing';
+        } else {
+          await load();
+        }
+      } catch (error) {
+        toast(error.response?.data?.error || 'Failed to delete campus', 'error');
+      }
     }
+
+    setPromptOpen(false);
+    setPendingDelete(null);
   };
 
   return (
@@ -135,7 +157,7 @@ export default function InstitutionsManager() {
                 {activeUniversityId === uni.id && (
                   <button
                     className="btn btn-danger"
-                    onClick={() => handleDeleteUniversity(uni)}
+                    onClick={() => initiateDeleteUniversity(uni)}
                     title="Delete this university"
                   >
                     Delete University
@@ -163,7 +185,7 @@ export default function InstitutionsManager() {
                     {activeUniversityId === uni.id && (
                       <button
                         className="btn btn-secondary"
-                        onClick={() => handleDeleteCampus(uni, campus)}
+                        onClick={() => initiateDeleteCampus(uni, campus)}
                         title="Delete this campus"
                       >
                         Delete Campus
@@ -176,6 +198,25 @@ export default function InstitutionsManager() {
           ))}
         </div>
       )}
+
+      <Modal open={promptOpen} onClose={() => { setPromptOpen(false); setPendingDelete(null); }} title="Authentication Required">
+        <form onSubmit={executeDelete}>
+          <p style={{ marginBottom: 16 }}>
+            Please type the {pendingDelete?.type} name <strong>"{pendingDelete?.type === 'university' ? pendingDelete?.uni?.name : pendingDelete?.campus?.name}"</strong> to confirm deletion:
+          </p>
+          <input
+            type="text"
+            value={authInput}
+            onChange={e => setAuthInput(e.target.value)}
+            style={{ width: '100%', padding: 10, borderRadius: 8, border: '1px solid var(--border)', marginBottom: 16 }}
+            autoFocus
+          />
+          <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+            <button type="button" className="btn btn-secondary" onClick={() => { setPromptOpen(false); setPendingDelete(null); }}>Cancel</button>
+            <button type="submit" className="btn btn-danger">Confirm</button>
+          </div>
+        </form>
+      </Modal>
 
       <ConfirmDialog />
     </div>
