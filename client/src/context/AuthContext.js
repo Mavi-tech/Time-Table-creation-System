@@ -50,6 +50,7 @@ export function AuthProvider({ children }) {
   const logout = () => {
     sessionStorage.removeItem('tt_user');
     setUser(null);
+    clearTenant();
   };
 
   return (

@@ -18,6 +18,36 @@ app.use((req, res, next) => {
   next();
 });
 
+function requireAdmin(req, res, next) {
+  const role = String(req.headers['x-user-role'] || '').toLowerCase();
+  if (role !== 'admin') {
+    return res.status(403).json({ error: 'Admin access required' });
+  }
+  next();
+}
+
+async function getActiveUniversityId(dbName) {
+  if (!dbName) return null;
+  const all = await tenants.getAll();
+  const uni = all.find(u => (u.campuses || []).some(campus => campus.dbName === dbName));
+  return uni ? uni.id : null;
+}
+
+async function requireScopedTenantAdmin(req, res, next) {
+  const role = String(req.headers['x-user-role'] || '').toLowerCase();
+  if (role !== 'admin') {
+    return res.status(403).json({ error: 'Admin access required' });
+  }
+
+  const activeUniversityId = await getActiveUniversityId(req.dbName);
+  if (!activeUniversityId) {
+    return res.status(403).json({ error: 'Active institution required' });
+  }
+
+  req.activeUniversityId = activeUniversityId;
+  next();
+}
+
 // ==================== TENANTS (public) ====================
 app.get('/api/tenants', async (_, res) => {
   try {
@@ -112,8 +142,32 @@ app.put('/api/tenants/:uniId/campuses/:campusId', async (req, res) => {
   }
 });
 
-app.delete('/api/tenants/:uniId', async (req, res) => {
+app.delete('/api/tenants/:uniId/campuses/:campusId', requireScopedTenantAdmin, async (req, res) => {
   try {
+    if (req.activeUniversityId !== req.params.uniId) {
+      return res.status(403).json({ error: 'You can only delete campuses from your active institution' });
+    }
+
+    const uni = await tenants.removeCampus(req.params.uniId, req.params.campusId);
+    if (!uni) return res.status(404).json({ error: 'University or campus not found' });
+
+    if ((uni.campuses || []).length === 0) {
+      await tenants.removeUniversity(req.params.uniId);
+      return res.json({ ok: true, removedUniversity: true });
+    }
+
+    res.json({ ok: true, university: uni });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.delete('/api/tenants/:uniId', requireScopedTenantAdmin, async (req, res) => {
+  try {
+    if (req.activeUniversityId !== req.params.uniId) {
+      return res.status(403).json({ error: 'You can only delete your active institution' });
+    }
+
     await tenants.removeUniversity(req.params.uniId);
     res.json({ ok: true });
   } catch (error) {

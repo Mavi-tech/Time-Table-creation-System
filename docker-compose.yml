@@ -1,4 +1,8 @@
 services:
+  # MySQL Database with persistent volume
+  # WARNING: Use 'docker-compose down' (NOT 'docker-compose down -v')
+  # to preserve data across redeployments.
+  # For cloud deployments, use a managed database service instead.
   db:
     image: mysql:8.4
     container_name: timetable_db
@@ -38,6 +42,9 @@ services:
       DB_USER: root
       DB_PASSWORD: root
       DB_NAME: timetable_db
+      # Set to 'true' to use file-based JSON persistence (writes to ./server/data)
+      # When using MySQL, leave this as 'false' or unset.
+      USE_FILE_DB: ${USE_FILE_DB:-false}
       PORT: 5000
       NODE_ENV: production
     ports:
@@ -51,6 +58,9 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    volumes:
+      # Persist server-side JSON data when using file DB adapter
+      - ./server/data:/app/data
 
   client:
     build:
@@ -78,3 +88,8 @@ services:
 
 volumes:
   mysql_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${MYSQL_DATA_PATH:-.}/mysql_data

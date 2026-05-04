@@ -29,6 +29,9 @@ const NAV = [
     { to: '/admin/departments', icon: Building2, label: 'Departments' },
     { to: '/admin/batches', icon: Layers, label: 'Student Batches' },
   ]},
+  { title: 'System', links: [
+    { to: '/admin/institutions', icon: Building2, label: 'Institutions' },
+  ]},
   { title: 'Requests', links: [
     { to: '/admin/requests', icon: MessagesSquare, label: 'Change Requests' },
   ]},

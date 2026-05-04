@@ -29,8 +29,25 @@ http.interceptors.request.use((config) => {
       if (tenant?.dbName) {
         config.headers['X-Tenant-Db'] = tenant.dbName;
       }
+      if (tenant?.universityId) {
+        config.headers['X-Tenant-University-Id'] = tenant.universityId;
+      }
     } catch { /* ignore */ }
   }
+
+  const userRaw = sessionStorage.getItem('tt_user');
+  if (userRaw) {
+    try {
+      const user = JSON.parse(userRaw);
+      if (user?.role) {
+        config.headers['X-User-Role'] = user.role;
+      }
+      if (user?.id) {
+        config.headers['X-User-Id'] = user.id;
+      }
+    } catch { /* ignore */ }
+  }
+
   return config;
 });
 
@@ -39,8 +56,10 @@ const api = {
   getTenants: () => http.get('/api/tenants').then(r => r.data),
   addUniversity: (data) => http.post('/api/tenants', data).then(r => r.data),
   updateUniversity: (uniId, data) => http.put(`/api/tenants/${uniId}`, data).then(r => r.data),
+  deleteUniversity: (uniId) => http.delete(`/api/tenants/${uniId}`).then(r => r.data),
   addCampus: (uniId, data) => http.post(`/api/tenants/${uniId}/campuses`, data).then(r => r.data),
   updateCampus: (uniId, campusId, data) => http.put(`/api/tenants/${uniId}/campuses/${campusId}`, data).then(r => r.data),
+  deleteCampus: (uniId, campusId) => http.delete(`/api/tenants/${uniId}/campuses/${campusId}`).then(r => r.data),
 
   // Auth — returns user object directly (unwrapped)
   login: (username, password) => http.post('/api/login', { username, password }).then(r => r.data),
