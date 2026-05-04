@@ -22,7 +22,7 @@ const http = axios.create({ baseURL: resolveBaseURL() });
 
 // Inject tenant header on every request
 http.interceptors.request.use((config) => {
-  const raw = sessionStorage.getItem('tt_tenant');
+  const raw = localStorage.getItem('tt_tenant');
   if (raw) {
     try {
       const tenant = JSON.parse(raw);

@@ -9,7 +9,7 @@ export function AuthProvider({ children }) {
   });
 
   const [tenant, setTenantState] = useState(() => {
-    const saved = sessionStorage.getItem('tt_tenant');
+    const saved = localStorage.getItem('tt_tenant');
     return saved ? JSON.parse(saved) : null;
   });
 
@@ -19,12 +19,12 @@ export function AuthProvider({ children }) {
   };
 
   const setTenant = (tenantData) => {
-    sessionStorage.setItem('tt_tenant', JSON.stringify(tenantData));
+    localStorage.setItem('tt_tenant', JSON.stringify(tenantData));
     setTenantState(tenantData);
   };
 
   const clearTenant = () => {
-    sessionStorage.removeItem('tt_tenant');
+    localStorage.removeItem('tt_tenant');
     setTenantState(null);
   };
 
@@ -39,7 +39,7 @@ export function AuthProvider({ children }) {
 
   const logout = () => {
     sessionStorage.removeItem('tt_user');
-    sessionStorage.removeItem('tt_tenant');
+    localStorage.removeItem('tt_tenant');
     setUser(null);
     setTenantState(null);
   };
