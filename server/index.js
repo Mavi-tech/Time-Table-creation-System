@@ -15,19 +15,23 @@ app.use(cors());
 app.use(express.json());
 
 // ==================== SECURITY & RATE LIMITING ====================
+const IS_DEV = process.env.NODE_ENV !== 'production';
+
 const apiLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 150, // Limit each IP to 150 requests per `window` (here, per 15 minutes)
-  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
-  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+  windowMs: 15 * 60 * 1000,
+  max: IS_DEV ? 10000 : 500, // Very relaxed in dev, reasonable in prod
+  standardHeaders: true,
+  legacyHeaders: false,
+  skip: () => IS_DEV, // Skip entirely in development
   message: { error: 'Too many requests from this IP, please try again after 15 minutes' }
 });
 
 const strictLimiter = rateLimit({
-  windowMs: 1 * 60 * 1000, // 1 minute
-  max: 15, // Limit each IP to 15 requests per minute
+  windowMs: 1 * 60 * 1000,
+  max: IS_DEV ? 10000 : 30, // Relaxed for login/generate in dev
   standardHeaders: true,
   legacyHeaders: false,
+  skip: () => IS_DEV, // Skip entirely in development
   message: { error: 'Too many requests to this endpoint, please try again after a minute' }
 });
 
