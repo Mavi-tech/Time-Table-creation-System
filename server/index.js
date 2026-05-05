@@ -1,5 +1,7 @@
 const express = require('express');
 const cors = require('cors');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
 const fs = require('fs');
 const path = require('path');
 const db = require('./db');
@@ -7,8 +9,29 @@ const gen = require('./generator');
 const tenants = require('./tenants');
 
 const app = express();
+app.use(helmet());
 app.use(cors());
 app.use(express.json());
+
+// ==================== SECURITY & RATE LIMITING ====================
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 150, // Limit each IP to 150 requests per `window` (here, per 15 minutes)
+  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+  message: { error: 'Too many requests from this IP, please try again after 15 minutes' }
+});
+
+const strictLimiter = rateLimit({
+  windowMs: 1 * 60 * 1000, // 1 minute
+  max: 15, // Limit each IP to 15 requests per minute
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many requests to this endpoint, please try again after a minute' }
+});
+
+// Apply the general rate limiting middleware to all API requests
+app.use('/api/', apiLimiter);
 
 // ==================== TENANT MIDDLEWARE ====================
 // Reads X-Tenant-Db header and attaches dbName to req
@@ -241,7 +264,7 @@ const clientIndexFile = path.join(clientBuildDir, 'index.html');
 app.use(express.static(clientBuildDir));
 
 // ==================== AUTH ====================
-app.post('/api/login', async (req, res) => {
+app.post('/api/login', strictLimiter, async (req, res) => {
   try {
     const { username, password } = req.body;
     console.log('Login attempt:', { username, password });
@@ -630,7 +653,7 @@ app.post('/api/batches/auto-split', async (req, res) => {
 });
 
 // ==================== TIMETABLE ====================
-app.post('/api/timetable/generate', async (req, res) => {
+app.post('/api/timetable/generate', strictLimiter, async (req, res) => {
   try {
     const { departmentId, semester, mode, batchId, preferences, semesterGroup } = req.body;
     if (semester) {
