@@ -538,14 +538,14 @@ async function generate(departmentId, semester, mode = 'week', batchId = null, p
     }
   }
 
-  // Delete existing rows in replace-scope, then insert newly generated rows.
-  for (const oldEntry of allTT.filter(shouldReplace)) {
-    await db.remove('timetables', oldEntry.id, dbName);
-  }
+  // Delete existing rows in replace-scope in parallel
+  const toDelete = allTT.filter(shouldReplace);
+  await Promise.all(toDelete.map(oldEntry => db.remove('timetables', oldEntry.id, dbName)));
 
-  // Add new timetables to DB
-  for (const entry of result.schedule) {
-    await db.add('timetables', entry, dbName);
+  // Add new timetables to DB in parallel (chunked by 50 to avoid connection pool exhaustion)
+  for (let i = 0; i < result.schedule.length; i += 50) {
+    const chunk = result.schedule.slice(i, i + 50);
+    await Promise.all(chunk.map(entry => db.add('timetables', entry, dbName)));
   }
 
   return {
