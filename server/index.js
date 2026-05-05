@@ -9,6 +9,7 @@ const gen = require('./generator');
 const tenants = require('./tenants');
 
 const app = express();
+app.set('trust proxy', 1); // Trust the Render reverse proxy for accurate IP tracking
 app.use(helmet());
 app.use(cors());
 app.use(express.json());

@@ -1,0 +1,102 @@
+id,name,code,department_ids,department_id,teacher_id,year,semester,weekly_lectures,weekly_labs,lab_duration,lecture_duration,credits,type
+c-mlx8n5tk0hmgxi,Discrete Mathemat,CS101,"[""dept-cs"",""dept-mloz3lcydz5d3y""]",\N,t-mlx88h3obhspg3,1,1,3,0,2,1,2,theory
+c-mlx8o18dco62wh,Programming Language,CS102,"[""dept-cs"",""dept-mloz3lcydz5d3y""]",\N,t-mm1t9lo8k1seut,1,1,4,2,2,1,3,theory+lab
+c-mlx8p7au95poyy, Information Technology Essentials,CS103,"[""dept-cs"",""dept-mloz3lcydz5d3y""]",\N,t-mm1t9lo8k1seut,1,1,3,0,2,1,2,theory
+c-mlx8q62fa1hd9e,Web Technologies + Certiport Certification ,CS104,"[""dept-cs"",""dept-mloz3lcydz5d3y""]",\N,t-mlxcgoyz5g43af,1,1,3,2,2,1,2,theory+lab
+c-mlx8rrwx0sidoe,Basics of Electrical & Electronics Engg,CS105,"[""dept-cs"",""dept-mloz3lcydz5d3y""]",\N,,1,1,2,2,1,1,2,theory+lab
+c-mlx8t3wpc336zz,.Engg Graphics and CAD,CS106,"[""dept-cs"",""dept-mloz3lcydz5d3y""]",\N,t-mlxbv57ldox0tb,1,1,2,2,1,1,2,theory+lab
+c-mlx8tztnipngv2,Environmen tal Science and Engg ,CS107,"[""dept-cs"",""dept-mloz3lcydz5d3y""]",\N,,1,1,1,0,2,2,0,theory
+c-mlx8v8768wy3iw, Engg Mathematics,CS108,"[""dept-cs"",""dept-mloz3lcydz5d3y""]",\N,,1,2,3,0,2,1,2,theory
+c-mlx8w71s82e1z2,Theory of computing,CS109,"[""dept-cs"",""dept-mloz3lcydz5d3y""]",\N,,1,2,2,0,2,1,2,theory
+c-mlx98ln7ald4pm,Data Structures and Algorithms,CS111,"[""dept-cs"",""dept-mloz3lcydz5d3y""]",\N,,1,2,3,0,2,1,3,theory
+c-mlx9cm0kyokd61,Database System Concepts,CS112,"[""dept-cs"",""dept-mloz3lcydz5d3y""]",\N,,1,2,3,2,2,1,2,theory+lab
+c-mlx9dffigsrgk2, Computer Architectur e,CS113,"[""dept-cs"",""dept-mloz3lcydz5d3y""]",\N,,1,2,2,0,2,1,2,theory
+c-mlx9ei3q7h9ej0,Computer Networks,CS114,"[""dept-cs"",""dept-mloz3lcydz5d3y""]",\N,,1,1,3,2,1,1,2,theory+lab
+c-mlx9fg0ha52ynq,Climate Change and Carbon,CS115,"[""dept-cs"",""dept-mloz3lcydz5d3y""]",\N,,1,2,1,0,2,1,\N,theory
+c-mlx9gr2s0yppn0, Object Oriented Analysis and Design,CS116,"[""dept-cs"",""dept-mloz3lcydz5d3y""]",\N,,2,3,2,2,1,1,2,theory+lab
+c-mlx9hg3a3u6q9b,Operating Systems,CS117,"[""dept-cs"",""dept-mloz3lcydz5d3y""]",\N,,2,3,3,0,2,1,2,theory
+c-mlx9v50syw6uyi,Java Programming,CS119,"[""dept-cs""]",\N,,2,3,2,2,1,1,2,theory+lab
+c-mlx9wpt396m9nb, Foreign Language I,CS120,"[""dept-cs"",""dept-mloz3lcydz5d3y""]",\N,,2,3,1,0,2,1,1,theory
+c-mlx9y1u12t0b6h, Computer Network administration and Security,IT101,"[""dept-mloz3lcydz5d3y""]",\N,,2,3,3,0,2,1,3,theory
+c-mlx9zztv7vkt74, Operating Systems administratio n with Certification,IT102,"[""dept-mloz3lcydz5d3y""]",\N,,2,3,3,2,2,1,1,theory+lab
+c-mlxa10xiv0l2xr,Organizatio nal Behaviour,CS121,"[""dept-cs"",""dept-mloz3lcydz5d3y""]",\N,,2,3,2,0,2,1,1,theory
+c-mlxa1puecmg9ms, Financial Literacy,CS123,"[""dept-cs"",""dept-mloz3lcydz5d3y""]",\N,,2,3,1,0,2,1,1,theory
+c-mlxa25uffipegj,Communica tion and Personality Developme,CS124,"[""dept-cs"",""dept-mloz3lcydz5d3y""]",\N,,1,1,1,0,2,1,\N,theory
+c-mlxa42da2dyuhq,. Software Engg and Agile Methodol ogy,CS125,"[""dept-cs"",""dept-mloz3lcydz5d3y""]",\N,,2,4,2,2,1,1,2,theory+lab
+c-mlxa4wpr402anq,Fundamental s of Data Science with Certification,CS126,"[""dept-cs"",""dept-mloz3lcydz5d3y""]",\N,,2,4,2,0,2,1,2,theory
+c-mlxa5virl7t909,Full Stack framework - Java Web and Spring Framework ,CS127,"[""dept-cs"",""dept-mloz3lcydz5d3y""]",\N,,1,1,3,2,2,1,3,theory+lab
+c-mlxbd0hxnduwsx,Preparation and Analysis of Data ,CS128,"[""dept-cs""]",\N,,2,4,2,0,2,1,1,theory
+c-mlxbdwageny2dt,Data Warehousing and Big Data,CS129,"[""dept-cs""]",\N,,2,4,3,0,2,1,3,theory
+c-mlxbepjsrwanm4,Deep Learning ,CS130,"[""dept-cs""]",\N,,2,4,3,2,2,1,3,theory+lab
+c-mlxbff3flqt23b,Capstone Projec,CAP,"[""dept-cs"",""dept-mloz3lcydz5d3y""]",\N,,2,4,1,0,2,1,2,theory
+c-mlxbh1uk2qh3t0,Foreign Language I,CS131,"[""dept-cs"",""dept-mloz3lcydz5d3y""]",\N,,2,3,2,0,2,1,1,theory
+c-mlxbhiogohwjc2,. MIS,CS132,"[""dept-cs"",""dept-mloz3lcydz5d3y""]",\N,,1,1,2,0,2,1,2,theory
+c-mlxbi2lakum20u,Intellectual property Rights IPR,CS133,"[""dept-cs"",""dept-mloz3lcydz5d3y""]",\N,,2,4,2,0,2,1,2,theory
+c-mlxbimym0kk0an,Communica tion and Personality Developme nt – I,CS134,"[""dept-cs"",""dept-mloz3lcydz5d3y""]",\N,,2,4,1,0,2,1,\N,theory
+c-mlxbjal11oi6yp,Wireless sensor network,IT109,"[""dept-mloz3lcydz5d3y""]",\N,,1,1,2,0,2,1,2,theory
+c-mlxbk3tgip2oyl,Penetration Testing,IT104,"[""dept-mloz3lcydz5d3y""]",\N,,2,3,3,0,2,1,3,theory
+c-mo70pr2t005kv47pkhgy,Cloud Infrastructure,IT301,"[""dept-mloz3lcydz5d3y""]",\N,,3,5,3,2,1,1,3,theory+lab
+c-mo70pr2t13dns9ye6ays,Design Project II,DS403,"[""dept-mlx760uqos09cv""]",\N,,4,8,0,6,1,1,4,project
+c-mo70pr2t1huj1fs8fuk,IT Project I,IT401,"[""dept-mloz3lcydz5d3y""]",\N,,4,7,0,6,1,1,4,project
+c-mo70pr2t1hzjnwwuh43,IT Project II,IT403,"[""dept-mloz3lcydz5d3y""]",\N,,4,8,0,6,1,1,4,project
+c-mo70pr2t21911rq0huk,Real-time Systems,MTX304,"[""dept-mloz3xrwsk11fr""]",\N,,3,6,2,2,1,1,2,theory+lab
+c-mo70pr2t2k793z9c8tj,Internet of Things,CS208,"[""dept-cs""]",\N,,3,5,2,2,1,1,2,theory+lab
+c-mo70pr2t2xath8b85t,Big Data Analytics,CS204,"[""dept-cs""]",\N,t-mm1td4k7l8m9n,3,5,3,2,1,1,3,theory+lab
+c-mo70pr2t4nzewpilow8,Advanced Database Systems,CS206,"[""dept-cs""]",\N,,3,6,2,2,1,1,3,theory+lab
+c-mo70pr2t6227n938vva,Enterprise Architecture,IT304,"[""dept-mloz3lcydz5d3y""]",\N,,3,6,3,0,2,1,3,theory
+c-mo70pr2t9kr9aexgko6,BBA Project II,BBA403,"[""dept-mlx76w007nakx1""]",\N,,4,8,0,6,1,1,4,project
+c-mo70pr2tc5c0zv12t9t,Industrial Automation,MTX402,"[""dept-mloz3xrwsk11fr""]",\N,,4,7,3,2,1,1,3,theory+lab
+c-mo70pr2tce0kugcixr,Advanced Algorithms,CS202,"[""dept-cs""]",\N,,3,5,3,0,2,1,3,theory
+c-mo70pr2tei5h5sl422d,Financial Management,BBA301,"[""dept-mlx76w007nakx1""]",\N,,3,5,3,0,2,1,3,theory
+c-mo70pr2tfa3pebugarg,Entrepreneurship,BBA402,"[""dept-mlx76w007nakx1""]",\N,,4,7,3,0,2,1,3,theory
+c-mo70pr2tfch6w1nejbn,Advanced Control Theory,MTX303,"[""dept-mloz3xrwsk11fr""]",\N,,3,6,3,0,2,1,3,theory
+c-mo70pr2tgsafwho9nw,Project I,CS301,"[""dept-cs""]",\N,,4,7,0,6,1,1,4,project
+c-mo70pr2tgyoier78gh,Advanced Robotics,MTX301,"[""dept-mloz3xrwsk11fr""]",\N,,3,5,3,2,1,1,3,theory+lab
+c-mo70pr2tid8py03lhxk,VLSI Design,MTX302,"[""dept-mloz3xrwsk11fr""]",\N,,3,5,3,2,1,1,3,theory+lab
+c-mo70pr2tir8te72ro4,Business Analytics,BBA304,"[""dept-mlx76w007nakx1""]",\N,,3,6,3,2,1,1,3,theory+lab
+c-mo70pr2tir9wc14chdc,DevOps and Containerization,IT303,"[""dept-mloz3lcydz5d3y""]",\N,,3,6,2,2,1,1,2,theory+lab
+c-mo70pr2tiy98ofxily,Microprocessor and Microcontroller,CS203,"[""dept-cs""]",\N,,3,5,3,2,1,1,3,theory+lab
+c-mo70pr2tjgnclrboyjb,Organizational Behavior Advanced,BBA303,"[""dept-mlx76w007nakx1""]",\N,,3,6,2,0,2,1,2,theory
+c-mo70pr2tjjpigo4h0c8,Advanced 3D Design,DS301,"[""dept-mlx760uqos09cv""]",\N,,3,5,2,3,1,1,3,theory+lab
+c-mo70pr2tl2h1lpov8ng,BBA Project I,BBA401,"[""dept-mlx76w007nakx1""]",\N,,4,7,0,6,1,1,4,project
+c-mo70pr2tm07inetxmih,Pattern Recognition,CS207,"[""dept-cs""]",\N,,3,6,3,2,1,1,3,theory+lab
+c-mo70pr2toe00y9puxj,User Experience Design,DS303,"[""dept-mlx760uqos09cv""]",\N,,3,6,2,3,1,1,2,theory+lab
+c-mo70pr2tqw4ang6p3rr,Advanced Security,IT402,"[""dept-mloz3lcydz5d3y""]",\N,,4,7,3,2,1,1,3,theory+lab
+c-mo70pr2tr3kfce0q75c,Advanced AI and ML,CS302,"[""dept-cs""]",\N,,4,7,3,2,1,1,3,theory+lab
+c-mo70pr2trplobxg996,Brand Design,DS304,"[""dept-mlx760uqos09cv""]",\N,,3,6,2,2,1,2,2,theory+lab
+c-mo70pr2trtle8l4dnt,Internship,CS305,"[""dept-cs""]",\N,,4,8,0,0,1,1,2,internship
+c-mo70pr2ttg2c55ky6ck,Ethical Hacking,IT302,"[""dept-mloz3lcydz5d3y""]",\N,,3,5,3,2,1,1,3,theory+lab
+c-mo70pr2tu1a20hp11d,Distributed Systems,CS303,"[""dept-cs""]",\N,,4,7,3,0,2,1,3,theory
+c-mo70pr2tu4byqpxs44h,Strategic Management,BBA302,"[""dept-mlx76w007nakx1""]",\N,,3,5,3,0,2,1,3,theory
+c-mo70pr2tug3kh88e207,Compiler Design,CS201,"[""dept-cs""]",\N,t-mm1ta1k2l1m2n,3,5,3,2,1,1,3,theory+lab
+c-mo70pr2tvsyr5g5kuao,Motion Graphics,DS302,"[""dept-mlx760uqos09cv""]",\N,,3,5,2,3,1,1,3,theory+lab
+c-mo70pr2txhlxktap0p,Design Project I,DS401,"[""dept-mlx760uqos09cv""]",\N,,4,7,0,6,1,1,4,project
+c-mo70pr2txyuozr2daq,Mechatronics Project I,MTX401,"[""dept-mloz3xrwsk11fr""]",\N,,4,7,0,6,1,1,4,project
+c-mo70pr2tybjk7bae2m,Product Design,DS402,"[""dept-mlx760uqos09cv""]",\N,,4,7,2,3,1,1,3,theory+lab
+c-mo70pr2tydj679josx,Mechatronics Project II,MTX403,"[""dept-mloz3xrwsk11fr""]",\N,,4,8,0,6,1,1,4,project
+c-mo70pr2tyjz1xdlx8,Project II,CS304,"[""dept-cs""]",\N,,4,8,0,6,1,1,4,project
+c-mo70pr2tz9a7896pgx,Cryptography and Network Security,CS205,"[""dept-cs""]",\N,,3,6,3,0,2,1,3,theory
+c-mo73ghji0q3d4u95,Digital Business Tools,BBA104,"[""dept-mlx76w007nakx1""]",\N,t-mm1tm3kh8l9m0n,1,2,2,2,2,1,2,theory+lab
+c-mo73ghji122a2lo8,Typography Basics,DS103,"[""dept-mlx760uqos09cv""]",\N,t-mm1tk1kf6l7m8n,1,2,2,2,2,1,2,theory+lab
+c-mo73ghji6tfbkbv2,Embedded C for Mechatronics,MTX204,"[""dept-mloz3xrwsk11fr""]",\N,t-mm1ti9kd4l5m6n,2,4,1,1,2,1,2,theory+lab
+c-mo73ghji8bs36ep6,Engineering Mathematics I,MTX101,"[""dept-mloz3xrwsk11fr""]",\N,t-mm1th8kc3l4m5n,1,1,3,0,2,1,3,theory
+c-mo73ghji8lb3l816,Digital Illustration,DS104,"[""dept-mlx760uqos09cv""]",\N,t-mm1tl2kg7l8m9n,1,2,2,3,2,1,3,theory+lab
+c-mo73ghji970wbfpx,Business Communication,BBA102,"[""dept-mlx76w007nakx1""]",\N,t-mm1tn4ki9l0m1n,1,1,2,0,2,1,2,theory
+c-mo73ghji9mhk0ogo,Design Fundamentals,DS101,"[""dept-mlx760uqos09cv""]",\N,t-mm1tk1kf6l7m8n,1,1,2,3,2,1,3,theory+lab
+c-mo73ghjicvtw5bl7,Engineering Graphics,MTX103,"[""dept-mloz3xrwsk11fr""]",\N,t-mm1tj0ke5l6m7n,1,2,2,2,2,1,2,theory+lab
+c-mo73ghjieox3yj4c,Color Theory,DS102,"[""dept-mlx760uqos09cv""]",\N,t-mm1tl2kg7l8m9n,1,1,2,0,2,1,2,theory
+c-mo73ghjih0ssjlgi,Interaction Design,DS202,"[""dept-mlx760uqos09cv""]",\N,t-mm1tl2kg7l8m9n,2,3,2,3,2,1,3,theory+lab
+c-mo73ghjiinhe21zy,Principles of Management,BBA101,"[""dept-mlx76w007nakx1""]",\N,t-mm1tm3kh8l9m0n,1,1,3,0,2,1,3,theory
+c-mo73ghjijjueon8c,Mechanics of Machines,MTX201,"[""dept-mloz3xrwsk11fr""]",\N,t-mm1ti9kd4l5m6n,2,3,3,0,2,1,3,theory
+c-mo73ghjijtme2z87,Business Statistics,BBA204,"[""dept-mlx76w007nakx1""]",\N,t-mm1tn4ki9l0m1n,2,4,2,2,2,1,3,theory+lab
+c-mo73ghjil6khcmz0,Programming Fundamentals,MTX104,"[""dept-mloz3xrwsk11fr""]",\N,t-mm1th8kc3l4m5n,1,2,2,2,2,1,2,theory+lab
+c-mo73ghjilqj2ygom,Marketing Management,BBA203,"[""dept-mlx76w007nakx1""]",\N,t-mm1tm3kh8l9m0n,2,4,3,0,2,1,3,theory
+c-mo73ghjin3s8cmo7,Engineering Physics,MTX102,"[""dept-mloz3xrwsk11fr""]",\N,t-mm1ti9kd4l5m6n,1,1,2,2,2,1,3,theory+lab
+c-mo73ghjip4coes0z,Business Mathematics,BBA103,"[""dept-mlx76w007nakx1""]",\N,t-mm1to5kj0l1m2n,1,2,3,0,2,1,3,theory
+c-mo73ghjipznkz441,Visual Communication,DS201,"[""dept-mlx760uqos09cv""]",\N,t-mm1tk1kf6l7m8n,2,3,2,2,2,1,3,theory+lab
+c-mo73ghjisc2xt6ah,Manufacturing Processes,MTX203,"[""dept-mloz3xrwsk11fr""]",\N,t-mm1th8kc3l4m5n,2,4,2,0,2,1,3,theory
+c-mo73ghjit5tfn4vj,Managerial Economics,BBA201,"[""dept-mlx76w007nakx1""]",\N,t-mm1tn4ki9l0m1n,2,3,3,0,2,1,3,theory
+c-mo73ghjiueo3bn2y,Accounting for Managers,BBA202,"[""dept-mlx76w007nakx1""]",\N,t-mm1to5kj0l1m2n,2,3,3,0,2,1,3,theory
+c-mo73ghjiug0aoplf,Design Research Methods,DS203,"[""dept-mlx760uqos09cv""]",\N,t-mm1tk1kf6l7m8n,2,4,3,0,2,1,3,theory
+c-mo73ghjivpm5btl0,Sensors and Actuators,MTX202,"[""dept-mloz3xrwsk11fr""]",\N,t-mm1tj0ke5l6m7n,2,3,2,2,2,1,3,theory+lab
+c-mo73ghjizbesj09d,Prototype Studio,DS204,"[""dept-mlx760uqos09cv""]",\N,t-mm1tl2kg7l8m9n,2,4,1,4,2,1,3,theory+lab
