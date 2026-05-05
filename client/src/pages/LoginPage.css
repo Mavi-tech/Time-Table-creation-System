@@ -106,6 +106,67 @@
   animation: slideUpLogin 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
+.login-box.modern-split-login {
+  max-width: 1000px;
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  padding: 0;
+  overflow: hidden;
+}
+
+.login-left-pane {
+  background: linear-gradient(135deg, rgba(41, 125, 185, 0.04), rgba(41, 125, 185, 0.12));
+  padding: 48px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  border-right: 1px solid rgba(41, 125, 185, 0.1);
+  text-align: center;
+}
+
+.login-left-pane .logo {
+  margin-bottom: 24px;
+}
+
+.login-left-pane h1 {
+  font-size: 32px;
+  margin-bottom: 12px;
+}
+
+.login-left-pane .subtitle {
+  margin-bottom: 40px;
+}
+
+.login-left-pane .demo-accounts {
+  margin-top: 0;
+  width: 100%;
+}
+
+.login-right-pane {
+  padding: 48px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.4);
+}
+
+@media (max-width: 768px) {
+  .modern-split-login {
+    grid-template-columns: 1fr;
+    max-width: 500px;
+  }
+  .login-left-pane {
+    padding: 32px 24px;
+    border-right: none;
+    border-bottom: 1px solid rgba(41, 125, 185, 0.1);
+  }
+  .login-right-pane {
+    padding: 32px 24px;
+  }
+}
+
 .tenant-selector {
   max-width: 1100px;
   background: transparent;
@@ -740,6 +801,8 @@
 
 .form-group input,
 .form-group select {
+  width: 100%;
+  box-sizing: border-box;
   padding: 16px;
   border: 2px solid rgba(41, 125, 185, 0.1);
   border-radius: 16px;

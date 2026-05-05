@@ -175,21 +175,28 @@ export default function LoginPage() {
     setError('');
     setLoading(true);
     try {
-      const userData = await api.login(username, password);
-      const selectedElectiveCourseIds = studentElectiveMode === 'all'
-        ? electiveOptions.map(c => c.id)
-        : (studentElectiveMode === 'none' ? [] : studentElectiveIds);
+      if (isStudentLogin) {
+        const selectedElectiveCourseIds = studentElectiveMode === 'all'
+          ? electiveOptions.map(c => c.id)
+          : (studentElectiveMode === 'none' ? [] : studentElectiveIds);
 
-      const nextUser = (userData.role === 'student' && isStudentLogin)
-        ? {
-          ...userData,
-          departmentId: studentDeptId || userData.departmentId || null,
-          year: Number(studentYear) || Number(userData.year) || 1,
-          semester: Number(studentSemester) || Number(userData.semester) || 1,
-          batchId: studentBatchId || userData.batchId || null,
+        const nextUser = {
+          role: 'student',
+          username: 'Student',
+          departmentId: studentDeptId || null,
+          year: Number(studentYear) || 1,
+          semester: Number(studentSemester) || 1,
+          batchId: studentBatchId || null,
           selectedElectiveCourseIds,
-        }
-        : userData;
+        };
+        login(nextUser);
+        navigate(`/student`, { replace: true });
+        setLoading(false);
+        return;
+      }
+
+      const userData = await api.login(username, password);
+      const nextUser = userData;
       login(nextUser);
       navigate(`/${nextUser.role}`, { replace: true });
     } catch {
@@ -490,143 +497,155 @@ export default function LoginPage() {
   // ==================== STEP 2: LOGIN FORM ====================
   return (
     <div className="login-page">
-      <div className="login-box">
-        <div className="step-indicator">
-          <div className="step done" onClick={() => { setTenant(null); }}>✓</div>
-          <div className="step-line active-line"></div>
-          <div className="step active">2</div>
+      <div className="login-box modern-split-login">
+        <div className="login-left-pane">
+          <div className="logo">
+            <img className="login-logo-image" src={COLLEGE_LOGO_URL} alt="MSSU Logo" />
+          </div>
+          <h1>University Timetable</h1>
+          <p className="subtitle">Sign in to access your dashboard and manage academic schedules efficiently.</p>
+          
+          <div className="demo-accounts">
+            <h4>🎯 Quick Demo Access</h4>
+            <div className="demo-grid">
+              <div className="demo-card" onClick={() => setModeAndFill('admin', 'admin', 'admin123')}>
+                <strong>👨‍💼 Admin</strong><span>admin</span>
+              </div>
+              <div className="demo-card" onClick={() => setModeAndFill('teacher', 'verma', 'teacher123')}>
+                <strong>👨‍🏫 Teacher</strong><span>verma</span>
+              </div>
+              <div className="demo-card" onClick={() => setModeAndFill('student', '', '')}>
+                <strong>👨‍🎓 Student</strong><span>View Timetable</span>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div className="tenant-badge" onClick={() => { setTenant(null); }}>
-          <span className="tenant-badge-icon">🏫</span>
-          <div>
-            <strong>{tenant?.universityShortName}</strong>
-            <span>{tenant?.campusName}</span>
+        <div className="login-right-pane">
+          <div className="step-indicator">
+            <div className="step done" onClick={() => { setTenant(null); }}>✓</div>
+            <div className="step-line active-line"></div>
+            <div className="step active">2</div>
           </div>
-          <span className="tenant-change">Change</span>
-        </div>
 
-        <div className="logo">
-          <img className="login-logo-image" src={COLLEGE_LOGO_URL} alt="MSSU Logo" />
-        </div>
-        <h1>University Timetable</h1>
-        <p className="subtitle">Sign in to access your dashboard</p>
-        {error && <div className="alert alert-error">{error}</div>}
-        <form onSubmit={handleSubmit}>
-          <div className="form-group">
-            <label>Login As</label>
-            <select value={loginMode} onChange={e => setLoginMode(e.target.value)}>
-              <option value="admin">Admin</option>
-              <option value="teacher">Teacher</option>
-              <option value="student">Student</option>
-            </select>
+          <div className="tenant-badge" onClick={() => { setTenant(null); }}>
+            <span className="tenant-badge-icon">🏫</span>
+            <div>
+              <strong>{tenant?.universityShortName}</strong>
+              <span>{tenant?.campusName}</span>
+            </div>
+            <span className="tenant-change">Change</span>
           </div>
-          <div className="form-group">
-            <label>Username</label>
-            <input value={username} onChange={e => setUsername(e.target.value)} placeholder="Enter username" required />
-          </div>
-          <div className="form-group">
-            <label>Password</label>
-            <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Enter password" required />
-          </div>
-          {isStudentLogin && (
-            <div className="student-options">
-              <div className="student-options-title">
-                📚 Student Login Options
-              </div>
-              <div className="form-group">
-                <label>Department</label>
-                <select value={studentDeptId} onChange={e => {
-                  setStudentDeptId(e.target.value);
-                  setStudentElectiveIds([]);
-                }}>
-                  {departments.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
-                </select>
-              </div>
-              <div className="student-year-semester">
+
+          {error && <div className="alert alert-error">{error}</div>}
+          
+          <form onSubmit={handleSubmit}>
+            <div className="form-group">
+              <label>{isStudentLogin ? "User Type" : "Login As"}</label>
+              <select value={loginMode} onChange={e => setLoginMode(e.target.value)}>
+                <option value="admin">Admin</option>
+                <option value="teacher">Teacher</option>
+                <option value="student">Student (View Timetable)</option>
+              </select>
+            </div>
+            {!isStudentLogin && (
+              <>
                 <div className="form-group">
-                  <label>Year</label>
-                  <select value={studentYear} onChange={e => {
-                    setStudentYear(Number(e.target.value));
-                    setStudentElectiveIds([]);
-                  }}>
-                    {Array.from({ length: selectedDept?.years || 4 }, (_, i) => i + 1).map(y => (
-                      <option key={y} value={y}>Year {y}</option>
-                    ))}
-                  </select>
+                  <label>Username</label>
+                  <input value={username} onChange={e => setUsername(e.target.value)} placeholder="Enter username" required />
                 </div>
                 <div className="form-group">
-                  <label>Semester</label>
-                  <select value={studentSemester} onChange={e => {
-                    setStudentSemester(Number(e.target.value));
+                  <label>Password</label>
+                  <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Enter password" required />
+                </div>
+              </>
+            )}
+            {isStudentLogin && (
+              <div className="student-options">
+                <div className="student-options-title">
+                  📚 Student Login Options
+                </div>
+                <div className="form-group">
+                  <label>Department</label>
+                  <select value={studentDeptId} onChange={e => {
+                    setStudentDeptId(e.target.value);
                     setStudentElectiveIds([]);
                   }}>
-                    {semesterOptions.map(sem => <option key={sem} value={sem}>Semester {sem}</option>)}
+                    {departments.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
                   </select>
                 </div>
-              </div>
-              <div className="form-group">
-                <label>Batch</label>
-                <select value={studentBatchId} onChange={e => setStudentBatchId(e.target.value)}>
-                  <option value="">No Specific Batch</option>
-                  {batches.map(b => (
-                    <option key={b.id} value={b.id}>{b.name} ({b.section})</option>
-                  ))}
-                </select>
-              </div>
-              <div className="form-group">
-                <label>Elective Option</label>
-                <select value={studentElectiveMode} onChange={e => setStudentElectiveMode(e.target.value)}>
-                  <option value="selected">Choose Selected Electives</option>
-                  <option value="all">Include All Available Electives</option>
-                  <option value="none">No Electives</option>
-                </select>
-              </div>
-              {electiveOptions.length > 0 && (
-                <div className="electives-section">
-                  <div className="electives-title">Available Electives</div>
-                  <div className="electives-list">
-                    {electiveOptions.map(c => (
-                      <label key={c.id} className="elective-item">
-                        <input
-                          type="checkbox"
-                          checked={studentElectiveIds.includes(c.id)}
-                          disabled={studentElectiveMode !== 'selected'}
-                          onChange={() => toggleElective(c.id)}
-                        />
-                        <span>{c.code} - {c.name}</span>
-                      </label>
-                    ))}
+                <div className="student-year-semester">
+                  <div className="form-group">
+                    <label>Year</label>
+                    <select value={studentYear} onChange={e => {
+                      setStudentYear(Number(e.target.value));
+                      setStudentElectiveIds([]);
+                    }}>
+                      {Array.from({ length: selectedDept?.years || 4 }, (_, i) => i + 1).map(y => (
+                        <option key={y} value={y}>Year {y}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label>Semester</label>
+                    <select value={studentSemester} onChange={e => {
+                      setStudentSemester(Number(e.target.value));
+                      setStudentElectiveIds([]);
+                    }}>
+                      {semesterOptions.map(sem => <option key={sem} value={sem}>Semester {sem}</option>)}
+                    </select>
                   </div>
                 </div>
-              )}
-              {electiveOptions.length === 0 && (
-                <div style={{ marginTop: 0.5, fontSize: '0.9rem', color: '#666' }}>
-                  No electives found for selected department/year/semester.
+                <div className="form-group">
+                  <label>Batch</label>
+                  <select value={studentBatchId} onChange={e => setStudentBatchId(e.target.value)}>
+                    <option value="">No Specific Batch</option>
+                    {batches.map(b => (
+                      <option key={b.id} value={b.id}>{b.name} ({b.section})</option>
+                    ))}
+                  </select>
                 </div>
-              )}
-            </div>
-          )}
-          <button type="submit" className="btn btn-primary btn-block" style={{ marginTop: 8, padding: '12px' }} disabled={loading}>
-            {loading ? 'Signing in…' : 'Sign In'}
-          </button>
-        </form>
-        <div className="demo-accounts">
-          <h4>🎯 Quick Demo Access</h4>
-          <div className="demo-grid">
-            <div className="demo-card" onClick={() => setModeAndFill('admin', 'admin', 'admin123')}>
-              <strong>👨‍💼 Admin</strong><span>admin</span>
-            </div>
-            <div className="demo-card" onClick={() => setModeAndFill('teacher', 'verma', 'teacher123')}>
-              <strong>👨‍🏫 Teacher</strong><span>verma</span>
-            </div>
-            <div className="demo-card" onClick={() => setModeAndFill('student', 'student1', 'student123')}>
-              <strong>👨‍🎓 Student</strong><span>student1</span>
-            </div>
+                <div className="form-group">
+                  <label>Elective Option</label>
+                  <select value={studentElectiveMode} onChange={e => setStudentElectiveMode(e.target.value)}>
+                    <option value="selected">Choose Selected Electives</option>
+                    <option value="all">Include All Available Electives</option>
+                    <option value="none">No Electives</option>
+                  </select>
+                </div>
+                {electiveOptions.length > 0 && (
+                  <div className="electives-section">
+                    <div className="electives-title">Available Electives</div>
+                    <div className="electives-list">
+                      {electiveOptions.map(c => (
+                        <label key={c.id} className="elective-item">
+                          <input
+                            type="checkbox"
+                            checked={studentElectiveIds.includes(c.id)}
+                            disabled={studentElectiveMode !== 'selected'}
+                            onChange={() => toggleElective(c.id)}
+                          />
+                          <span>{c.code} - {c.name}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {electiveOptions.length === 0 && (
+                  <div style={{ marginTop: 0.5, fontSize: '0.9rem', color: '#666' }}>
+                    No electives found for selected department/year/semester.
+                  </div>
+                )}
+              </div>
+            )}
+            <button type="submit" className="btn btn-primary btn-block" style={{ marginTop: 8, padding: '12px' }} disabled={loading}>
+              {loading ? (isStudentLogin ? 'Loading...' : 'Signing in…') : (isStudentLogin ? 'View Timetable' : 'Sign In')}
+            </button>
+          </form>
+
+          <div className="back-to-landing">
+            <a href="/landing">← Back to Home</a>
           </div>
-        </div>
-        <div className="back-to-landing">
-          <a href="/landing">← Back to Home</a>
         </div>
       </div>
     </div>

@@ -1034,8 +1034,7 @@ function startServer(port) {
   const server = app.listen(port, () => {
     console.log(`\n🎓 Server running on http://localhost:${port}\n`);
     console.log('  Admin:   admin / admin123');
-    console.log('  Teacher: sharma / teacher123');
-    console.log('  Student: student1 / student123\n');
+    console.log('  Teacher: sharma / teacher123\n');
   });
 
   server.on('error', (error) => {
