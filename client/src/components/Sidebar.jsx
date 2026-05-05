@@ -6,7 +6,7 @@ import { useAuth } from '../context/AuthContext';
 const COLLEGE_LOGO_URL = 'https://mssu.ac.in/wp-content/uploads/2022/11/MSSU-Logo_home-1-430x330.png';
 
 export default function Sidebar({ items, role }) {
-  const { user, logout } = useAuth();
+  const { user, tenant, logout } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -18,11 +18,11 @@ export default function Sidebar({ items, role }) {
     <div className="sidebar">
       <div className="sidebar-header">
         <div className="sidebar-brand">
-          <img className="brand-logo" src={COLLEGE_LOGO_URL} alt="MSSU Logo" />
+          <img className="brand-logo" src={COLLEGE_LOGO_URL} alt="Institution Logo" />
           <h2>
-            Timetable System
+            {tenant?.universityShortName || 'Timetable System'}
           </h2>
-          <small>RTMSSU Campus Planner</small>
+          <small>{tenant?.campusName || 'RTMSSU Campus Planner'}</small>
         </div>
         <span className="role-badge">{role}</span>
       </div>
