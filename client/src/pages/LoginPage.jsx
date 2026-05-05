@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../api';
+import { toast } from '../components/UI';
 import './LoginPage.css';
 
 const COLLEGE_LOGO_URL = 'https://mssu.ac.in/wp-content/uploads/2022/11/MSSU-Logo_home-1-430x330.png';
@@ -208,7 +209,7 @@ export default function LoginPage() {
       setShowAddForm(false);
       setNewUniName(''); setNewUniShort(''); setNewUniLogo(''); setNewCampusName('Main Campus');
     } catch (err) {
-      alert('Failed to add university: ' + (err.response?.data?.error || err.message));
+      toast('Failed to add university: ' + (err.response?.data?.error || err.message), 'error');
     }
     setAddingUni(false);
   };
@@ -224,7 +225,7 @@ export default function LoginPage() {
       setShowCampusForm(null);
       setNewCampusNameForUni('');
     } catch (err) {
-      alert('Failed to add campus: ' + (err.response?.data?.error || err.message));
+      toast('Failed to add campus: ' + (err.response?.data?.error || err.message), 'error');
     }
     setAddingCampus(false);
   };
@@ -251,7 +252,7 @@ export default function LoginPage() {
       setUniversities(updated);
       setShowEditUniForm(false);
     } catch (err) {
-      alert('Failed to update university: ' + (err.response?.data?.error || err.message));
+      toast('Failed to update university: ' + (err.response?.data?.error || err.message), 'error');
     }
     setUpdatingUni(false);
   };
@@ -273,7 +274,7 @@ export default function LoginPage() {
       setUniversities(updated);
       setShowEditCampusForm(false);
     } catch (err) {
-      alert('Failed to update campus: ' + (err.response?.data?.error || err.message));
+      toast('Failed to update campus: ' + (err.response?.data?.error || err.message), 'error');
     }
     setUpdatingCampus(false);
   };
