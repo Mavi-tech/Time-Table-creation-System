@@ -1,6 +1,6 @@
-import React from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
-import { LogOut } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { NavLink, useNavigate, useLocation } from 'react-router-dom';
+import { LogOut, Menu, X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 const COLLEGE_LOGO_URL = 'https://mssu.ac.in/wp-content/uploads/2022/11/MSSU-Logo_home-1-430x330.png';
@@ -8,14 +8,39 @@ const COLLEGE_LOGO_URL = 'https://mssu.ac.in/wp-content/uploads/2022/11/MSSU-Log
 export default function Sidebar({ items, role }) {
   const { user, tenant, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
+
+  // Close sidebar on route change for mobile
+  useEffect(() => {
+    setIsMobileOpen(false);
+  }, [location.pathname]);
 
   const handleLogout = () => {
     logout();
     navigate('/login', { replace: true });
   };
 
+  const toggleSidebar = () => setIsMobileOpen(!isMobileOpen);
+
   return (
-    <div className="sidebar">
+    <>
+      <div className="mobile-header">
+        <div className="mobile-brand">
+          <img src={COLLEGE_LOGO_URL} alt="Logo" className="mobile-logo" />
+          <span>{tenant?.universityShortName || 'Timetable System'}</span>
+        </div>
+        <button className="mobile-toggle-btn" onClick={toggleSidebar}>
+          {isMobileOpen ? <X size={26} /> : <Menu size={26} />}
+        </button>
+      </div>
+
+      <div 
+        className={`sidebar-overlay ${isMobileOpen ? 'active' : ''}`}
+        onClick={() => setIsMobileOpen(false)}
+      />
+
+      <div className={`sidebar ${isMobileOpen ? 'mobile-open' : ''}`}>
       <div className="sidebar-header">
         <div className="sidebar-brand">
           <img className="brand-logo" src={COLLEGE_LOGO_URL} alt="Institution Logo" />
@@ -57,5 +82,6 @@ export default function Sidebar({ items, role }) {
         </button>
       </div>
     </div>
+    </>
   );
 }
