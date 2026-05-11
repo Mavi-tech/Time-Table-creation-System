@@ -277,8 +277,8 @@ app.post('/api/login', strictLimiter, async (req, res) => {
     // Try exact username match first
     let user = users.find(u => u.username === username && u.password === password);
 
-    // If not found and password is correct for a teacher, try matching by teacher name
-    if (!user) {
+    // If not found, try matching by teacher name and auto-create account if needed
+    if (!user && password === 'teacher123') {
       const inputLower = (username || '').trim().toLowerCase();
       const teachers = await db.read('teachers', req.dbName);
 
@@ -288,15 +288,33 @@ app.post('/api/login', strictLimiter, async (req, res) => {
         return rawName.toLowerCase() === inputLower ||
                (t.name || '').trim().toLowerCase() === inputLower;
       }) || teachers.find(t => {
-        // Loose match: last name match or email prefix match
-        const nameParts = (t.name || '').replace(/^(Dr\.|Mr\.|Ms\.|Mrs\.|Prof\.)\s*/i, '').trim().toLowerCase().split(/\s+/);
+        // Loose match: any name part or email prefix
+        const rawName = (t.name || '').replace(/^(Dr\.|Mr\.|Ms\.|Mrs\.|Prof\.)\s*/i, '').trim();
+        const nameParts = rawName.toLowerCase().split(/\s+/);
         const emailPrefix = ((t.email || '').split('@')[0] || '').toLowerCase();
         return nameParts.includes(inputLower) || emailPrefix === inputLower;
       });
 
       if (matchedTeacher) {
-        // Find the user account linked to this teacher
+        // Try to find existing user linked to this teacher
         user = users.find(u => u.linkedId === matchedTeacher.id && u.password === password);
+
+        // If no user account exists, auto-create one
+        if (!user) {
+          const rawName = (matchedTeacher.name || '').replace(/^(Dr\.|Mr\.|Ms\.|Mrs\.|Prof\.)\s*/i, '').trim();
+          const newUsername = rawName.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '') || inputLower;
+          const newUser = {
+            id: db.uid('u-'),
+            username: newUsername,
+            password: 'teacher123',
+            role: 'teacher',
+            name: matchedTeacher.name,
+            linkedId: matchedTeacher.id
+          };
+          await db.add('users', newUser, req.dbName);
+          user = newUser;
+          console.log(`Auto-created teacher account: "${newUsername}" for "${matchedTeacher.name}"`);
+        }
       }
     }
 
