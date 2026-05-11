@@ -272,20 +272,44 @@ app.use(express.static(clientBuildDir));
 app.post('/api/login', strictLimiter, async (req, res) => {
   try {
     const { username, password } = req.body;
-    console.log('Login attempt:', { username, password });
     const users = await db.read('users', req.dbName);
-    console.log('Loaded users:', users.map(u => ({ username: u.username, password: u.password, role: u.role })));
-    const user = users.find(u => u.username === username && u.password === password);
+
+    // Try exact username match first
+    let user = users.find(u => u.username === username && u.password === password);
+
+    // If not found and password is correct for a teacher, try matching by teacher name
     if (!user) {
-      console.log('Login failed for:', username);
+      const inputLower = (username || '').trim().toLowerCase();
+      const teachers = await db.read('teachers', req.dbName);
+
+      // Find teacher by name match (strip titles like Dr., Mr., etc.)
+      const matchedTeacher = teachers.find(t => {
+        const rawName = (t.name || '').replace(/^(Dr\.|Mr\.|Ms\.|Mrs\.|Prof\.)\s*/i, '').trim();
+        return rawName.toLowerCase() === inputLower ||
+               (t.name || '').trim().toLowerCase() === inputLower;
+      }) || teachers.find(t => {
+        // Loose match: last name match or email prefix match
+        const nameParts = (t.name || '').replace(/^(Dr\.|Mr\.|Ms\.|Mrs\.|Prof\.)\s*/i, '').trim().toLowerCase().split(/\s+/);
+        const emailPrefix = ((t.email || '').split('@')[0] || '').toLowerCase();
+        return nameParts.includes(inputLower) || emailPrefix === inputLower;
+      });
+
+      if (matchedTeacher) {
+        // Find the user account linked to this teacher
+        user = users.find(u => u.linkedId === matchedTeacher.id && u.password === password);
+      }
+    }
+
+    if (!user) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
+
     let resolvedLinkedId = user.linkedId;
     if (user.role === 'teacher') {
       const teachers = await db.read('teachers', req.dbName);
       const hasValidLinkedId = resolvedLinkedId && teachers.some(t => t.id === resolvedLinkedId);
       if (!hasValidLinkedId) {
-        const uname = (user.username || '').trim().toLowerCase();
+        const uname = (username || '').trim().toLowerCase();
         const direct = teachers.find(t =>
           (t.name || '').trim().toLowerCase() === uname ||
           ((t.email || '').split('@')[0] || '').trim().toLowerCase() === uname
@@ -298,7 +322,6 @@ app.post('/api/login', strictLimiter, async (req, res) => {
       }
     }
     const { password: _, ...safe } = { ...user, linkedId: resolvedLinkedId };
-    console.log('Login success for:', username, 'role:', user.role);
     res.json(safe);
   } catch (error) {
     console.error('Login error:', error);
