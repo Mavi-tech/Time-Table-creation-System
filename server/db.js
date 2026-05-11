@@ -384,6 +384,29 @@ async function initTenantDb(dbName) {
     console.log(`  ✅ Demo teacher user seeded for ${dbName}`);
   }
 
+  // Migrate teacher usernames: fix old email-prefix usernames to name-based
+  // e.g. username 'l' (from l@mssu.edu) → 'patel' (from teacher name 'Patel')
+  const [allTeacherUsers] = await p.query("SELECT * FROM users WHERE role = 'teacher'");
+  const [allTeachers] = await p.query("SELECT * FROM teachers");
+  for (const u of allTeacherUsers) {
+    if (!u.linked_id) continue;
+    const teacher = allTeachers.find(t => t.id === u.linked_id);
+    if (!teacher || !teacher.name) continue;
+    // Derive expected username from teacher name
+    const rawName = (teacher.name || '').replace(/^(Dr\.|Mr\.|Ms\.|Mrs\.|Prof\.)\s*/i, '').trim();
+    const expectedUsername = rawName.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+    if (!expectedUsername || expectedUsername === u.username) continue;
+    // Only migrate if current username looks like a short email prefix (≤3 chars or doesn't match name)
+    const isShortPrefix = u.username.length <= 3;
+    const nameContainsUsername = rawName.toLowerCase().includes(u.username.toLowerCase());
+    if (!isShortPrefix && nameContainsUsername) continue;
+    // Check if the expected username is already taken by someone else
+    const [conflicts] = await p.query('SELECT id FROM users WHERE username = ? AND id != ?', [expectedUsername, u.id]);
+    if (conflicts.length > 0) continue;
+    await p.query('UPDATE users SET username = ? WHERE id = ?', [expectedUsername, u.id]);
+    console.log(`  🔄 Migrated teacher username: "${u.username}" → "${expectedUsername}" (${teacher.name})`);
+  }
+
   console.log(`  ✅ Database "${dbName}" initialized`);
 }
 

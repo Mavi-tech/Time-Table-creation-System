@@ -474,7 +474,7 @@ export default function TeachersManager() {
             {/* Info note for new teachers */}
             {!editing.id && (
               <div className="alert alert-info" style={{ fontSize: 12 }}>
-                ℹ️ A login account will be auto-created using the email prefix as username and <strong>teacher123</strong> as the default password.
+                ℹ️ A login account will be auto-created using the <strong>teacher's name</strong> as username (e.g. "Patel" → username "patel") and <strong>teacher123</strong> as the default password.
               </div>
             )}
 

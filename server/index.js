@@ -444,7 +444,19 @@ app.post('/api/teachers', async (req, res) => {
   try {
     const t = { id: db.uid('t-'), ...req.body };
     await db.add('teachers', t, req.dbName);
-    await db.add('users', { id: db.uid('u-'), username: req.body.email.split('@')[0], password: 'teacher123', role: 'teacher', name: req.body.name, linkedId: t.id }, req.dbName);
+    // Use teacher name (lowercased, cleaned) as username for intuitive login
+    // e.g. "Dr. Patel" → "patel", "Mr. Karan Singh" → "karan_singh"
+    const rawName = (req.body.name || '').replace(/^(Dr\.|Mr\.|Ms\.|Mrs\.|Prof\.)\s*/i, '').trim();
+    const teacherUsername = rawName.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '') || req.body.email.split('@')[0];
+    // Check if username already exists, append number if needed
+    const existingUsers = await db.read('users', req.dbName);
+    let finalUsername = teacherUsername;
+    let counter = 2;
+    while (existingUsers.some(u => u.username === finalUsername)) {
+      finalUsername = `${teacherUsername}${counter}`;
+      counter++;
+    }
+    await db.add('users', { id: db.uid('u-'), username: finalUsername, password: 'teacher123', role: 'teacher', name: req.body.name, linkedId: t.id }, req.dbName);
     if (t.courseIds && t.courseIds.length > 0) {
       for (const cid of t.courseIds) {
         await db.update('courses', cid, { teacherId: t.id }, req.dbName);
