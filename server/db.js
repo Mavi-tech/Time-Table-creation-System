@@ -396,10 +396,6 @@ async function initTenantDb(dbName) {
     const rawName = (teacher.name || '').replace(/^(Dr\.|Mr\.|Ms\.|Mrs\.|Prof\.)\s*/i, '').trim();
     const expectedUsername = rawName.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
     if (!expectedUsername || expectedUsername === u.username) continue;
-    // Only migrate if current username looks like a short email prefix (≤3 chars or doesn't match name)
-    const isShortPrefix = u.username.length <= 3;
-    const nameContainsUsername = rawName.toLowerCase().includes(u.username.toLowerCase());
-    if (!isShortPrefix && nameContainsUsername) continue;
     // Check if the expected username is already taken by someone else
     const [conflicts] = await p.query('SELECT id FROM users WHERE username = ? AND id != ?', [expectedUsername, u.id]);
     if (conflicts.length > 0) continue;
