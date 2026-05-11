@@ -249,11 +249,11 @@ async function refreshWeeklyOverrides(dbName) {
       status: 'active',
       tempCancelledDate: null,
       tempCancelledWeek: null,
-    }, dbName, req.dbName);
+    }, dbName);
   }
 
   for (const id of toRemove) {
-    await db.remove('timetables', id, dbName, req.dbName);
+    await db.remove('timetables', id, dbName);
   }
 
   if (toRestore.length > 0 || toRemove.length > 0) {
@@ -742,7 +742,7 @@ app.get('/api/timetable', async (req, res) => {
   }
 });
 
-app.get('/api/timetable/all', async (_, res) => {
+app.get('/api/timetable/all', async (req, res) => {
   try {
     const all = await refreshWeeklyOverrides(req.dbName);
     const teachers = await db.read('teachers', req.dbName);
