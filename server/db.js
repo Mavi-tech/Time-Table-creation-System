@@ -384,19 +384,49 @@ async function initTenantDb(dbName) {
     console.log(`  ✅ Demo teacher user seeded for ${dbName}`);
   }
 
-  // Migrate teacher usernames: fix old email-prefix usernames to name-based
-  // e.g. username 'l' (from l@mssu.edu) → 'patel' (from teacher name 'Patel')
+  // Ensure every teacher has a login account, create if missing
   const [allTeacherUsers] = await p.query("SELECT * FROM users WHERE role = 'teacher'");
   const [allTeachers] = await p.query("SELECT * FROM teachers");
-  for (const u of allTeacherUsers) {
+  const [allUsers] = await p.query("SELECT username FROM users");
+  const takenUsernames = new Set(allUsers.map(u => u.username));
+
+  for (const teacher of allTeachers) {
+    if (!teacher.name) continue;
+    // Check if this teacher has a linked user account
+    const hasUser = allTeacherUsers.some(u => u.linked_id === teacher.id);
+    if (hasUser) continue;
+
+    // Create a new user account for this teacher
+    const rawName = (teacher.name || '').replace(/^(Dr\.|Mr\.|Ms\.|Mrs\.|Prof\.)\s*/i, '').trim();
+    let username = rawName.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '') || (teacher.email || '').split('@')[0];
+    if (!username) continue;
+
+    // Ensure unique username
+    let finalUsername = username;
+    let counter = 2;
+    while (takenUsernames.has(finalUsername)) {
+      finalUsername = `${username}${counter}`;
+      counter++;
+    }
+    takenUsernames.add(finalUsername);
+
+    const userId = 'u-' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+    await p.query(
+      'INSERT INTO users (id, username, password, role, name, linked_id) VALUES (?, ?, ?, ?, ?, ?)',
+      [userId, finalUsername, 'teacher123', 'teacher', teacher.name, teacher.id]
+    );
+    console.log(`  ✅ Created missing user account: "${finalUsername}" for teacher "${teacher.name}"`);
+  }
+
+  // Migrate old email-prefix usernames to name-based ones
+  const [updatedTeacherUsers] = await p.query("SELECT * FROM users WHERE role = 'teacher'");
+  for (const u of updatedTeacherUsers) {
     if (!u.linked_id) continue;
     const teacher = allTeachers.find(t => t.id === u.linked_id);
     if (!teacher || !teacher.name) continue;
-    // Derive expected username from teacher name
     const rawName = (teacher.name || '').replace(/^(Dr\.|Mr\.|Ms\.|Mrs\.|Prof\.)\s*/i, '').trim();
     const expectedUsername = rawName.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
     if (!expectedUsername || expectedUsername === u.username) continue;
-    // Check if the expected username is already taken by someone else
     const [conflicts] = await p.query('SELECT id FROM users WHERE username = ? AND id != ?', [expectedUsername, u.id]);
     if (conflicts.length > 0) continue;
     await p.query('UPDATE users SET username = ? WHERE id = ?', [expectedUsername, u.id]);
