@@ -273,47 +273,74 @@ app.post('/api/login', strictLimiter, async (req, res) => {
   try {
     const { username, password } = req.body;
     const users = await db.read('users', req.dbName);
+    const inputLower = (username || '').trim().toLowerCase();
 
-    // Try exact username match first
+    // 1. Try exact username + password match
     let user = users.find(u => u.username === username && u.password === password);
 
-    // If not found, try matching by teacher name and auto-create account if needed
+    // 2. Try case-insensitive username match
+    if (!user) {
+      user = users.find(u => u.username?.toLowerCase() === inputLower && u.password === password);
+    }
+
+    // 3. If still not found and password is teacher123, try matching by teacher name
     if (!user && password === 'teacher123') {
-      const inputLower = (username || '').trim().toLowerCase();
       const teachers = await db.read('teachers', req.dbName);
 
-      // Find teacher by name match (strip titles like Dr., Mr., etc.)
+      // Helper: strip title prefix from name
+      const stripTitle = (name) => (name || '').replace(/^(Dr\.|Mr\.|Ms\.|Mrs\.|Prof\.)\s*/i, '').trim();
+
+      // Find teacher by name match — try exact match first, then partial
       const matchedTeacher = teachers.find(t => {
-        const rawName = (t.name || '').replace(/^(Dr\.|Mr\.|Ms\.|Mrs\.|Prof\.)\s*/i, '').trim();
-        return rawName.toLowerCase() === inputLower ||
-               (t.name || '').trim().toLowerCase() === inputLower;
+        const raw = stripTitle(t.name).toLowerCase();
+        const full = (t.name || '').trim().toLowerCase();
+        return raw === inputLower || full === inputLower;
       }) || teachers.find(t => {
-        // Loose match: any name part or email prefix
-        const rawName = (t.name || '').replace(/^(Dr\.|Mr\.|Ms\.|Mrs\.|Prof\.)\s*/i, '').trim();
-        const nameParts = rawName.toLowerCase().split(/\s+/);
+        // Loose match: any part of the name, or last name, or email prefix
+        const raw = stripTitle(t.name);
+        const parts = raw.toLowerCase().split(/\s+/);
+        const lastName = parts[parts.length - 1] || '';
         const emailPrefix = ((t.email || '').split('@')[0] || '').toLowerCase();
-        return nameParts.includes(inputLower) || emailPrefix === inputLower;
+        return parts.includes(inputLower) || lastName === inputLower || emailPrefix === inputLower;
       });
 
       if (matchedTeacher) {
-        // Try to find existing user linked to this teacher
+        // Check if user linked to this teacher already exists
         user = users.find(u => u.linkedId === matchedTeacher.id && u.password === password);
 
-        // If no user account exists, auto-create one
         if (!user) {
-          const rawName = (matchedTeacher.name || '').replace(/^(Dr\.|Mr\.|Ms\.|Mrs\.|Prof\.)\s*/i, '').trim();
-          const newUsername = rawName.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '') || inputLower;
+          // Auto-create user account for this teacher
+          const rawName = stripTitle(matchedTeacher.name);
+          let baseUsername = rawName.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '') || inputLower;
+          
+          // Ensure uniqueness
+          let finalUsername = baseUsername;
+          let counter = 2;
+          const takenUsernames = new Set(users.map(u => u.username?.toLowerCase()));
+          while (takenUsernames.has(finalUsername)) {
+            finalUsername = `${baseUsername}${counter}`;
+            counter++;
+          }
+
           const newUser = {
             id: db.uid('u-'),
-            username: newUsername,
+            username: finalUsername,
             password: 'teacher123',
             role: 'teacher',
             name: matchedTeacher.name,
             linkedId: matchedTeacher.id
           };
-          await db.add('users', newUser, req.dbName);
-          user = newUser;
-          console.log(`Auto-created teacher account: "${newUsername}" for "${matchedTeacher.name}"`);
+
+          try {
+            await db.add('users', newUser, req.dbName);
+            user = newUser;
+            console.log(`Auto-created teacher account: "${finalUsername}" for "${matchedTeacher.name}"`);
+          } catch (addErr) {
+            // If insert fails (e.g. duplicate key), try to find existing user by linkedId
+            console.error(`Failed to auto-create user for "${matchedTeacher.name}":`, addErr.message);
+            const refreshedUsers = await db.read('users', req.dbName);
+            user = refreshedUsers.find(u => u.linkedId === matchedTeacher.id && u.password === password);
+          }
         }
       }
     }
@@ -327,14 +354,13 @@ app.post('/api/login', strictLimiter, async (req, res) => {
       const teachers = await db.read('teachers', req.dbName);
       const hasValidLinkedId = resolvedLinkedId && teachers.some(t => t.id === resolvedLinkedId);
       if (!hasValidLinkedId) {
-        const uname = (username || '').trim().toLowerCase();
         const direct = teachers.find(t =>
-          (t.name || '').trim().toLowerCase() === uname ||
-          ((t.email || '').split('@')[0] || '').trim().toLowerCase() === uname
+          (t.name || '').trim().toLowerCase() === inputLower ||
+          ((t.email || '').split('@')[0] || '').trim().toLowerCase() === inputLower
         );
         const loose = teachers.find(t =>
-          (t.name || '').toLowerCase().includes(uname) ||
-          ((t.email || '').split('@')[0] || '').toLowerCase().includes(uname)
+          (t.name || '').toLowerCase().includes(inputLower) ||
+          ((t.email || '').split('@')[0] || '').toLowerCase().includes(inputLower)
         );
         resolvedLinkedId = (direct || loose || {}).id || resolvedLinkedId || null;
       }
