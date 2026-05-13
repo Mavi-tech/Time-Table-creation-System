@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import api from '../../api';
-import { toast, Modal } from '../../components/UI';
+import { toast, Modal, useConfirm } from '../../components/UI';
 
 export default function Dashboard() {
   const [departments, setDepartments] = useState([]);
@@ -175,6 +175,7 @@ function SemesterCard({ deptId, semester }) {
   const [classrooms, setClassrooms] = useState([]);
   const [days, setDays] = useState(['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']);
   const [slots, setSlots] = useState([]);
+  const [confirm, ConfirmDialog] = useConfirm();
 
   const load = () => {
     api.getCourses(deptId).then(r => setCourses(r.data.filter(c => c.semester === semester))).catch(() => {});
@@ -278,7 +279,7 @@ function SemesterCard({ deptId, semester }) {
   };
 
   const handleClear = async () => {
-    if (!window.confirm(`Delete timetable for Semester ${semester}?`)) return;
+    if (!await confirm('Delete Timetable', `Are you sure you want to delete the timetable for Semester ${semester}? This action cannot be undone.`)) return;
     try {
       await api.deleteDeptSemTT(deptId, +semester);
       setTimetable([]);
@@ -293,6 +294,7 @@ function SemesterCard({ deptId, semester }) {
       flex: '1 1 220px', background: 'var(--card)', borderRadius: 'var(--radius)',
       border: '1px solid var(--border)', padding: 20, boxShadow: 'var(--shadow)',
     }}>
+      <ConfirmDialog />
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
         <h3 style={{ fontSize: 16, fontWeight: 700 }}>Semester {semester}</h3>
         <span className={`badge ${displayTT.length > 0 ? 'badge-success' : 'badge-warning'}`}>
