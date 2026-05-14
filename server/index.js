@@ -402,6 +402,56 @@ app.get('/api/overview', async (req, res) => {
   }
 });
 
+// ==================== SYNC TEACHER ACCOUNTS ====================
+app.post('/api/sync-teacher-accounts', requireAdmin, async (req, res) => {
+  try {
+    const teachers = await db.read('teachers', req.dbName);
+    const users = await db.read('users', req.dbName);
+    const takenUsernames = new Set(users.map(u => u.username?.toLowerCase()));
+    const stripTitle = (name) => (name || '').replace(/^(Dr\.|Mr\.|Ms\.|Mrs\.|Prof\.)\s*/i, '').trim();
+
+    const created = [];
+    for (const teacher of teachers) {
+      if (!teacher.name) continue;
+      // Check if this teacher already has a linked user account
+      const hasUser = users.some(u => u.linkedId === teacher.id);
+      if (hasUser) continue;
+
+      const rawName = stripTitle(teacher.name);
+      let baseUsername = rawName.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '') || (teacher.email || '').split('@')[0];
+      if (!baseUsername) continue;
+
+      let finalUsername = baseUsername;
+      let counter = 2;
+      while (takenUsernames.has(finalUsername)) {
+        finalUsername = `${baseUsername}${counter}`;
+        counter++;
+      }
+      takenUsernames.add(finalUsername);
+
+      const newUser = {
+        id: db.uid('u-'),
+        username: finalUsername,
+        password: 'teacher123',
+        role: 'teacher',
+        name: teacher.name,
+        linkedId: teacher.id
+      };
+
+      try {
+        await db.add('users', newUser, req.dbName);
+        created.push({ username: finalUsername, teacherName: teacher.name, teacherId: teacher.id });
+      } catch (err) {
+        console.error(`Failed to create user for "${teacher.name}":`, err.message);
+      }
+    }
+
+    res.json({ ok: true, created: created.length, accounts: created });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // ==================== DEPARTMENTS ====================
 app.get('/api/departments', async (req, res) => {
   try {
