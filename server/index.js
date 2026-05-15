@@ -273,18 +273,21 @@ app.post('/api/login', strictLimiter, async (req, res) => {
   try {
     const { username, password } = req.body;
     const users = await db.read('users', req.dbName);
-    const inputLower = (username || '').trim().toLowerCase();
+    const input = String(username || '').trim();
+    const inputLower = input.toLowerCase();
+    const pass = password == null ? '' : String(password);
 
-    // 1. Try exact username + password match
-    let user = users.find(u => u.username === username && u.password === password);
+    // Normalize username comparisons: compare trimmed lowercase forms for username,
+    // but preserve original stored username when returning the user object.
+    let user = users.find(u => String(u.username || '').trim().toLowerCase() === inputLower && String(u.password || '') === pass);
 
-    // 2. Try case-insensitive username match
+    // If not found, allow case-insensitive match on username (covers legacy data)
     if (!user) {
-      user = users.find(u => u.username?.toLowerCase() === inputLower && u.password === password);
+      user = users.find(u => String(u.username || '').toLowerCase() === inputLower && String(u.password || '') === pass);
     }
 
-    // 3. If still not found and password is teacher123, try matching by teacher name
-    if (!user && password === 'teacher123') {
+    // If still not found and password equals the teacher default, try matching by teacher name/email
+    if (!user && pass === 'teacher123') {
       const teachers = await db.read('teachers', req.dbName);
 
       // Helper: strip title prefix from name
@@ -296,7 +299,6 @@ app.post('/api/login', strictLimiter, async (req, res) => {
         const full = (t.name || '').trim().toLowerCase();
         return raw === inputLower || full === inputLower;
       }) || teachers.find(t => {
-        // Loose match: any part of the name, or last name, or email prefix
         const raw = stripTitle(t.name);
         const parts = raw.toLowerCase().split(/\s+/);
         const lastName = parts[parts.length - 1] || '';
@@ -306,17 +308,16 @@ app.post('/api/login', strictLimiter, async (req, res) => {
 
       if (matchedTeacher) {
         // Check if user linked to this teacher already exists
-        user = users.find(u => u.linkedId === matchedTeacher.id && u.password === password);
+        user = users.find(u => u.linkedId === matchedTeacher.id && String(u.password || '') === pass);
 
         if (!user) {
           // Auto-create user account for this teacher
           const rawName = stripTitle(matchedTeacher.name);
           let baseUsername = rawName.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '') || inputLower;
-          
           // Ensure uniqueness
           let finalUsername = baseUsername;
           let counter = 2;
-          const takenUsernames = new Set(users.map(u => u.username?.toLowerCase()));
+          const takenUsernames = new Set(users.map(u => String(u.username || '').toLowerCase()));
           while (takenUsernames.has(finalUsername)) {
             finalUsername = `${baseUsername}${counter}`;
             counter++;
@@ -336,10 +337,9 @@ app.post('/api/login', strictLimiter, async (req, res) => {
             user = newUser;
             console.log(`Auto-created teacher account: "${finalUsername}" for "${matchedTeacher.name}"`);
           } catch (addErr) {
-            // If insert fails (e.g. duplicate key), try to find existing user by linkedId
             console.error(`Failed to auto-create user for "${matchedTeacher.name}":`, addErr.message);
             const refreshedUsers = await db.read('users', req.dbName);
-            user = refreshedUsers.find(u => u.linkedId === matchedTeacher.id && u.password === password);
+            user = refreshedUsers.find(u => u.linkedId === matchedTeacher.id && String(u.password || '') === pass);
           }
         }
       }
