@@ -51,6 +51,9 @@ export default function ViewAll() {
 
   // Filter entries by selected batch
   const displayedEntries = useMemo(() => {
+    // When viewing by teacher, show all entries for that teacher (don't hide batch-specific rows)
+    if (mode === 'teacher') return entries;
+
     if (batches.length === 0) return entries;
     if (!selBatch) return entries.filter(e => !e.batchId);
     return entries.filter(e => e.batchId === selBatch || !e.batchId);
