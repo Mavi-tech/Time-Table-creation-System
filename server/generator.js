@@ -152,6 +152,9 @@ function checkHardConstraints(session, day, slotId, room, schedule, departmentId
   if (session.type === 'lab' && room.type !== 'lab') return false;
   if (session.type === 'lecture' && room.type !== 'lecture') return false;
 
+  // Room capacity check (hard constraint: students must fit in the classroom)
+  if (room.capacity && session.studentCount && room.capacity < session.studentCount) return false;
+
   return true;
 }
 
@@ -237,15 +240,29 @@ function scoreSlot(session, day, slotId, room, schedule, departmentId, semester)
   }
 
   // ---- 6. ROOM CAPACITY FIT: prefer smallest room that fits ----
-  if (session.studentCount > 0 && room.capacity >= session.studentCount) {
+  if (session.studentCount > 0 && Number(room.capacity) >= Number(session.studentCount)) {
     // Smaller excess capacity = better fit
-    const excess = room.capacity - session.studentCount;
+    const excess = Number(room.capacity) - Number(session.studentCount);
     score += Math.max(0, 5 - Math.floor(excess / 10));
   }
 
   // ---- 7. EARLY DAY SLIGHT PREFERENCE: Mon-Fri slightly preferred over Saturday ----
   const dayIndex = DAYS.indexOf(day);
   if (dayIndex < 5) score += 1;
+
+  // ---- 8. SIBLING BATCH STAGGER: strongly avoid same day+slot as other batches of the same course ----
+  // This ensures different batches (A, B, C) get DIFFERENT timetables
+  if (session.batchId) {
+    for (let s = 0; s < slotsNeeded; s++) {
+      const siblingCount = schedule.filter(
+        e => e.courseId === session.courseId &&
+          e.batchId !== session.batchId &&
+          e.day === day &&
+          Number(e.slotId) === slotId + s
+      ).length;
+      score -= siblingCount * 200; // Very strong penalty per sibling batch overlap
+    }
+  }
 
   return score;
 }
@@ -287,6 +304,7 @@ function findValidPlacements(session, schedule, rooms, departmentId, semester, d
 // ==================== DIFFICULTY SORTING (MRV Heuristic) ====================
 // Sessions with preferences go FIRST (they need their specific slot).
 // Then remaining sessions sorted by number of valid placements (most constrained first).
+// Finally, interleave batches so A,B,C sessions alternate instead of grouping.
 function sortByDifficulty(sessions, rooms, existingSchedule, departmentId, semester, days) {
   const withPrefs = [];
   const withoutPrefs = [];
@@ -305,8 +323,45 @@ function sortByDifficulty(sessions, rooms, existingSchedule, departmentId, semes
   withPrefs.sort((a, b) => a.difficulty - b.difficulty);
   withoutPrefs.sort((a, b) => a.difficulty - b.difficulty);
 
-  // Preferred sessions first, then the rest
-  return [...withPrefs, ...withoutPrefs].map(sd => sd.session);
+  // Interleave sessions across batches so A, B, C are scheduled consecutively
+  // This ensures the scheduler places Batch A's TOC, then B's TOC, then C's TOC
+  // so the sibling penalty can take effect immediately.
+  function interleaveBatches(entries) {
+    // Group by courseId + type + lectureIndex/labIndex
+    const groups = new Map();
+    const ungrouped = [];
+    entries.forEach(entry => {
+      const s = entry.session;
+      if (!s.batchId) {
+        ungrouped.push(entry);
+        return;
+      }
+      const key = `${s.courseId}|${s.type}|${s.lectureIndex ?? s.labIndex ?? '?'}`;
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key).push(entry);
+    });
+
+    // Consecutive sibling ordering
+    const result = [...ungrouped];
+    for (const g of groups.values()) {
+      g.sort((a, b) => {
+        const sectionA = String(a.session.batchSection || '');
+        const sectionB = String(b.session.batchSection || '');
+        const sectionCompare = sectionA.localeCompare(sectionB, undefined, { numeric: true, sensitivity: 'base' });
+        if (sectionCompare !== 0) return sectionCompare;
+        return String(a.session.batchId || '').localeCompare(String(b.session.batchId || ''));
+      });
+      for (const entry of g) {
+        result.push(entry);
+      }
+    }
+    return result;
+  }
+
+  const interleavedWithout = interleaveBatches(withoutPrefs);
+
+  // Preferred sessions first, then interleaved rest
+  return [...withPrefs, ...interleavedWithout].map(sd => sd.session);
 }
 
 // ==================== MAIN SCHEDULING ENGINE ====================
@@ -437,17 +492,44 @@ function scheduleWithBacktracking(sessions, rooms, existingSchedule, departmentI
 // ==================== PUBLIC API (async version for PostgreSQL) ====================
 
 async function generate(departmentId, semester, mode = 'week', batchId = null, preferences = [], dbName) {
-  const courses = (await db.read('courses', dbName)).filter(c => {
+  const allCourses = await db.read('courses', dbName);
+  const courses = allCourses.filter(c => {
     const cDepts = c.departmentIds || (c.departmentId ? [c.departmentId] : []);
     return cDepts.includes(departmentId) && c.semester === semester;
   });
   const rooms = await db.read('classrooms', dbName);
   const allTT = await db.read('timetables', dbName);
 
+  const resolvedCourseForEntry = t => allCourses.find(c => c.id === t.courseId || c.code === t.courseCode) || null;
+
   // Replace scope: whole semester, or only the selected batch within that semester.
-  const shouldReplace = batchId
-    ? (t => t.departmentId === departmentId && t.semester === semester && t.batchId === batchId)
-    : (t => t.departmentId === departmentId && t.semester === semester);
+  // Resolves semester for legacy entries (semester = null) via course lookup,
+  // and cleans up orphaned entries to prevent classroom/teacher resource blockages.
+  const shouldReplace = t => {
+    const course = resolvedCourseForEntry(t);
+    if (t.departmentId !== departmentId) {
+      const courseDepartments = course?.departmentIds || (course?.departmentId ? [course.departmentId] : []);
+      if (!courseDepartments.includes(departmentId)) return false;
+    }
+
+    if (batchId && t.batchId !== batchId) return false;
+
+    let tSem = null;
+    if (t.semester !== null && t.semester !== undefined) {
+      tSem = Number(t.semester);
+    } else {
+      if (course) {
+        tSem = Number(course.semester);
+      }
+    }
+
+    if (tSem !== null) {
+      return tSem === Number(semester);
+    }
+
+    // Clean up completely orphaned/legacy records to prevent permanent room/teacher blockage.
+    return true;
+  };
 
   // Everything outside replace-scope remains as hard constraints.
   const existingConstraints = allTT.filter(t => !shouldReplace(t));
@@ -583,7 +665,7 @@ async function generateDept(departmentId, semesterGroup = 'all', dbName) {
 
 async function getTT(departmentId, semester, dbName) {
   const timetables = await db.read('timetables', dbName);
-  return timetables.filter(t => t.departmentId === departmentId && t.semester === semester);
+  return timetables.filter(t => t.departmentId === departmentId && Number(t.semester) === Number(semester));
 }
 
 async function getTeacherTT(teacherId, dbName) {

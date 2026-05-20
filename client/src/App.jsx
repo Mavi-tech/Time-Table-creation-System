@@ -1,10 +1,13 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
+import { ToastContainer } from './components/UI';
 
 /* Landing & Login */
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
+import Contact from './pages/Contact';
+import Policies from './pages/Policies';
 
 /* Admin */
 import AdminLayout from './pages/Admin/AdminLayout';
@@ -50,10 +53,14 @@ function RootRedirect() {
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <Routes>
+    <>
+      <ToastContainer />
+      <BrowserRouter>
+        <Routes>
         <Route path="/landing" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/contact" element={<Contact />} />
+        <Route path="/policies" element={<Policies />} />
         <Route path="/" element={<RootRedirect />} />
 
         {/* Admin Routes */}
@@ -102,5 +109,6 @@ export default function App() {
         <Route path="*" element={<RootRedirect />} />
       </Routes>
     </BrowserRouter>
+    </>
   );
 }

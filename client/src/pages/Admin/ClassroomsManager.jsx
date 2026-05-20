@@ -196,70 +196,59 @@ export default function ClassroomsManager() {
           const cfg = TYPE_CONFIG[c.type] || TYPE_CONFIG.lecture;
           const cap = getCapacityLevel(c.capacity);
           return (
-            <div key={c.id} className="card" style={{ padding: 0, overflow: 'hidden', transition: 'transform .15s, box-shadow .15s' }}>
-              {/* Type stripe */}
-              <div style={{ height: 4, background: cfg.color }} />
-              <div style={{ padding: '20px 20px 16px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14 }}>
-                  <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-                    <div style={{
-                      width: 44, height: 44, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontSize: 20, background: c.type === 'lab' ? '#f0fdf4' : '#eef2ff', flexShrink: 0
-                    }}>
-                      {cfg.icon}
-                    </div>
-                    <div>
-                      <h4 style={{ fontSize: 15, fontWeight: 700, margin: 0 }}>{c.name}</h4>
-                      <span className={`badge ${cfg.badge}`} style={{ marginTop: 4 }}>{cfg.label}</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16 }}>
-                  {/* Capacity bar */}
-                  <div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12, marginBottom: 4 }}>
-                      <span style={{ color: 'var(--text-secondary)' }}>Capacity</span>
-                      <span style={{ fontWeight: 700 }}>{c.capacity} seats</span>
-                    </div>
-                    <div style={{ height: 6, background: 'var(--border)', borderRadius: 3, overflow: 'hidden' }}>
-                      <div style={{
-                        height: '100%', borderRadius: 3, background: cap.color,
-                        width: `${Math.min((c.capacity / 120) * 100, 100)}%`, transition: 'width .3s'
-                      }} />
-                    </div>
-                  </div>
-                  {c.building && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'var(--text-secondary)' }}>
-                      <span style={{
-                        width: 8, height: 8, borderRadius: 2, background: getBuildingColor(c.building), flexShrink: 0
-                      }} />
-                      {c.building}{c.floor ? `, Floor ${c.floor}` : ''}
-                    </div>
-                  )}
-                  {c.facilities && (
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 2 }}>
-                      {c.facilities.split(',').map((f, i) => (
-                        <span key={i} style={{
-                          padding: '2px 8px', borderRadius: 4, background: 'var(--bg)', fontSize: 10,
-                          fontWeight: 600, color: 'var(--text-secondary)'
-                        }}>
-                          {f.trim()}
-                        </span>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                <div style={{ display: 'flex', gap: 8 }}>
-                  <button className="btn btn-sm btn-secondary" style={{ flex: 1 }} onClick={() => openEdit(c)}>✏️ Edit</button>
-                  <button className="btn btn-sm btn-danger" onClick={() => remove(c.id)}>🗑️</button>
+            <div key={c.id} className="bg-white border border-slate-200 rounded-2xl p-5 flex flex-col h-full hover:shadow-md transition-shadow relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-full h-1" style={{ background: cfg.color }} />
+              
+              <div className="flex justify-between items-start mb-3">
+                <div className="pr-2">
+                  <h3 className="text-[15px] font-bold text-slate-800 leading-tight mb-1">{c.name}</h3>
+                  <span className={`badge ${cfg.badge} text-[10px] px-2 py-0.5 whitespace-nowrap inline-block`}>{cfg.icon} {cfg.label}</span>
                 </div>
               </div>
+
+              <div className="flex-1 flex flex-col gap-3 mt-2">
+                <div>
+                  <div className="flex justify-between text-[11px] mb-1.5">
+                    <span className="text-slate-500 font-bold uppercase tracking-wider">Capacity</span>
+                    <span className="font-bold text-slate-900">{c.capacity} seats</span>
+                  </div>
+                  <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden border border-slate-200/50">
+                    <div className="h-full rounded-full transition-all duration-500" style={{
+                      background: cap.color === 'var(--primary)' ? '#14B8A6' : cap.color === 'var(--warning)' ? '#f59e0b' : '#10b981',
+                      width: `${Math.min((c.capacity / 120) * 100, 100)}%`
+                    }} />
+                  </div>
+                </div>
+
+                {c.building && (
+                  <div className="flex items-center gap-2 text-[13px] font-medium text-slate-600">
+                    <span className="w-2.5 h-2.5 rounded-full shrink-0 shadow-sm" style={{ background: getBuildingColor(c.building) }} />
+                    {c.building}{c.floor ? `, Floor ${c.floor}` : ''}
+                  </div>
+                )}
+                {c.facilities && (
+                  <div className="flex flex-wrap gap-1.5 mt-1">
+                    {c.facilities.split(',').map((f, i) => (
+                      <span key={i} className="px-2 py-0.5 rounded-md bg-slate-100 text-[10px] font-bold text-slate-600 border border-slate-200/60 uppercase tracking-wider">
+                        {f.trim()}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 mt-5 pt-3 border-t border-slate-100">
+                <button onClick={() => openEdit(c)} className="py-2 text-[13px] font-bold text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors flex items-center justify-center gap-1.5">
+                   ✏️ Edit
+                </button>
+                <button onClick={() => remove(c.id)} className="py-2 text-[13px] font-bold text-slate-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors flex items-center justify-center gap-1.5">
+                   🗑️ Delete
+                </button>
+              </div>
             </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
 
       {filtered.length === 0 && (
         <div className="empty-state">

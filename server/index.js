@@ -1055,11 +1055,11 @@ app.post('/api/timetable/:id/restore', async (req, res) => {
 app.delete('/api/timetable/dept/:deptId/semester/:semester', async (req, res) => {
   try {
     const all = await db.read('timetables', req.dbName);
-    const kept = all.filter(t => !(t.departmentId === req.params.deptId && t.semester === +req.params.semester));
+    const kept = all.filter(t => !(t.departmentId === req.params.deptId && Number(t.semester) === Number(req.params.semester)));
     const removed = all.length - kept.length;
     
     // Delete all matching timetables
-    for (const t of all.filter(t => t.departmentId === req.params.deptId && t.semester === +req.params.semester)) {
+    for (const t of all.filter(t => t.departmentId === req.params.deptId && Number(t.semester) === Number(req.params.semester))) {
       await db.remove('timetables', t.id, req.dbName);
     }
     res.json({ ok: true, removed });
@@ -1143,6 +1143,25 @@ app.put('/api/change-requests/:id', async (req, res) => {
   try {
     const r = await db.update('changeRequests', req.params.id, req.body, req.dbName);
     r ? res.json(r) : res.status(404).json({ error: 'Not found' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ==================== CONTACT MESSAGES ====================
+app.post('/api/contact', async (req, res) => {
+  try {
+    const { name, email, subject, message } = req.body;
+    if (!name || !email || !message) return res.status(400).json({ error: 'Missing required fields' });
+    const result = await db.add('contacts', {
+      id: db.uid('msg-'),
+      name,
+      email,
+      subject: subject || '',
+      message,
+      createdAt: new Date().toISOString()
+    }, req.dbName);
+    res.json({ ok: true, id: result.id });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

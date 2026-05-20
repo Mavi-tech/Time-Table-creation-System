@@ -609,20 +609,14 @@ export default function CoursesManager() {
               <div key={dept.id} className="card" style={{ marginBottom: 20, padding: 0, overflow: 'hidden' }}>
                 <div
                   onClick={() => toggleSection(dept.id)}
-                  style={{
-                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                    padding: '14px 20px', cursor: 'pointer', userSelect: 'none',
-                    background: 'linear-gradient(135deg, var(--primary), #6366f1)',
-                    color: '#fff',
-                  }}
+                  className="flex items-center justify-between px-5 py-4 cursor-pointer select-none bg-gradient-to-br from-primary-600 to-indigo-600 text-white"
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <span style={{ fontSize: 18, transition: 'transform .2s', transform: deptCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)' }}>▾</span>
-                    <span style={{ fontWeight: 700, fontSize: 15 }}>🏛️ {dept.name}</span>
-                    <span style={{
-                      background: 'rgba(255,255,255,.2)', padding: '2px 10px', borderRadius: 20,
-                      fontSize: 12, fontWeight: 600
-                    }}>{dept.code}</span>
+                  <div className="flex items-center gap-3">
+                    <span className={`text-lg transition-transform duration-200 ${deptCollapsed ? '-rotate-90' : 'rotate-0'}`}>▾</span>
+                    <span className="font-bold text-base">🏛️ {dept.name}</span>
+                    <span className="bg-white/20 px-3 py-0.5 rounded-full text-xs font-bold">
+                      {dept.code}
+                    </span>
                   </div>
                   <span style={{ fontSize: 12, opacity: .85, fontWeight: 500 }}>
                     {totalInDept} course{totalInDept !== 1 ? 's' : ''}
@@ -636,19 +630,14 @@ export default function CoursesManager() {
                     <div key={yrKey}>
                       <div
                         onClick={() => toggleSection(yrKey)}
-                        style={{
-                          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                          padding: '10px 20px', cursor: 'pointer', userSelect: 'none',
-                          background: 'var(--bg)', borderBottom: '1px solid var(--border)',
-                        }}
+                        className="flex items-center justify-between px-5 py-3 cursor-pointer select-none bg-neutral-50 border-b border-neutral-200"
                       >
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                          <span style={{ fontSize: 14, transition: 'transform .2s', transform: yrCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)' }}>▾</span>
-                          <span style={{ fontWeight: 700, fontSize: 13, color: 'var(--primary)' }}>📅 Year {year}</span>
-                          <span style={{
-                            background: 'var(--primary)', color: '#fff', padding: '1px 8px',
-                            borderRadius: 12, fontSize: 11, fontWeight: 700
-                          }}>{yearCourses.length}</span>
+                        <div className="flex items-center gap-2">
+                          <span className={`text-sm transition-transform duration-200 ${yrCollapsed ? '-rotate-90' : 'rotate-0'}`}>▾</span>
+                          <span className="font-bold text-sm text-primary-700">📅 Year {year}</span>
+                          <span className="bg-primary-600 text-white px-2 py-0.5 rounded-full text-xs font-bold">
+                            {yearCourses.length}
+                          </span>
                         </div>
                       </div>
 
@@ -658,57 +647,47 @@ export default function CoursesManager() {
                             const teacher = teacherMap[c.teacherId];
                             const tl = TYPE_LABELS[c.type] || TYPE_LABELS.theory;
                             return (
-                              <div key={c.id} className="card course-uniform-card" style={{
-                                padding: 14,
-                                background: '#fff',
-                                borderLeft: `4px solid ${getCourseColor(c.code)}`,
-                                transition: 'box-shadow .15s',
-                              }}
-                              onMouseEnter={e => e.currentTarget.style.boxShadow = '0 2px 12px rgba(0,0,0,.08)'}
-                              onMouseLeave={e => e.currentTarget.style.boxShadow = 'none'}
-                              >
-                                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8 }}>
-                                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                                    <div style={{
-                                      width: 36, height: 36, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                      fontSize: 11, fontWeight: 800, color: '#fff', background: getCourseColor(c.code), flexShrink: 0
-                                    }}>
-                                      {(c.code || '??').slice(0, 4)}
-                                    </div>
-                                    <div>
-                                      <div style={{ fontWeight: 700, fontSize: 13 }}>{c.name}</div>
-                                      <div style={{ fontSize: 11, color: 'var(--text-secondary)', fontWeight: 600 }}>
-                                        {c.code}{c.semester ? ` • Sem ${c.semester}` : ''}
-                                      </div>
-                                    </div>
+                              <div key={c.id} className="bg-white border border-slate-200 rounded-2xl p-5 flex flex-col h-full hover:shadow-md transition-shadow relative overflow-hidden">
+                                <div className="absolute top-0 left-0 w-full h-1" style={{ background: getCourseColor(c.code) }} />
+                                
+                                <div className="flex justify-between items-start mb-3">
+                                  <div className="pr-2">
+                                    <h3 className="text-[15px] font-bold text-slate-800 leading-tight mb-1">{c.name}</h3>
+                                    <p className="text-[11px] text-slate-500 font-bold uppercase tracking-wide">{c.code} {c.semester ? `• Sem ${c.semester}` : ''}</p>
                                   </div>
-                                  <span className={`badge ${tl.badge}`} style={{ fontSize: 10, whiteSpace: 'nowrap' }}>{tl.icon} {tl.label}</span>
-                                  {c.isElective && <span className="badge" style={{ background: '#f59e0b', color: '#fff', fontSize: 10, marginLeft: 4 }}>🎯 Elective</span>}
+                                  <div className="flex flex-col gap-1.5 items-end shrink-0">
+                                    <span className={`badge ${tl.badge} text-[10px] px-2 py-0.5 whitespace-nowrap`}>{tl.icon} {tl.label}</span>
+                                    {c.isElective && <span className="bg-amber-100 text-amber-700 rounded text-[10px] px-2 py-0.5 font-bold whitespace-nowrap">🎯 Elective</span>}
+                                  </div>
                                 </div>
 
-                                <div style={{ marginTop: 10, display: 'flex', flexWrap: 'wrap', gap: 6, fontSize: 11, color: 'var(--text-secondary)' }}>
-                                  <span style={{ background: 'var(--bg)', padding: '2px 8px', borderRadius: 6 }}>
-                                    📖 {c.weeklyLectures} lec/wk
-                                  </span>
+                                <div className="flex-1 flex flex-col gap-2.5 mt-2">
+                                  <div className="flex items-center text-[13px] text-slate-600 font-medium">
+                                    <span className="w-5 text-center mr-2 opacity-50">📖</span>
+                                    <span>{c.weeklyLectures} lectures/wk</span>
+                                  </div>
                                   {(c.weeklyLabs || 0) > 0 && (
-                                    <span style={{ background: 'var(--bg)', padding: '2px 8px', borderRadius: 6 }}>
-                                      🔬 {c.weeklyLabs}×{c.labDuration || 2}h lab
-                                    </span>
+                                    <div className="flex items-center text-[13px] text-slate-600 font-medium">
+                                      <span className="w-5 text-center mr-2 opacity-50">🔬</span>
+                                      <span>{c.weeklyLabs} × {c.labDuration || 2}h lab</span>
+                                    </div>
                                   )}
-                                  {teacher ? (
-                                    <span style={{ background: 'var(--bg)', padding: '2px 8px', borderRadius: 6 }}>
-                                      👨‍🏫 {teacher.name}
-                                    </span>
-                                  ) : (
-                                    <span style={{ background: '#fff3cd', padding: '2px 8px', borderRadius: 6, color: '#856404' }}>
-                                      ⚠️ Unassigned
-                                    </span>
-                                  )}
+                                  <div className="flex items-center text-[13px] text-slate-600 font-medium mt-1">
+                                    {teacher ? (
+                                      <><span className="w-5 text-center mr-2 opacity-50">👨‍🏫</span> <span className="truncate">{teacher.name}</span></>
+                                    ) : (
+                                      <><span className="w-5 text-center mr-2 opacity-50">⚠️</span> <span className="text-amber-600 font-bold">Unassigned</span></>
+                                    )}
+                                  </div>
                                 </div>
 
-                                <div style={{ marginTop: 'auto', paddingTop: 10, display: 'flex', gap: 6, justifyContent: 'flex-end' }}>
-                                  <button className="btn btn-sm btn-secondary" onClick={() => openEdit(c)}>Edit</button>
-                                  <button className="btn btn-sm btn-danger" onClick={() => remove(c.id)}>Delete</button>
+                                <div className="grid grid-cols-2 gap-2 mt-5 pt-3 border-t border-slate-100">
+                                  <button onClick={() => openEdit(c)} className="py-2 text-[13px] font-bold text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors flex items-center justify-center gap-1.5">
+                                     ✏️ Edit
+                                  </button>
+                                  <button onClick={() => remove(c.id)} className="py-2 text-[13px] font-bold text-slate-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors flex items-center justify-center gap-1.5">
+                                     🗑️ Delete
+                                  </button>
                                 </div>
                               </div>
                             );

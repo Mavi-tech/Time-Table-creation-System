@@ -1,14 +1,14 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import api from '../../api';
 import { toast, Modal, useConfirm } from '../../components/UI';
+import { Search, Calendar, ChevronLeft, ChevronRight } from 'lucide-react';
 
 export default function Dashboard() {
   const [departments, setDepartments] = useState([]);
   const [selectedDept, setSelectedDept] = useState(null);
   const [generating, setGenerating] = useState('');
-  const [page, setPage] = useState(0);
   const [search, setSearch] = useState('');
-  const PAGE_SIZE = 6;
+  const scrollRef = useRef(null);
 
   const filtered = departments.filter(d =>
     d.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -28,6 +28,17 @@ export default function Dashboard() {
 
     setGenerating(`${deptId}:${semesterGroup}`);
     try {
+      // Step 1: Delete existing timetables for these semesters first
+      for (const s of semesters) {
+        try {
+          await api.deleteDeptSemTT(deptId, s);
+        } catch {
+          // Ignore if nothing to delete
+        }
+      }
+      toast('Old timetables cleared, generating new ones...', 'info');
+
+      // Step 2: Generate fresh timetables
       const results = [];
       for (const s of semesters) {
         const r = await api.generateTimetable(deptId, s, 'week');
@@ -35,7 +46,7 @@ export default function Dashboard() {
       }
       const total = results.reduce((s, r) => s + (r.placed || 0), 0);
       const errors = results.flatMap(r => r.errors || []);
-      const label = semesterGroup === 'odd' ? 'Odd semesters' : 'Even semesters';
+      const label = semesterGroup === 'odd' ? 'Odd semesters (1,3,5,7)' : 'Even semesters (2,4,6,8)';
       toast(`${label} generated — ${total} slots placed`, 'success');
       if (errors.length > 0) errors.forEach(e => toast(e, 'error'));
     } catch {
@@ -47,94 +58,104 @@ export default function Dashboard() {
   const deptName = (id) => departments.find(d => d.id === id)?.name || '';
 
   return (
-    <div>
-      <div className="page-header">
-        <h1 className="page-title">Generate Timetable</h1>
+    <div className="animate-fade-in relative z-10">
+      <div className="mb-8">
+        <h1 className="text-3xl md:text-4xl font-extrabold text-neutral-900 tracking-tight">Generate Timetable</h1>
       </div>
 
       {/* Search bar */}
-      <div style={{ marginBottom: 16 }}>
+      <div className="mb-8 relative max-w-2xl">
+        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+          <Search className="h-5 w-5 text-neutral-400" />
+        </div>
         <input
           type="text"
           placeholder="Search departments by name or code..."
           value={search}
-          onChange={e => { setSearch(e.target.value); setPage(0); }}
-          style={{
-            width: '100%', padding: '12px 18px', border: '2px solid var(--border)',
-            borderRadius: 'var(--radius)', fontSize: 14, outline: 'none',
-            background: 'var(--card)', fontFamily: 'inherit', transition: 'border-color .15s',
-          }}
-          onFocus={e => e.target.style.borderColor = 'var(--primary)'}
-          onBlur={e => e.target.style.borderColor = 'var(--border)'}
+          onChange={e => setSearch(e.target.value)}
+          className="w-full pl-11 pr-4 py-3.5 rounded-xl border border-neutral-200 focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 transition-all outline-none bg-white shadow-sm font-medium text-neutral-900 placeholder:text-neutral-400"
         />
       </div>
 
-      {/* Department buttons — paginated, max 6 visible */}
-      <div className="dept-bar-wrapper">
-        {page > 0 && (
-          <button className="dept-bar-arrow left" onClick={() => setPage(p => p - 1)} title="Previous">
-            ‹
-          </button>
-        )}
-        <div className="dept-bar">
-          {filtered.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE).map(d => {
+      {/* Department carousel */}
+      <div className="relative mb-8 group">
+        <button 
+          onClick={() => scrollRef.current?.scrollBy({ left: -300, behavior: 'smooth' })}
+          className="absolute left-0 top-1/2 -translate-y-1/2 -ml-4 z-10 w-10 h-10 rounded-full flex items-center justify-center bg-white border border-neutral-200 text-neutral-600 shadow-md opacity-0 group-hover:opacity-100 transition-opacity hover:bg-neutral-50"
+        >
+          <ChevronLeft size={20} />
+        </button>
+
+        <div 
+          ref={scrollRef} 
+          className="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-4 hide-scrollbar"
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+        >
+          {filtered.map(d => {
             const isActive = selectedDept === d.id;
             const initials = d.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
             return (
               <button
                 key={d.id}
-                className={`dept-bar-btn${isActive ? ' active' : ''}`}
                 onClick={() => setSelectedDept(isActive ? null : d.id)}
+                className={`flex-none w-[280px] sm:w-[320px] flex items-center gap-4 p-4 rounded-2xl border text-left transition-all duration-200 snap-start ${
+                  isActive 
+                    ? 'bg-primary-50 border-primary-500 shadow-md ring-1 ring-primary-500' 
+                    : 'bg-white border-neutral-200 hover:border-primary-300 hover:shadow-sm'
+                }`}
               >
-                <span className="dept-bar-avatar">{initials}</span>
-                <span className="dept-bar-name">{d.name}</span>
-                <span className="dept-bar-code">{d.code}</span>
+                <div className={`w-12 h-12 rounded-xl flex items-center justify-center font-bold text-lg shrink-0 transition-colors ${
+                  isActive ? 'bg-primary-500 text-white shadow-sm' : 'bg-neutral-100 text-neutral-600 group-hover:bg-primary-100 group-hover:text-primary-700'
+                }`}>
+                  {initials}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className={`font-bold truncate ${isActive ? 'text-primary-900' : 'text-neutral-900'}`}>{d.name}</div>
+                  <div className={`text-xs font-semibold mt-0.5 ${isActive ? 'text-primary-600' : 'text-neutral-500'}`}>{d.code}</div>
+                </div>
               </button>
             );
           })}
         </div>
-        {(page + 1) * PAGE_SIZE < filtered.length && (
-          <button className="dept-bar-arrow right" onClick={() => setPage(p => p + 1)} title="Next">
-            ›
-          </button>
-        )}
+
+        <button 
+          onClick={() => scrollRef.current?.scrollBy({ left: 300, behavior: 'smooth' })}
+          className="absolute right-0 top-1/2 -translate-y-1/2 -mr-4 z-10 w-10 h-10 rounded-full flex items-center justify-center bg-white border border-neutral-200 text-neutral-600 shadow-md opacity-0 group-hover:opacity-100 transition-opacity hover:bg-neutral-50"
+        >
+          <ChevronRight size={20} />
+        </button>
       </div>
-      {filtered.length > PAGE_SIZE && (
-        <div className="dept-bar-dots">
-          {Array.from({ length: Math.ceil(filtered.length / PAGE_SIZE) }).map((_, i) => (
-            <span key={i} className={`dept-bar-dot${i === page ? ' active' : ''}`} onClick={() => setPage(i)} />
-          ))}
-        </div>
-      )}
+
       {filtered.length === 0 && departments.length > 0 && (
-        <div style={{ textAlign: 'center', padding: 24, color: 'var(--text-secondary)', fontSize: 14 }}>
+        <div className="text-center py-12 text-neutral-500 font-medium">
           No departments match "{search}"
         </div>
       )}
 
       {departments.length === 0 && (
-        <div style={{ textAlign: 'center', padding: 40, color: 'var(--text-secondary)' }}>
+        <div className="text-center py-12 text-neutral-500 font-medium">
           No departments found. Add departments first.
         </div>
       )}
 
       {/* Selected department panel */}
       {selectedDept && (
-        <div style={{ marginTop: 24 }}>
-          <div className="page-header" style={{ marginBottom: 16 }}>
-            <h2 style={{ fontSize: 20, fontWeight: 700 }}>
-              {deptName(selectedDept)} <span className="badge badge-primary">{departments.find(d => d.id === selectedDept)?.code}</span>
+        <div className="mt-8 animate-fade-in border-t border-neutral-200 pt-8">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+            <h2 className="text-2xl font-extrabold text-neutral-900 flex items-center gap-3">
+              {deptName(selectedDept)} 
+              <span className="px-2.5 py-1 text-xs font-bold bg-primary-100 text-primary-700 rounded-md uppercase tracking-wider">{departments.find(d => d.id === selectedDept)?.code}</span>
             </h2>
-            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            <div className="flex flex-wrap gap-3">
               <button
-                className="btn btn-primary"
+                className="px-5 py-2.5 bg-primary-600 text-white font-bold rounded-xl shadow-sm hover:bg-primary-700 disabled:opacity-70 transition-all flex items-center gap-2"
                 onClick={() => handleGenerate(selectedDept, 'odd')}
                 disabled={generating.startsWith(`${selectedDept}:`)}
               >
                 {generating === `${selectedDept}:odd` ? '⏳ Generating Odd…' : '+ Generate 1,3,5,7'}
               </button>
               <button
-                className="btn btn-secondary"
+                className="px-5 py-2.5 bg-white border border-neutral-200 text-neutral-700 font-bold rounded-xl shadow-sm hover:bg-neutral-50 hover:border-neutral-300 disabled:opacity-70 transition-all flex items-center gap-2"
                 onClick={() => handleGenerate(selectedDept, 'even')}
                 disabled={generating.startsWith(`${selectedDept}:`)}
               >
@@ -143,20 +164,22 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {Array.from({ length: departments.find(d => d.id === selectedDept)?.years || 4 }, (_, i) => i + 1).map(year => (
-            <div key={year} style={{
-              marginBottom: 20, background: 'var(--card)', borderRadius: 'var(--radius)',
-              border: '1px solid var(--border)', padding: 20, boxShadow: 'var(--shadow)',
-            }}>
-              <h3 style={{ fontSize: 17, fontWeight: 700, marginBottom: 14, color: 'var(--text)' }}>
-                📅 Year {year}
-              </h3>
-              <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
-                <SemesterCard deptId={selectedDept} semester={year * 2 - 1} />
-                <SemesterCard deptId={selectedDept} semester={year * 2} />
+          {/* Years */}
+          <div className="space-y-6">
+            {Array.from({ length: departments.find(d => d.id === selectedDept)?.years || 4 }, (_, i) => i + 1).map(year => (
+              <div key={year} className="bg-white/60 backdrop-blur-xl rounded-3xl border border-neutral-200 shadow-sm p-6 relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-primary-50 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+                <h3 className="text-xl font-bold text-neutral-900 mb-6 flex items-center gap-2 relative z-10">
+                  <span className="w-8 h-8 rounded-lg bg-primary-100 flex items-center justify-center text-primary-600"><Calendar size={16} strokeWidth={2.5} /></span> 
+                  Year {year}
+                </h3>
+                <div className="grid lg:grid-cols-2 gap-6 relative z-10">
+                  <SemesterCard deptId={selectedDept} semester={year * 2 - 1} />
+                  <SemesterCard deptId={selectedDept} semester={year * 2} />
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       )}
     </div>
@@ -290,47 +313,48 @@ function SemesterCard({ deptId, semester }) {
   };
 
   return (
-    <div style={{
-      flex: '1 1 220px', background: 'var(--card)', borderRadius: 'var(--radius)',
-      border: '1px solid var(--border)', padding: 20, boxShadow: 'var(--shadow)',
-    }}>
+    <div className="flex-1 min-w-[220px] bg-white rounded-2xl border border-neutral-200 p-5 shadow-sm hover:shadow-md transition-shadow flex flex-col">
       <ConfirmDialog />
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-        <h3 style={{ fontSize: 16, fontWeight: 700 }}>Semester {semester}</h3>
-        <span className={`badge ${displayTT.length > 0 ? 'badge-success' : 'badge-warning'}`}>
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-lg font-bold text-neutral-900">Semester {semester}</h3>
+        <span className={`px-2.5 py-1 text-xs font-bold rounded-md uppercase tracking-wider ${displayTT.length > 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
           {displayTT.length > 0 ? `${displayTT.length} slots` : 'No schedule'}
         </span>
       </div>
 
-      <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 12 }}>
-        <div>{courses.length} courses</div>
-        <div>{scheduled}/{courses.length} scheduled</div>
+      <div className="text-sm text-neutral-500 mb-4 space-y-1">
+        <div className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-neutral-300"></div>{courses.length} courses</div>
+        <div className="flex items-center gap-2"><div className="w-1.5 h-1.5 rounded-full bg-neutral-300"></div>{scheduled}/{courses.length} scheduled</div>
         {batches.length > 0 && (
-          <div style={{ marginTop: 4, color: 'var(--primary)', fontWeight: 500 }}>
+          <div className="mt-3 text-primary-600 font-semibold bg-primary-50 px-3 py-2 rounded-lg border border-primary-100 inline-block">
             👥 {batches.length} batch{batches.length !== 1 ? 'es' : ''}: {batches.map(b => `${b.section}(${b.studentCount})`).join(', ')}
           </div>
         )}
       </div>
 
       {batches.length > 0 && (
-        <div className="form-group" style={{ marginBottom: 10 }}>
-          <label style={{ fontSize: 12 }}>Batch while generating</label>
-          <select value={selectedBatchId} onChange={e => setSelectedBatchId(e.target.value)}>
+        <div className="mb-4">
+          <label className="block text-xs font-bold text-neutral-500 uppercase tracking-wider mb-2">Batch while generating</label>
+          <select 
+            value={selectedBatchId} 
+            onChange={e => setSelectedBatchId(e.target.value)}
+            className="w-full px-3 py-2 rounded-lg border border-neutral-200 bg-neutral-50 text-neutral-700 focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 outline-none transition-all"
+          >
             <option value="">All Batches</option>
             {batches.map(b => <option key={b.id} value={b.id}>{b.name} ({b.section})</option>)}
           </select>
         </div>
       )}
 
-      <div className="btn-group" style={{ flexWrap: 'wrap' }}>
-        <button className="btn btn-sm btn-primary" onClick={handleGenerate} disabled={generating}>
+      <div className="flex flex-wrap gap-2 mt-auto pt-4 border-t border-neutral-100">
+        <button className="px-3 py-1.5 bg-primary-600 text-white text-sm font-bold rounded-lg shadow-sm hover:bg-primary-700 disabled:opacity-70 transition-all" onClick={handleGenerate} disabled={generating}>
           {generating ? '⏳' : '+ Generate'}
         </button>
-        <button className="btn btn-sm btn-secondary" onClick={() => setShowPrefModal(true)} disabled={generating}>
-          ⚙ Generate + Pref
+        <button className="px-3 py-1.5 bg-white border border-neutral-200 text-neutral-700 text-sm font-bold rounded-lg hover:bg-neutral-50 disabled:opacity-70 transition-all flex items-center gap-1.5" onClick={() => setShowPrefModal(true)} disabled={generating}>
+          ⚙ <span className="hidden sm:inline">Adv.</span> Pref
         </button>
         {timetable.length > 0 && (
-          <button className="btn btn-sm btn-danger" onClick={handleClear}>Delete</button>
+          <button className="px-3 py-1.5 bg-red-50 text-red-600 text-sm font-bold rounded-lg hover:bg-red-100 transition-all ml-auto" onClick={handleClear}>Delete</button>
         )}
       </div>
 
