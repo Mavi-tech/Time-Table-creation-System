@@ -647,7 +647,7 @@ export default function CoursesManager() {
                             const teacher = teacherMap[c.teacherId];
                             const tl = TYPE_LABELS[c.type] || TYPE_LABELS.theory;
                             return (
-                              <div key={c.id} className="bg-white border border-slate-200 rounded-2xl p-5 flex flex-col h-full hover:shadow-md transition-shadow relative overflow-hidden">
+                              <div key={c.id} className="bg-white border border-slate-200 rounded-2xl p-5 flex flex-col h-full hover:shadow-md transition-shadow relative overflow-visible">
                                 <div className="absolute top-0 left-0 w-full h-1" style={{ background: getCourseColor(c.code) }} />
                                 
                                 <div className="flex justify-between items-start mb-3">

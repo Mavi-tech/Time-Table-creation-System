@@ -364,25 +364,7 @@ async function initTenantDb(dbName) {
     console.log(`  ✅ Admin user seeded for ${dbName}`);
   }
 
-  // Seed demo teacher user so the Quick Demo Access "Teacher" login works
-  const [teacherUsers] = await p.query('SELECT id FROM users WHERE username = ?', ['verma']);
-  if (teacherUsers.length === 0) {
-    // Create a teacher record first
-    const [existingTeacher] = await p.query('SELECT id FROM teachers WHERE id = ?', ['t-demo-verma']);
-    if (existingTeacher.length === 0) {
-      await p.query(
-        'INSERT INTO teachers (id, name, email, designation) VALUES (?, ?, ?, ?)',
-        ['t-demo-verma', 'Dr. Verma', 'verma@university.edu', 'Assistant Professor']
-      );
-      console.log(`  ✅ Demo teacher seeded for ${dbName}`);
-    }
-    // Create the teacher's login account
-    await p.query(
-      'INSERT INTO users (id, username, password, role, name, linked_id) VALUES (?, ?, ?, ?, ?, ?)',
-      ['u-demo-verma', 'verma', 'teacher123', 'teacher', 'Dr. Verma', 't-demo-verma']
-    );
-    console.log(`  ✅ Demo teacher user seeded for ${dbName}`);
-  }
+  // (Demo teacher "Dr. Verma" seeding removed — was re-creating on every restart)
 
   // Ensure every teacher has a login account, create if missing
   const [allTeacherUsers] = await p.query("SELECT * FROM users WHERE role = 'teacher'");
