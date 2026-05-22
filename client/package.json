@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "dependencies": {
+    "@vercel/analytics": "^2.0.1",
     "axios": "^1.6.7",
     "framer-motion": "^12.39.0",
     "lucide-react": "^0.541.0",

@@ -1,5 +1,6 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { Analytics } from '@vercel/analytics/react';
 import { useAuth } from './context/AuthContext';
 import { ToastContainer } from './components/UI';
 
@@ -55,6 +56,7 @@ export default function App() {
   return (
     <>
       <ToastContainer />
+      <Analytics />
       <BrowserRouter>
         <Routes>
         <Route path="/landing" element={<LandingPage />} />
